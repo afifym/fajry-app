@@ -1,12 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.container}>
-        <Text style={styles.title}>Fajr</Text>
-        <Text style={styles.subtitle}>Answer the Call</Text>
+        <Text style={styles.text}>Settings</Text>
       </View>
     </SafeAreaView>
   );
@@ -21,16 +20,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
-  title: {
+  text: {
     color: '#ffffff',
-    fontSize: 48,
-    fontWeight: '600',
-  },
-  subtitle: {
-    color: '#B0B4BA',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 20,
   },
 });

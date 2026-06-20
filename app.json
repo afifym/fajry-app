@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fajryapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.afify.fajry-app"
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#000000",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
