@@ -19,12 +19,24 @@ export async function requestGPSLocation(): Promise<Location> {
     accuracy: ExpoLocation.Accuracy.Balanced,
   });
 
+  const { latitude, longitude } = result.coords;
+  const nearest = nearestCity(latitude, longitude);
   return {
-    lat: result.coords.latitude,
-    lng: result.coords.longitude,
-    cityName: '',   // populated by caller via reverseGeocode if desired
-    country: '',
+    lat: latitude,
+    lng: longitude,
+    cityName: nearest?.name ?? '',
+    country: nearest?.country ?? '',
   };
+}
+
+function nearestCity(lat: number, lng: number): City | null {
+  let best: City | null = null;
+  let bestDist = Infinity;
+  for (const city of cities) {
+    const d = haversineKm(lat, lng, city.lat, city.lng);
+    if (d < bestDist) { bestDist = d; best = city; }
+  }
+  return best;
 }
 
 export function searchCities(query: string): City[] {

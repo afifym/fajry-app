@@ -1,17 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Redirect, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Redirect, router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useSettingsStore } from '@/store/settingsStore';
-import { useConsistencyStore } from '@/store/consistencyStore';
-import { detectLocationChange, requestGPSLocation } from '@/utils/location';
-import { isConfirmationWindowOpen, todayISODate } from '@/utils/prayerTimes';
-import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
-import { AlarmSlot } from '@/components/AlarmSlot';
-import { SlideToConfirm } from '@/components/SlideToConfirm';
-import type { AlarmDay } from '@/types';
+import { AlarmSlot } from "@/components/AlarmSlot";
+import { SlideToConfirm } from "@/components/SlideToConfirm";
+import { useConsistencyStore } from "@/store/consistencyStore";
+import { useSettingsStore } from "@/store/settingsStore";
+import type { AlarmDay } from "@/types";
+import { detectLocationChange, requestGPSLocation } from "@/utils/location";
+import { isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
+import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
 const HomeScreen = () => {
   const location = useSettingsStore((state) => state.location);
@@ -42,7 +42,9 @@ const HomeScreenContent = () => {
     const today = s.find((d) => d.date === todayISODate());
     if (!today) return;
     // Use true fajrTime (not alarmTime) — window opens at prayer time, not the pre-alarm offset
-    setConfirmationOpen(isConfirmationWindowOpen(today.fajrTime, today.sunriseTime));
+    setConfirmationOpen(
+      isConfirmationWindowOpen(today.fajrTime, today.sunriseTime),
+    );
   }, []);
 
   useEffect(() => {
@@ -75,12 +77,12 @@ const HomeScreenContent = () => {
         const gps = await requestGPSLocation();
         if (detectLocationChange(location, gps)) {
           Alert.alert(
-            'Location Changed',
-            'Your GPS position has moved more than 50 km from your stored location. Update?',
+            "Location Changed",
+            "Your GPS position has moved more than 50 km from your stored location. Update?",
             [
-              { text: 'Keep Current', style: 'cancel' },
+              { text: "Keep Current", style: "cancel" },
               {
-                text: 'Update',
+                text: "Update",
                 onPress: () => {
                   useSettingsStore.getState().setLocation({
                     lat: gps.lat,
@@ -111,19 +113,29 @@ const HomeScreenContent = () => {
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
           <Pressable
-            style={styles.navButton}
-            onPress={() => router.push('/settings')}
-            accessibilityLabel="Settings"
+            onPress={() => router.push("/settings")}
+            accessibilityLabel="Change location"
           >
-            <Text style={styles.navIcon}>⚙</Text>
+            <Text style={styles.locationText}>{location.cityName}</Text>
+            <Text style={styles.locationCountry}>{location.country}</Text>
           </Pressable>
-          <Pressable
-            style={styles.navButton}
-            onPress={() => router.push('/consistency')}
-            accessibilityLabel="Consistency Calendar"
-          >
-            <Text style={styles.navIcon}>☽</Text>
-          </Pressable>
+
+          <View style={styles.navIcons}>
+            <Pressable
+              style={styles.navButton}
+              onPress={() => router.push("/settings")}
+              accessibilityLabel="Settings"
+            >
+              <Text style={styles.navIcon}>⚙</Text>
+            </Pressable>
+            <Pressable
+              style={styles.navButton}
+              onPress={() => router.push("/consistency")}
+              accessibilityLabel="Consistency Calendar"
+            >
+              <Text style={styles.navIcon}>☽</Text>
+            </Pressable>
+          </View>
         </View>
 
         <View style={styles.main}>
@@ -132,13 +144,20 @@ const HomeScreenContent = () => {
           <View style={styles.streakRow}>
             <Text style={styles.streakLabel}>STREAK</Text>
             <Text style={styles.streakValue}>{streak}</Text>
-            <Text style={styles.streakUnit}>{streak === 1 ? 'day' : 'days'}</Text>
+            <Text style={styles.streakUnit}>
+              {streak === 1 ? "day" : "days"}
+            </Text>
           </View>
 
           {confirmationOpen && !confirmed && (
             <View style={styles.confirmSection}>
-              <Text style={styles.confirmHint}>Prayed on time? Confirm below.</Text>
-              <SlideToConfirm onConfirm={handleConfirm} label="Slide to confirm prayer" />
+              <Text style={styles.confirmHint}>
+                Prayed on time? Confirm below.
+              </Text>
+              <SlideToConfirm
+                onConfirm={handleConfirm}
+                label="Slide to confirm prayer"
+              />
             </View>
           )}
         </View>
@@ -148,36 +167,44 @@ const HomeScreenContent = () => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
+  root: { flex: 1, backgroundColor: "#000000" },
   safe: { flex: 1 },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
-    gap: 16,
   },
+  locationText: { color: "#ffffff", fontSize: 15, fontWeight: "500" },
+  locationCountry: { color: "#4B5060", fontSize: 12, marginTop: 1 },
+  navIcons: { flexDirection: "row", gap: 4 },
   navButton: { padding: 8 },
-  navIcon: { color: '#5A5E6A', fontSize: 22 },
+  navIcon: { color: "#5A5E6A", fontSize: 22 },
 
   main: {
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 24,
     gap: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   streakRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+    flexDirection: "row",
+    alignItems: "baseline",
     gap: 6,
   },
-  streakLabel: { color: '#4B5060', fontSize: 11, fontWeight: '600', letterSpacing: 2 },
-  streakValue: { color: '#ffffff', fontSize: 40, fontWeight: '300' },
-  streakUnit: { color: '#5A5E6A', fontSize: 16 },
+  streakLabel: {
+    color: "#4B5060",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 2,
+  },
+  streakValue: { color: "#ffffff", fontSize: 40, fontWeight: "300" },
+  streakUnit: { color: "#5A5E6A", fontSize: 16 },
 
-  confirmSection: { alignItems: 'center', gap: 12 },
-  confirmHint: { color: '#9EA3AD', fontSize: 14 },
+  confirmSection: { alignItems: "center", gap: 12 },
+  confirmHint: { color: "#9EA3AD", fontSize: 14 },
 });
