@@ -84,11 +84,7 @@ export const ConsistencyCalendar = () => {
 
       {/* Day cells */}
       <View style={s.grid}>
-        {days.map((isoDate, i) => {
-          if (!isoDate) {
-            return <View key={`empty-${i}`} style={s.cell} />;
-          }
-
+        {days.map((isoDate) => {
           const state = getDayState(isoDate, confirmations[isoDate], today);
           const dayNum = parseInt(isoDate.slice(-2), 10);
           const editable = isoDate <= today && isoDate >= cutoff;

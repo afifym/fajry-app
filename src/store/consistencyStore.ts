@@ -49,7 +49,7 @@ function computeStreakFromConfirmations(
 
 export const useConsistencyStore = create<ConsistencyState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       confirmations: {},
       streak: 0,
 
@@ -78,7 +78,7 @@ export const useConsistencyStore = create<ConsistencyState>()(
           const existing = state.confirmations[date];
           let updated: Record<string, PrayerConfirmation>;
 
-          if (existing?.confirmedAt !== null && existing !== undefined) {
+          if (existing?.confirmedAt != null) {
             // Toggle off
             updated = {
               ...state.confirmations,

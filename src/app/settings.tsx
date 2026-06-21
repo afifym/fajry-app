@@ -70,79 +70,79 @@ const SettingsScreen = () => {
 
   const handleMethodSelect = useCallback(
     async (key: CalculationMethodKey) => {
-      settings.setCalculationMethod(key);
+      useSettingsStore.getState().setCalculationMethod(key);
       setMethodModalOpen(false);
-      await applyAndRebuild({ ...useSettingsStore.getState(), calculationMethod: key });
+      await applyAndRebuild(useSettingsStore.getState());
     },
-    [settings],
+    [],
   );
 
   const handleRecitationSelect = useCallback(
     async (key: AdhanRecitation) => {
-      settings.setAdhanRecitation(key);
+      useSettingsStore.getState().setAdhanRecitation(key);
       setRecitationModalOpen(false);
-      await applyAndRebuild({ ...useSettingsStore.getState(), adhanRecitation: key });
+      await applyAndRebuild(useSettingsStore.getState());
     },
-    [settings],
+    [],
   );
 
   const handleCitySelect = useCallback(
     async (city: City) => {
-      settings.setLocation({ lat: city.lat, lng: city.lng, cityName: city.name, country: city.country });
+      useSettingsStore.getState().setLocation({ lat: city.lat, lng: city.lng, cityName: city.name, country: city.country });
       setCityModalOpen(false);
       setCityQuery('');
-      await applyAndRebuild({ ...useSettingsStore.getState() });
+      await applyAndRebuild(useSettingsStore.getState());
     },
-    [settings],
+    [],
   );
 
   const handleSnoozeChange = useCallback(
     async (text: string) => {
       const v = parseInt(text, 10);
       if (!isNaN(v) && v >= 1 && v <= 30) {
-        settings.setSnoozeDuration(v);
-        await applyAndRebuild({ ...useSettingsStore.getState(), snoozeDurationMinutes: v });
+        useSettingsStore.getState().setSnoozeDuration(v);
+        await applyAndRebuild(useSettingsStore.getState());
       }
     },
-    [settings],
+    [],
   );
 
   const handleOffsetChange = useCallback(
     async (text: string) => {
       const v = parseInt(text, 10);
       if (!isNaN(v) && v >= 0 && v <= 60) {
-        settings.setPreAlarmOffset(v);
-        await applyAndRebuild({ ...useSettingsStore.getState(), preAlarmOffsetMinutes: v });
+        useSettingsStore.getState().setPreAlarmOffset(v);
+        await applyAndRebuild(useSettingsStore.getState());
       }
     },
-    [settings],
+    [],
   );
 
   const handleAlarmToggle = useCallback(
     async (val: boolean) => {
-      settings.setAlarmEnabled(val);
-      await applyAndRebuild({ ...useSettingsStore.getState(), alarmEnabled: val });
+      useSettingsStore.getState().setAlarmEnabled(val);
+      await applyAndRebuild(useSettingsStore.getState());
     },
-    [settings],
+    [],
   );
 
   const handleSleepReminderToggle = useCallback(
     async (val: boolean) => {
-      settings.setSleepReminderEnabled(val);
-      await applyAndRebuild({ ...useSettingsStore.getState(), sleepReminderEnabled: val });
+      useSettingsStore.getState().setSleepReminderEnabled(val);
+      await applyAndRebuild(useSettingsStore.getState());
     },
-    [settings],
+    [],
   );
 
   const handleSleepHoursChange = useCallback(
     async (text: string) => {
       const v = parseFloat(text);
       if (!isNaN(v) && v >= 0.5 && v <= 12) {
-        settings.setDesiredSleepHours(v);
-        await applyAndRebuild({ ...useSettingsStore.getState(), desiredSleepHours: v });
+        useSettingsStore.getState().setDesiredSleepHours(v);
+        await applyAndRebuild(useSettingsStore.getState());
       }
     },
-    [settings],
+    [],
   );
 
   const currentMethodLabel = CALCULATION_METHODS.find((m) => m.key === settings.calculationMethod)?.label ?? settings.calculationMethod;
