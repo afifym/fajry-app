@@ -4,7 +4,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AlarmSlot } from "@/components/AlarmSlot";
+import { FajrClockRing } from "@/components/FajrClockRing";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -139,7 +139,9 @@ const HomeScreenContent = () => {
         </View>
 
         <View style={styles.main}>
-          <AlarmSlot slots={schedule} />
+          <FajrClockRing
+            fajrTime={schedule.find((d) => d.fajrTime.getTime() > Date.now())?.fajrTime ?? null}
+          />
 
           <View style={styles.streakRow}>
             <Text style={styles.streakLabel}>STREAK</Text>
