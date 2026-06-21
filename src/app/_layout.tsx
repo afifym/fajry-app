@@ -5,12 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react-native';
 
 Sentry.init({
-  // DSN is provided via EXPO_PUBLIC_SENTRY_DSN env var.
-  // In development the value is empty and no events are sent.
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? '',
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: !__DEV__,
   tracesSampleRate: 0.2,
-  sendDefaultPii: false, // never attach location, PII, or session replay
+  sendDefaultPii: false,
 });
 
 function RootLayout() {
