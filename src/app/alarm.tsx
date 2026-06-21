@@ -36,7 +36,7 @@ function formatClock(date: Date): string {
   return `${h}:${m} ${period}`;
 }
 
-export default function AlarmScreen() {
+const AlarmScreen = () => {
   const settings = useSettingsStore();
   const { confirm } = useConsistencyStore();
 
@@ -179,7 +179,9 @@ export default function AlarmScreen() {
       </SafeAreaView>
     </GestureHandlerRootView>
   );
-}
+};
+
+export default AlarmScreen;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },

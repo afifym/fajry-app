@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConsistencyStore } from '@/store/consistencyStore';
 import { ConsistencyCalendar } from '@/components/ConsistencyCalendar';
 
-export default function ConsistencyScreen() {
+const ConsistencyScreen = () => {
   const streak = useConsistencyStore((state) => state.streak);
 
   return (
@@ -38,7 +38,9 @@ export default function ConsistencyScreen() {
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
+
+export default ConsistencyScreen;
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },

@@ -14,7 +14,7 @@ function formatTime(date: Date): string {
   return `${h12}:${m} ${period}`;
 }
 
-export function AlarmSlot({ slots }: Props) {
+export const AlarmSlot = ({ slots }: Props) => {
   const next = slots.find((d) => d.alarmTime.getTime() > Date.now());
 
   if (!next) {

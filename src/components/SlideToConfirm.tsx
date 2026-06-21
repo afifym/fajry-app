@@ -18,7 +18,7 @@ type Props = {
   label?: string;
 };
 
-export function SlideToConfirm({ onConfirm, label = 'Slide to confirm' }: Props) {
+export const SlideToConfirm = ({ onConfirm, label = 'Slide to confirm' }: Props) => {
   const translateX = useSharedValue(0);
   const confirmed = useSharedValue(false);
 

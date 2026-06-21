@@ -13,7 +13,7 @@ import { AlarmSlot } from '@/components/AlarmSlot';
 import { SlideToConfirm } from '@/components/SlideToConfirm';
 import type { AlarmDay } from '@/types';
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   const location = useSettingsStore((state) => state.location);
 
   if (!location) {
@@ -21,9 +21,11 @@ export default function HomeScreen() {
   }
 
   return <HomeScreenContent />;
-}
+};
 
-function HomeScreenContent() {
+export default HomeScreen;
+
+const HomeScreenContent = () => {
   const settings = useSettingsStore();
   const { streak, confirm } = useConsistencyStore();
 
@@ -143,7 +145,7 @@ function HomeScreenContent() {
       </SafeAreaView>
     </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },

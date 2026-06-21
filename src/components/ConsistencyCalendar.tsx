@@ -53,7 +53,7 @@ const MONTH_NAMES = [
 // Use a fixed far-future sunrise for calendar toggle (actual time unknown at this point)
 const FAR_FUTURE = new Date(Date.now() + 24 * 60 * 60_000);
 
-export function ConsistencyCalendar() {
+export const ConsistencyCalendar = () => {
   const { confirmations, toggleConfirmation } = useConsistencyStore();
   const today = toISODate(new Date());
   const now = new Date();
@@ -114,16 +114,16 @@ export function ConsistencyCalendar() {
       </View>
     </View>
   );
-}
+};
 
-function LegendDot({ color, label }: { color: string; label: string }) {
+const LegendDot = ({ color, label }: { color: string; label: string }) => {
   return (
     <View style={s.legendItem}>
       <View style={[s.legendDot, { backgroundColor: color }]} />
       <Text style={s.legendText}>{label}</Text>
     </View>
   );
-}
+};
 
 const COLORS = {
   'on-time': '#34C759',

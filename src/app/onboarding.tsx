@@ -41,7 +41,7 @@ const METHOD_LABEL: Record<string, string> = {
 
 type Step = 'intro' | 'loading' | 'city-search';
 
-export default function OnboardingScreen() {
+const OnboardingScreen = () => {
   const [step, setStep] = useState<Step>('intro');
   const [query, setQuery] = useState('');
 
@@ -160,7 +160,9 @@ export default function OnboardingScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
+};
+
+export default OnboardingScreen;
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },

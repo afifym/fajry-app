@@ -11,7 +11,7 @@ Sentry.init({
   sendDefaultPii: false,
 });
 
-function RootLayout() {
+const RootLayout = () => {
   return (
     <ThemeProvider value={DarkTheme}>
       <StatusBar style="light" />

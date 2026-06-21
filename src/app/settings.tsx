@@ -56,7 +56,7 @@ async function applyAndRebuild(settings: ReturnType<typeof useSettingsStore.getS
   });
 }
 
-export default function SettingsScreen() {
+const SettingsScreen = () => {
   const settings = useSettingsStore();
   const [cityQuery, setCityQuery] = useState('');
   const [cityModalOpen, setCityModalOpen] = useState(false);
@@ -327,22 +327,24 @@ export default function SettingsScreen() {
       </Modal>
     </SafeAreaView>
   );
-}
+};
 
-function SectionHeader({ label }: { label: string }) {
+export default SettingsScreen;
+
+const SectionHeader = ({ label }: { label: string }) => {
   return <Text style={st.sectionHeader}>{label.toUpperCase()}</Text>;
-}
+};
 
-function SettingRow({ label, children }: { label: string; children: React.ReactNode }) {
+const SettingRow = ({ label, children }: { label: string; children: React.ReactNode }) => {
   return (
     <View style={st.row}>
       <Text style={st.rowLabel}>{label}</Text>
       {children}
     </View>
   );
-}
+};
 
-function PickerModal({
+const PickerModal = ({
   visible,
   title,
   onClose,
@@ -352,7 +354,7 @@ function PickerModal({
   title: string;
   onClose: () => void;
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <SafeAreaView style={st.modalRoot}>
@@ -366,7 +368,7 @@ function PickerModal({
       </SafeAreaView>
     </Modal>
   );
-}
+};
 
 const st = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },

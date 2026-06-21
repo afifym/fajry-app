@@ -15,7 +15,7 @@ function formatDuration(ms: number): string {
   return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export function CountdownTimer({ targetTime, onReach }: Props) {
+export const CountdownTimer = ({ targetTime, onReach }: Props) => {
   const [remaining, setRemaining] = useState(() => targetTime.getTime() - Date.now());
 
   useEffect(() => {
