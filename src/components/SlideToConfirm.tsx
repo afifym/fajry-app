@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   track: {
     width: TRACK_WIDTH,
     height: THUMB_SIZE + 8,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0D1526',
     borderRadius: (THUMB_SIZE + 8) / 2,
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     textAlign: 'center',
-    color: '#5A5E6A',
+    color: '#8892A4',
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: 0.3,

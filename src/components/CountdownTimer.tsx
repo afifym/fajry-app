@@ -38,7 +38,7 @@ export const CountdownTimer = ({ targetTime, onReach }: Props) => {
 
 const styles = StyleSheet.create({
   countdown: {
-    color: '#ffffff',
+    color: '#06B6D4',
     fontSize: 36,
     fontWeight: '300',
     letterSpacing: 1,

@@ -169,7 +169,7 @@ const HomeScreenContent = () => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
+  root: { flex: 1, backgroundColor: "#060C1A" },
   safe: { flex: 1 },
   header: {
     flexDirection: "row",
@@ -179,10 +179,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   locationText: { color: "#ffffff", fontSize: 15, fontWeight: "500" },
-  locationCountry: { color: "#4B5060", fontSize: 12, marginTop: 1 },
+  locationCountry: { color: "#8892A4", fontSize: 12, marginTop: 1 },
   navIcons: { flexDirection: "row", gap: 4 },
   navButton: { padding: 8 },
-  navIcon: { color: "#5A5E6A", fontSize: 22 },
+  navIcon: { color: "#8892A4", fontSize: 22 },
 
   main: {
     flex: 1,
@@ -199,14 +199,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   streakLabel: {
-    color: "#4B5060",
+    color: "#4A5568",
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 2,
   },
-  streakValue: { color: "#ffffff", fontSize: 40, fontWeight: "300" },
-  streakUnit: { color: "#5A5E6A", fontSize: 16 },
+  streakValue: { color: "#06B6D4", fontSize: 40, fontWeight: "300" },
+  streakUnit: { color: "#8892A4", fontSize: 16 },
 
   confirmSection: { alignItems: "center", gap: 12 },
-  confirmHint: { color: "#9EA3AD", fontSize: 14 },
+  confirmHint: { color: "#A0AEC0", fontSize: 14 },
 });

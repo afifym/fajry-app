@@ -136,7 +136,7 @@ const OnboardingScreen = () => {
           <TextInput
             style={s.searchInput}
             placeholder="City name…"
-            placeholderTextColor="#4B5060"
+            placeholderTextColor="#4A5568"
             value={query}
             onChangeText={setQuery}
             autoFocus
@@ -165,7 +165,7 @@ const OnboardingScreen = () => {
 export default OnboardingScreen;
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
+  root: { flex: 1, backgroundColor: '#060C1A' },
   flex: { flex: 1 },
   scrollContent: { flexGrow: 1, padding: 32, justifyContent: 'center', gap: 28 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
@@ -177,16 +177,16 @@ const s = StyleSheet.create({
   body: { color: '#9EA3AD', fontSize: 16, lineHeight: 26 },
 
   methodCard: {
-    backgroundColor: '#0E0E0E',
+    backgroundColor: '#0D1526',
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2028',
+    borderColor: '#1E2D4A',
     padding: 20,
     gap: 6,
   },
-  methodLabel: { color: '#5A5E6A', fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
+  methodLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
   methodValue: { color: '#ffffff', fontSize: 16, fontWeight: '500' },
-  methodHint: { color: '#5A5E6A', fontSize: 13 },
+  methodHint: { color: '#4A5568', fontSize: 13 },
 
   cta: {
     backgroundColor: '#ffffff',
@@ -200,10 +200,10 @@ const s = StyleSheet.create({
 
   searchHeader: { padding: 24, gap: 14 },
   searchInput: {
-    backgroundColor: '#0E0E0E',
+    backgroundColor: '#0D1526',
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#2A2E38',
+    borderColor: '#253352',
     paddingHorizontal: 16,
     paddingVertical: 13,
     color: '#ffffff',

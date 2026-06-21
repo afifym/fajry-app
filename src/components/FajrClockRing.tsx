@@ -58,8 +58,8 @@ export const FajrClockRing = ({ fajrTime }: Props) => {
     return (
       <View style={s.wrap}>
         <Svg width={SIZE} height={SIZE}>
-          <Circle cx={CENTER} cy={CENTER} r={RING_R} fill="none" stroke="#1A1C22" strokeWidth={STROKE} />
-          <Circle {...polarToCartesian(CENTER, CENTER, RING_R, nowAngle)} r={5} fill="#2A2E38" />
+          <Circle cx={CENTER} cy={CENTER} r={RING_R} fill="none" stroke="#1E2D4A" strokeWidth={STROKE} />
+          <Circle {...polarToCartesian(CENTER, CENTER, RING_R, nowAngle)} r={5} fill="#253352" />
         </Svg>
         <View style={s.center}>
           <Text style={s.noAlarm}>No upcoming alarm</Text>
@@ -80,18 +80,18 @@ export const FajrClockRing = ({ fajrTime }: Props) => {
     <View style={s.wrap}>
       <Svg width={SIZE} height={SIZE}>
         {/* Background track */}
-        <Circle cx={CENTER} cy={CENTER} r={RING_R} fill="none" stroke="#1A1C22" strokeWidth={STROKE} />
+        <Circle cx={CENTER} cy={CENTER} r={RING_R} fill="none" stroke="#1E2D4A" strokeWidth={STROKE} />
 
         {/* Arc: current time → Fajr */}
         {path ? (
-          <Path d={path} fill="none" stroke="#ffffff" strokeWidth={STROKE} strokeLinecap="round" />
+          <Path d={path} fill="none" stroke="#C9A84C" strokeWidth={STROKE} strokeLinecap="round" />
         ) : null}
 
         {/* Current time dot */}
-        <Circle cx={nowPt.x} cy={nowPt.y} r={6} fill="#2A2E38" />
+        <Circle cx={nowPt.x} cy={nowPt.y} r={5} fill="#253352" />
 
         {/* Fajr dot */}
-        <Circle cx={fajrPt.x} cy={fajrPt.y} r={8} fill="#ffffff" />
+        <Circle cx={fajrPt.x} cy={fajrPt.y} r={8} fill="#C9A84C" />
       </Svg>
 
       <View style={s.center}>
@@ -115,7 +115,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    color: '#4B5060',
+    color: '#C9A84C',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
@@ -127,12 +127,13 @@ const s = StyleSheet.create({
     letterSpacing: -1,
   },
   remaining: {
-    color: '#5A5E6A',
+    color: '#06B6D4',
     fontSize: 14,
     marginTop: 4,
+    fontWeight: '500',
   },
   noAlarm: {
-    color: '#5A5E6A',
+    color: '#8892A4',
     fontSize: 15,
   },
 });

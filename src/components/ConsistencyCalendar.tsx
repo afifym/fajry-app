@@ -122,16 +122,16 @@ const LegendDot = ({ color, label }: { color: string; label: string }) => {
 };
 
 const COLORS = {
-  'on-time': '#34C759',
+  'on-time': '#06B6D4',
   late: '#FF9500',
-  missed: '#1A1C22',
+  missed: '#0D1526',
   future: 'transparent',
 };
 
 const s = StyleSheet.create({
   container: { gap: 12 },
   monthLabel: {
-    color: '#ffffff',
+    color: '#C9A84C',
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
@@ -143,7 +143,7 @@ const s = StyleSheet.create({
   dayHeader: {
     width: `${100 / 7}%` as `${number}%`,
     textAlign: 'center',
-    color: '#4B5060',
+    color: '#4A5568',
     fontSize: 11,
     fontWeight: '600',
     paddingVertical: 6,
@@ -162,13 +162,13 @@ const s = StyleSheet.create({
   cell_late: { backgroundColor: COLORS.late },
   cellReadOnly: { opacity: 0.5 },
   dayNum: { color: '#ffffff', fontSize: 13, fontWeight: '500' },
-  dayNum_future: { color: '#3A3E48' },
-  dayNum_missed: { color: '#3A3E48' },
+  dayNum_future: { color: '#2D3748' },
+  dayNum_missed: { color: '#4A5568' },
   'dayNum_on-time': { color: '#000000', fontWeight: '600' },
   dayNum_late: { color: '#000000', fontWeight: '600' },
 
   legend: { flexDirection: 'row', gap: 20, marginTop: 8 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: '#9EA3AD', fontSize: 12 },
+  legendText: { color: '#8892A4', fontSize: 12 },
 });

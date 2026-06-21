@@ -184,7 +184,7 @@ const AlarmScreen = () => {
 export default AlarmScreen;
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
+  root: { flex: 1, backgroundColor: '#060C1A' },
   safe: { flex: 1 },
   flex: { flex: 1, justifyContent: 'space-between' },
 
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   clock: {
-    color: '#5A5E6A',
+    color: '#8892A4',
     fontSize: 18,
     fontWeight: '400',
   },
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    color: '#4B5060',
+    color: '#C9A84C',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1.5,
   },
   untilSunrise: {
-    color: '#4B5060',
+    color: '#4A5568',
     fontSize: 13,
     marginTop: 16,
   },
@@ -240,30 +240,30 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   snoozeButton: {
-    backgroundColor: '#141416',
+    backgroundColor: '#0D1526',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#2A2E38',
+    borderColor: '#1E2D4A',
   },
-  snoozeText: { color: '#9EA3AD', fontSize: 17 },
+  snoozeText: { color: '#A0AEC0', fontSize: 17 },
   snoozeDisabled: {
     paddingVertical: 14,
     alignItems: 'center',
   },
   snoozeDisabledText: {
-    color: '#4B5060',
+    color: '#4A5568',
     fontSize: 13,
     textAlign: 'center',
   },
   dismissButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#C9A84C',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',
   },
-  dismissText: { color: '#000000', fontSize: 17, fontWeight: '600' },
+  dismissText: { color: '#000000', fontSize: 17, fontWeight: '700' },
 
   skipLink: { marginTop: 24 },
   skipText: { color: '#5A5E6A', fontSize: 14 },

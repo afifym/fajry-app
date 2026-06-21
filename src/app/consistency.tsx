@@ -42,37 +42,37 @@ const ConsistencyScreen = () => {
 export default ConsistencyScreen;
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
+  root: { flex: 1, backgroundColor: '#060C1A' },
 
   header: {
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1A1C22',
+    borderBottomColor: '#1E2D4A',
   },
   backBtn: { marginBottom: 4 },
-  backText: { color: '#5A5E6A', fontSize: 16 },
+  backText: { color: '#8892A4', fontSize: 16 },
   title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
 
   content: { padding: 24, gap: 28, paddingBottom: 48 },
 
   streakCard: {
-    backgroundColor: '#0E0E0E',
+    backgroundColor: '#0D1526',
     borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2028',
+    borderColor: '#1E2D4A',
     padding: 28,
     alignItems: 'center',
     gap: 4,
   },
-  streakLabel: { color: '#4B5060', fontSize: 11, fontWeight: '600', letterSpacing: 2 },
-  streakValue: { color: '#ffffff', fontSize: 64, fontWeight: '200', lineHeight: 72 },
-  streakUnit: { color: '#5A5E6A', fontSize: 18 },
-  streakHint: { color: '#4B5060', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  streakLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 2 },
+  streakValue: { color: '#06B6D4', fontSize: 64, fontWeight: '200', lineHeight: 72 },
+  streakUnit: { color: '#8892A4', fontSize: 18 },
+  streakHint: { color: '#4A5568', fontSize: 13, textAlign: 'center', marginTop: 8 },
 
   editHint: {
-    color: '#4B5060',
+    color: '#4A5568',
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 20,

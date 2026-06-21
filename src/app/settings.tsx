@@ -184,7 +184,7 @@ const SettingsScreen = () => {
           <Switch
             value={settings.alarmEnabled}
             onValueChange={handleAlarmToggle}
-            trackColor={{ true: '#ffffff', false: '#2A2E38' }}
+            trackColor={{ true: '#ffffff', false: '#253352' }}
             thumbColor="#000000"
           />
         </SettingRow>
@@ -213,7 +213,7 @@ const SettingsScreen = () => {
           <Switch
             value={settings.sleepReminderEnabled}
             onValueChange={handleSleepReminderToggle}
-            trackColor={{ true: '#ffffff', false: '#2A2E38' }}
+            trackColor={{ true: '#ffffff', false: '#253352' }}
             thumbColor="#000000"
           />
         </SettingRow>
@@ -371,7 +371,7 @@ const PickerModal = ({
 };
 
 const st = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
+  root: { flex: 1, backgroundColor: '#060C1A' },
   flex: { flex: 1 },
 
   header: {
@@ -379,10 +379,10 @@ const st = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1A1C22',
+    borderBottomColor: '#1E2D4A',
   },
   backBtn: { marginBottom: 4 },
-  backText: { color: '#5A5E6A', fontSize: 16 },
+  backText: { color: '#8892A4', fontSize: 16 },
   title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
 
   content: { paddingBottom: 40 },
@@ -392,14 +392,14 @@ const st = StyleSheet.create({
     marginTop: 8,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#2A2E38',
+    borderColor: '#C9A84C',
     paddingVertical: 16,
     alignItems: 'center',
   },
-  testAlarmText: { color: '#9EA3AD', fontSize: 16 },
+  testAlarmText: { color: '#C9A84C', fontSize: 16 },
 
   sectionHeader: {
-    color: '#4B5060',
+    color: '#C9A84C',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.2,
@@ -415,7 +415,7 @@ const st = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#141416',
+    borderBottomColor: '#0A1020',
   },
   rowLabel: { color: '#ffffff', fontSize: 16, flex: 1 },
 
@@ -425,24 +425,24 @@ const st = StyleSheet.create({
     gap: 4,
     maxWidth: '55%',
   },
-  pickerValue: { color: '#5A5E6A', fontSize: 16, textAlign: 'right' },
-  chevron: { color: '#3A3E48', fontSize: 20 },
+  pickerValue: { color: '#8892A4', fontSize: 16, textAlign: 'right' },
+  chevron: { color: '#4A5568', fontSize: 20 },
 
   numInput: {
     color: '#ffffff',
     fontSize: 16,
-    backgroundColor: '#141416',
+    backgroundColor: '#0A1020',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
     minWidth: 60,
     textAlign: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#2A2E38',
+    borderColor: '#253352',
   },
 
   // Modals
-  modalRoot: { flex: 1, backgroundColor: '#0A0A0A' },
+  modalRoot: { flex: 1, backgroundColor: '#060C1A' },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -450,10 +450,10 @@ const st = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1A1C22',
+    borderBottomColor: '#1E2D4A',
   },
   modalTitle: { color: '#ffffff', fontSize: 18, fontWeight: '600' },
-  modalClose: { color: '#9EA3AD', fontSize: 16 },
+  modalClose: { color: '#C9A84C', fontSize: 16 },
 
   optionRow: {
     flexDirection: 'row',
@@ -462,7 +462,7 @@ const st = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#141416',
+    borderBottomColor: '#0A1020',
   },
   optionRowActive: { backgroundColor: '#0E0E0E' },
   optionText: { color: '#ffffff', fontSize: 16 },
@@ -470,7 +470,7 @@ const st = StyleSheet.create({
   checkmark: { color: '#ffffff', fontSize: 16 },
 
   citySearch: {
-    backgroundColor: '#141416',
+    backgroundColor: '#0A1020',
     borderRadius: 10,
     margin: 16,
     paddingHorizontal: 16,
@@ -478,7 +478,7 @@ const st = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#2A2E38',
+    borderColor: '#253352',
   },
   cityRow: {
     flexDirection: 'row',
@@ -487,7 +487,7 @@ const st = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#141416',
+    borderBottomColor: '#0A1020',
   },
   cityName: { color: '#ffffff', fontSize: 16 },
   cityCountry: { color: '#5A5E6A', fontSize: 13 },
