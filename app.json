@@ -18,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.afify.fajryapp"
     },
     "web": {
       "output": "static",
@@ -36,7 +37,8 @@
           }
         }
       ],
-      "@sentry/react-native"
+      "@sentry/react-native",
+      "./plugins/withNotifeeAndroid"
     ],
     "experiments": {
       "typedRoutes": true,
