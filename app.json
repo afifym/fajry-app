@@ -9,7 +9,10 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.afify.fajry-app"
+      "bundleIdentifier": "com.afify.fajry-app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Your location is used to calculate accurate Fajr prayer times. It never leaves your device."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,7 +41,8 @@
         }
       ],
       "@sentry/react-native",
-      "./plugins/withNotifeeAndroid"
+      "./plugins/withNotifeeAndroid",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,
