@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
+import { useAudioPlayer } from 'expo-audio';
+
 import { useSettingsStore } from '@/store/settingsStore';
 import { useConsistencyStore } from '@/store/consistencyStore';
 import { getFajrAndSunrise, todayISODate } from '@/utils/prayerTimes';
@@ -19,6 +21,13 @@ import { SlideToConfirm } from '@/components/SlideToConfirm';
 import { CountdownTimer } from '@/components/CountdownTimer';
 
 type Phase = 'ringing' | 'dismissed';
+
+// Static require() calls must be at module level for Metro bundler
+const ADHAN_SOURCES = {
+  makkah: require('../../assets/audio/makkah.wav'),
+  madinah: require('../../assets/audio/madinah.wav'),
+  mishary: require('../../assets/audio/mishary.wav'),
+} as const;
 
 function formatClock(date: Date): string {
   const h = date.getHours() % 12 || 12;
@@ -51,6 +60,17 @@ export default function AlarmScreen() {
     );
   }, []); // intentionally empty — fires once on mount
 
+  // Adhan audio — loops while ringing, stopped via ref on dismiss/snooze
+  const player = useAudioPlayer(ADHAN_SOURCES[settings.adhanRecitation]);
+  const playerRef = useRef(player);
+  playerRef.current = player;
+
+  useEffect(() => {
+    player.loop = true;
+    player.play();
+    return () => { player.pause(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const location = settings.location;
 
   // Derive today's Fajr & Sunrise from settings — memoized to avoid re-running adhan on every clock tick
@@ -78,10 +98,12 @@ export default function AlarmScreen() {
       );
       return;
     }
+    playerRef.current.pause();
     router.back();
   }, [settings.snoozeDurationMinutes, sunriseTime]);
 
   const handleDismiss = useCallback(() => {
+    playerRef.current.pause();
     setPhase('dismissed');
   }, []);
 
@@ -126,7 +148,6 @@ export default function AlarmScreen() {
             <Text style={styles.untilSunrise}>until sunrise</Text>
             <CountdownTimer targetTime={sunriseTime} />
 
-            {/* TODO: Audio — install expo-audio and bundle adhan mp3 files in assets/audio/ */}
           </View>
 
           <View style={styles.actions}>
