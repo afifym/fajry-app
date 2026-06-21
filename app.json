@@ -40,7 +40,6 @@
           }
         }
       ],
-      "@sentry/react-native",
       "./plugins/withNotifeeAndroid",
       "expo-audio"
     ],
