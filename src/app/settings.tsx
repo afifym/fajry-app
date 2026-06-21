@@ -241,6 +241,12 @@ export default function SettingsScreen() {
             <Text style={st.chevron}>›</Text>
           </Pressable>
         </SettingRow>
+
+        <SectionHeader label="Test" />
+
+        <Pressable style={st.testAlarmBtn} onPress={() => router.push('/alarm')} accessibilityLabel="Trigger alarm screen">
+          <Text style={st.testAlarmText}>Trigger Alarm</Text>
+        </Pressable>
       </ScrollView>
 
       {/* Calculation method picker modal */}
@@ -378,6 +384,17 @@ const st = StyleSheet.create({
   title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
 
   content: { paddingBottom: 40 },
+
+  testAlarmBtn: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#2A2E38',
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  testAlarmText: { color: '#9EA3AD', fontSize: 16 },
 
   sectionHeader: {
     color: '#4B5060',
