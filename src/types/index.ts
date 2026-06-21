@@ -29,7 +29,8 @@ export type Location = {
 
 export type AlarmDay = {
   date: string;          // ISO date string: YYYY-MM-DD
-  fajrTime: Date;
+  fajrTime: Date;        // true prayer time (used for confirmation window)
+  alarmTime: Date;       // offset-adjusted trigger time (displayed and scheduled)
   sunriseTime: Date;
   scheduled: boolean;
 };

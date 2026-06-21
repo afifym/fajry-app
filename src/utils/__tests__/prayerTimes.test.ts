@@ -43,8 +43,8 @@ describe('buildAlarmSchedule', () => {
     const withOffset = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 10);
     const withoutOffset = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 0);
 
-    // With 10-minute offset, alarm fires 10 minutes earlier
-    const diffMs = withoutOffset[0].fajrTime.getTime() - withOffset[0].fajrTime.getTime();
+    // With 10-minute offset, alarm fires 10 minutes earlier (fajrTime is unchanged — it's the true prayer time)
+    const diffMs = withoutOffset[0].alarmTime.getTime() - withOffset[0].alarmTime.getTime();
     expect(diffMs).toBe(10 * 60_000);
   });
 

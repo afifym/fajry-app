@@ -31,12 +31,13 @@ export function buildAlarmSchedule(
 
     const { fajrTime, sunriseTime } = getFajrAndSunrise(date, location, method);
 
-    // Apply pre-alarm offset: ring N minutes before fajrTime
+    // Apply pre-alarm offset: alarm rings N minutes before true Fajr time
     const alarmTime = new Date(fajrTime.getTime() - preAlarmOffsetMinutes * 60_000);
 
     schedule.push({
       date: toISODate(date),
-      fajrTime: alarmTime,
+      fajrTime,    // true prayer time — used for confirmation window
+      alarmTime,   // offset-adjusted trigger time — displayed and scheduled
       sunriseTime,
       scheduled: false, // updated after notifee scheduling
     });

@@ -17,8 +17,6 @@ export function getTodayReflection(): Reflection {
   let index: number;
 
   if (lastDate === today) {
-    // Same day — return the same reflection
-    index = storage.getNumber ? storage.getNumber(REFLECTION_INDEX_KEY) ?? 0 : 0;
     const rawIndex = storage.getString(REFLECTION_INDEX_KEY);
     index = rawIndex !== undefined ? parseInt(rawIndex, 10) : 0;
   } else {
