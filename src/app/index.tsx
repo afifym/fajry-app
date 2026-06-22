@@ -1,17 +1,76 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle, Defs, Path, Pattern, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { FajrClockRing } from "@/components/FajrClockRing";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import type { AlarmDay } from "@/types";
-import { detectLocationChange, requestGPSLocation } from "@/utils/location";
+import type { AlarmDay, City } from "@/types";
+import { detectLocationChange, requestGPSLocation, searchCities } from "@/utils/location";
 import { isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
+
+const { width: W, height: H } = Dimensions.get('window');
+
+const TILE = 70;
+
+const HomeBg = () => (
+  <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
+    <Defs>
+      {/* Overlapping circles at tile corners — creates 4-petal Islamic pattern when tiled */}
+      <Pattern id="islamic" x={0} y={0} width={TILE} height={TILE} patternUnits="userSpaceOnUse">
+        <Circle cx={0} cy={0} r={TILE} fill="none" stroke="#1A2D50" strokeWidth={1} />
+        <Circle cx={TILE} cy={0} r={TILE} fill="none" stroke="#1A2D50" strokeWidth={1} />
+        <Circle cx={0} cy={TILE} r={TILE} fill="none" stroke="#1A2D50" strokeWidth={1} />
+        <Circle cx={TILE} cy={TILE} r={TILE} fill="none" stroke="#1A2D50" strokeWidth={1} />
+      </Pattern>
+      {/* Radial vignette — darker at edges, transparent at centre */}
+      <RadialGradient id="vignette" cx="50%" cy="46%" r="65%">
+        <Stop offset="0%" stopColor="#060C1A" stopOpacity={0} />
+        <Stop offset="75%" stopColor="#060C1A" stopOpacity={0.2} />
+        <Stop offset="100%" stopColor="#060C1A" stopOpacity={0.75} />
+      </RadialGradient>
+    </Defs>
+
+    {/* Full-screen tiled pattern */}
+    <Rect width={W} height={H} fill="url(#islamic)" />
+
+    {/* Vignette on top so edges recede */}
+    <Rect width={W} height={H} fill="url(#vignette)" />
+  </Svg>
+);
+
+const GearIcon = ({ color = '#8892A4', size = 17 }: { color?: string; size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Circle cx={12} cy={12} r={3} fill="none" stroke={color} strokeWidth={1.75} />
+    <Path
+      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const LocationPinIcon = ({ color = '#8892A4', size = 13 }: { color?: string; size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path
+      d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Circle cx={12} cy={10} r={3} fill="none" stroke={color} strokeWidth={2} />
+  </Svg>
+);
 
 const HomeScreen = () => {
   const location = useSettingsStore((state) => state.location);
@@ -25,6 +84,10 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
+const todayLabel = new Date().toLocaleDateString('en-US', {
+  weekday: 'long', day: 'numeric', month: 'long',
+});
+
 const HomeScreenContent = () => {
   const settings = useSettingsStore();
   const { streak, confirm } = useConsistencyStore();
@@ -35,6 +98,13 @@ const HomeScreenContent = () => {
     const today = todayISODate();
     return !!useConsistencyStore.getState().confirmations[today]?.confirmedAt;
   });
+  const insets = useSafeAreaInsets();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const cityResults = useMemo(
+    () => (query.length >= 2 ? searchCities(query) : []),
+    [query],
+  );
 
   const location = settings.location!;
 
@@ -75,7 +145,8 @@ const HomeScreenContent = () => {
     async function checkLocation() {
       try {
         const gps = await requestGPSLocation();
-        if (detectLocationChange(location, gps)) {
+        const stored = useSettingsStore.getState().location;
+        if (stored && detectLocationChange(stored, gps)) {
           Alert.alert(
             "Location Changed",
             "Your GPS position has moved more than 50 km from your stored location. Update?",
@@ -100,7 +171,7 @@ const HomeScreenContent = () => {
       }
     }
     checkLocation();
-  }, [location]);
+  }, []); // run once on mount — manual location changes go through handleCityPick
 
   function handleConfirm() {
     if (confirmed) return;
@@ -108,62 +179,157 @@ const HomeScreenContent = () => {
     confirm(todayISODate(), true);
   }
 
+  async function handleCityPick(city: City) {
+    const loc = { lat: city.lat, lng: city.lng, cityName: city.name, country: city.country };
+    useSettingsStore.getState().setLocation(loc);
+    setPickerOpen(false);
+    setQuery('');
+    const s = useSettingsStore.getState();
+    const newSchedule = await rebuildScheduleOnAppOpen({
+      location: loc,
+      calculationMethod: s.calculationMethod,
+      adhanRecitation: s.adhanRecitation,
+      preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
+      alarmEnabled: s.alarmEnabled,
+      sleepReminderEnabled: s.sleepReminderEnabled,
+      desiredSleepHours: s.desiredSleepHours,
+    });
+    setSchedule(newSchedule);
+    checkConfirmationWindow(newSchedule);
+  }
+
   return (
     <GestureHandlerRootView style={styles.root}>
+      <HomeBg />
       <SafeAreaView style={styles.safe}>
+        {/* Header */}
         <View style={styles.header}>
           <Pressable
-            onPress={() => router.push("/settings")}
+            onPress={() => setPickerOpen(true)}
             accessibilityLabel="Change location"
           >
-            <Text style={styles.locationText}>{location.cityName}</Text>
+            <View style={styles.locationNameRow}>
+              <LocationPinIcon />
+              <Text style={styles.locationText}>{location.cityName}</Text>
+              <Text style={styles.locationChevron}>›</Text>
+            </View>
             <Text style={styles.locationCountry}>{location.country}</Text>
           </Pressable>
-
           <View style={styles.navIcons}>
             <Pressable
               style={styles.navButton}
               onPress={() => router.push("/settings")}
               accessibilityLabel="Settings"
             >
-              <Text style={styles.navIcon}>⚙</Text>
+              <GearIcon />
             </Pressable>
             <Pressable
               style={styles.navButton}
               onPress={() => router.push("/consistency")}
-              accessibilityLabel="Consistency Calendar"
+              accessibilityLabel="Prayer consistency"
             >
               <Text style={styles.navIcon}>☽</Text>
             </Pressable>
           </View>
         </View>
 
-        <View style={styles.main}>
-          <FajrClockRing
-            fajrTime={schedule.find((d) => d.fajrTime.getTime() > Date.now())?.fajrTime ?? null}
-          />
+        {/* Date strip */}
+        <Text style={styles.dateText}>{todayLabel}</Text>
 
-          <View style={styles.streakRow}>
-            <Text style={styles.streakLabel}>STREAK</Text>
-            <Text style={styles.streakValue}>{streak}</Text>
-            <Text style={styles.streakUnit}>
-              {streak === 1 ? "day" : "days"}
-            </Text>
+        {/* Main */}
+        <View style={styles.main}>
+          {/* Clock ring — vertically centered in the flex:1 area */}
+          <View style={styles.clockSection}>
+            <FajrClockRing
+              fajrTime={
+                schedule.find((d) => d.fajrTime.getTime() > Date.now())
+                  ?.fajrTime ?? null
+              }
+            />
           </View>
 
-          {confirmationOpen && !confirmed && (
-            <View style={styles.confirmSection}>
-              <Text style={styles.confirmHint}>
-                Prayed on time? Confirm below.
-              </Text>
-              <SlideToConfirm
-                onConfirm={handleConfirm}
-                label="Slide to confirm prayer"
-              />
+          {/* Bottom: streak card + optional confirm */}
+          <View style={styles.bottomSection}>
+            <View style={styles.streakCard}>
+              <Text style={styles.streakLabel}>STREAK</Text>
+              <View style={styles.streakRight}>
+                <Text style={styles.streakValue}>{streak}</Text>
+                <Text style={styles.streakUnit}>
+                  {" "}
+                  {streak === 1 ? "day" : "days"}
+                </Text>
+              </View>
             </View>
-          )}
+
+            {confirmationOpen && !confirmed && (
+              <View style={styles.confirmCard}>
+                <Text style={styles.confirmTitle}>FAJR WINDOW OPEN</Text>
+                <Text style={styles.confirmHint}>Did you pray on time?</Text>
+                <SlideToConfirm
+                  onConfirm={handleConfirm}
+                  label="Slide to confirm"
+                />
+              </View>
+            )}
+          </View>
         </View>
       </SafeAreaView>
+
+      {/* Location picker modal */}
+      <Modal
+        visible={pickerOpen}
+        animationType="slide"
+        onRequestClose={() => { setPickerOpen(false); setQuery(''); }}
+      >
+        <KeyboardAvoidingView
+          style={[styles.modalRoot, { paddingTop: insets.top }]}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.modalSafe}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Change Location</Text>
+              <Pressable
+                onPress={() => { setPickerOpen(false); setQuery(''); }}
+                style={styles.modalCloseBtn}
+                accessibilityLabel="Close"
+              >
+                <Text style={styles.modalCloseText}>✕</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.modalSearchWrap}>
+              <TextInput
+                style={styles.modalSearchInput}
+                placeholder="Search city…"
+                placeholderTextColor="#4A5568"
+                value={query}
+                onChangeText={setQuery}
+                autoFocus
+                autoCorrect={false}
+                returnKeyType="search"
+                accessibilityLabel="City search"
+              />
+            </View>
+
+            <FlatList<City>
+              data={cityResults}
+              keyExtractor={(item) => `${item.lat}_${item.lng}`}
+              renderItem={({ item }) => (
+                <Pressable style={styles.cityRow} onPress={() => handleCityPick(item)}>
+                  <Text style={styles.cityName}>{item.name}</Text>
+                  <Text style={styles.cityCountry}>{item.country}</Text>
+                </Pressable>
+              )}
+              keyboardShouldPersistTaps="handled"
+              ListEmptyComponent={
+                <Text style={styles.searchHint}>
+                  {query.length >= 2 ? 'No cities found.' : 'Type at least 2 characters to search.'}
+                </Text>
+              }
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </GestureHandlerRootView>
   );
 };
@@ -171,42 +337,142 @@ const HomeScreenContent = () => {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#060C1A" },
   safe: { flex: 1 },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
+    paddingBottom: 4,
   },
+  locationNameRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   locationText: { color: "#ffffff", fontSize: 15, fontWeight: "500" },
   locationCountry: { color: "#8892A4", fontSize: 12, marginTop: 1 },
-  navIcons: { flexDirection: "row", gap: 4 },
-  navButton: { padding: 8 },
-  navIcon: { color: "#8892A4", fontSize: 22 },
+  navIcons: { flexDirection: "row", gap: 8 },
+  navButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#0D1526",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#1E2D4A",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navIcon: { color: "#8892A4", fontSize: 18 },
+
+  dateText: {
+    textAlign: "center",
+    color: "#4A5568",
+    fontSize: 13,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+    paddingBottom: 4,
+  },
 
   main: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
-    gap: 32,
+    paddingBottom: 16,
+  },
+
+  clockSection: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
 
-  streakRow: {
+  bottomSection: {
+    gap: 12,
+  },
+
+  streakCard: {
     flexDirection: "row",
-    alignItems: "baseline",
-    gap: 6,
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#0D1526",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#1E2D4A",
+    paddingHorizontal: 24,
+    paddingVertical: 18,
   },
   streakLabel: {
-    color: "#4A5568",
+    color: "#C9A84C",
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 2,
   },
-  streakValue: { color: "#06B6D4", fontSize: 40, fontWeight: "300" },
-  streakUnit: { color: "#8892A4", fontSize: 16 },
+  streakRight: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  streakValue: { color: "#06B6D4", fontSize: 36, fontWeight: "300" },
+  streakUnit: { color: "#8892A4", fontSize: 14 },
 
-  confirmSection: { alignItems: "center", gap: 12 },
-  confirmHint: { color: "#A0AEC0", fontSize: 14 },
+  confirmCard: {
+    backgroundColor: "#0D1526",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#1E2D4A",
+    padding: 20,
+    gap: 10,
+    alignItems: "center",
+  },
+  confirmTitle: {
+    color: "#C9A84C",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 2,
+  },
+  confirmHint: { color: "#8892A4", fontSize: 14 },
+
+  locationChevron: { color: "#4A5568", fontSize: 16, marginLeft: 2, lineHeight: 20 },
+
+  // Location picker modal
+  modalRoot: { flex: 1, backgroundColor: "#060C1A" },
+  modalSafe: { flex: 1 },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#1E2D4A",
+  },
+  modalTitle: { color: "#ffffff", fontSize: 20, fontWeight: "600" },
+  modalCloseBtn: { padding: 6 },
+  modalCloseText: { color: "#8892A4", fontSize: 20 },
+  modalSearchWrap: { paddingHorizontal: 24, paddingVertical: 16 },
+  modalSearchInput: {
+    backgroundColor: "#0D1526",
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#1E2D4A",
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    color: "#ffffff",
+    fontSize: 16,
+  },
+  cityRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#0D1526",
+  },
+  cityName: { color: "#ffffff", fontSize: 16 },
+  cityCountry: { color: "#4A5568", fontSize: 13 },
+  searchHint: {
+    color: "#4A5568",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 40,
+    paddingHorizontal: 24,
+  },
 });
