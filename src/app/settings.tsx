@@ -1,10 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
-  Alert,
-  FlatList,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,8 +12,8 @@ import {
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CityPickerModal } from '@/components/CityPickerModal';
 import { useSettingsStore } from '@/store/settingsStore';
-import { searchCities } from '@/utils/location';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
 import type { CalculationMethodKey, AdhanRecitation, City } from '@/types';
 
@@ -58,15 +54,9 @@ async function applyAndRebuild(settings: ReturnType<typeof useSettingsStore.getS
 
 const SettingsScreen = () => {
   const settings = useSettingsStore();
-  const [cityQuery, setCityQuery] = useState('');
   const [cityModalOpen, setCityModalOpen] = useState(false);
   const [methodModalOpen, setMethodModalOpen] = useState(false);
   const [recitationModalOpen, setRecitationModalOpen] = useState(false);
-
-  const cityResults = useMemo(
-    () => (cityQuery.length >= 2 ? searchCities(cityQuery) : []),
-    [cityQuery],
-  );
 
   const handleMethodSelect = useCallback(
     async (key: CalculationMethodKey) => {
@@ -90,7 +80,6 @@ const SettingsScreen = () => {
     async (city: City) => {
       useSettingsStore.getState().setLocation({ lat: city.lat, lng: city.lng, cityName: city.name, country: city.country });
       setCityModalOpen(false);
-      setCityQuery('');
       await applyAndRebuild(useSettingsStore.getState());
     },
     [],
@@ -289,42 +278,14 @@ const SettingsScreen = () => {
         ))}
       </PickerModal>
 
-      {/* City search modal */}
-      <Modal visible={cityModalOpen} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={st.modalRoot}>
-          <KeyboardAvoidingView
-            style={st.flex}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <View style={st.modalHeader}>
-              <Text style={st.modalTitle}>Choose City</Text>
-              <Pressable onPress={() => { setCityModalOpen(false); setCityQuery(''); }}>
-                <Text style={st.modalClose}>Done</Text>
-              </Pressable>
-            </View>
-            <TextInput
-              style={st.citySearch}
-              placeholder="Search city…"
-              placeholderTextColor="#4B5060"
-              value={cityQuery}
-              onChangeText={setCityQuery}
-              autoFocus
-              autoCorrect={false}
-            />
-            <FlatList<City>
-              data={cityResults}
-              keyExtractor={(c) => `${c.lat}_${c.lng}`}
-              renderItem={({ item }) => (
-                <Pressable style={st.cityRow} onPress={() => handleCitySelect(item)}>
-                  <Text style={st.cityName}>{item.name}</Text>
-                  <Text style={st.cityCountry}>{item.country}</Text>
-                </Pressable>
-              )}
-              keyboardShouldPersistTaps="handled"
-            />
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </Modal>
+      <CityPickerModal
+        visible={cityModalOpen}
+        title="Choose City"
+        closeLabel="Done"
+        presentationStyle="pageSheet"
+        onClose={() => setCityModalOpen(false)}
+        onSelect={handleCitySelect}
+      />
     </SafeAreaView>
   );
 };
@@ -468,27 +429,4 @@ const st = StyleSheet.create({
   optionText: { color: '#ffffff', fontSize: 16 },
   optionTextActive: { color: '#ffffff', fontWeight: '500' },
   checkmark: { color: '#ffffff', fontSize: 16 },
-
-  citySearch: {
-    backgroundColor: '#0A1020',
-    borderRadius: 10,
-    margin: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#ffffff',
-    fontSize: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#253352',
-  },
-  cityRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#0A1020',
-  },
-  cityName: { color: '#ffffff', fontSize: 16 },
-  cityCountry: { color: '#5A5E6A', fontSize: 13 },
 });

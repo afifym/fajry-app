@@ -1,16 +1,17 @@
 import { Redirect, router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, Defs, Path, Pattern, RadialGradient, Rect, Stop } from "react-native-svg";
 
+import { CityPickerModal } from "@/components/CityPickerModal";
 import { FajrClockRing } from "@/components/FajrClockRing";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
-import { detectLocationChange, requestGPSLocation, searchCities } from "@/utils/location";
+import { detectLocationChange, requestGPSLocation } from "@/utils/location";
 import { isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
@@ -98,13 +99,7 @@ const HomeScreenContent = () => {
     const today = todayISODate();
     return !!useConsistencyStore.getState().confirmations[today]?.confirmedAt;
   });
-  const insets = useSafeAreaInsets();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const cityResults = useMemo(
-    () => (query.length >= 2 ? searchCities(query) : []),
-    [query],
-  );
 
   const location = settings.location!;
 
@@ -197,7 +192,6 @@ const HomeScreenContent = () => {
 
   async function handleCityPick(city: City) {
     setPickerOpen(false);
-    setQuery('');
     await applyLocationChange({
       lat: city.lat,
       lng: city.lng,
@@ -283,61 +277,12 @@ const HomeScreenContent = () => {
         </View>
       </SafeAreaView>
 
-      {/* Location picker modal */}
-      <Modal
+      <CityPickerModal
         visible={pickerOpen}
-        animationType="slide"
-        onRequestClose={() => { setPickerOpen(false); setQuery(''); }}
-      >
-        <KeyboardAvoidingView
-          style={[styles.modalRoot, { paddingTop: insets.top }]}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <View style={styles.modalSafe}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Change Location</Text>
-              <Pressable
-                onPress={() => { setPickerOpen(false); setQuery(''); }}
-                style={styles.modalCloseBtn}
-                accessibilityLabel="Close"
-              >
-                <Text style={styles.modalCloseText}>✕</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.modalSearchWrap}>
-              <TextInput
-                style={styles.modalSearchInput}
-                placeholder="Search city…"
-                placeholderTextColor="#4A5568"
-                value={query}
-                onChangeText={setQuery}
-                autoFocus
-                autoCorrect={false}
-                returnKeyType="search"
-                accessibilityLabel="City search"
-              />
-            </View>
-
-            <FlatList<City>
-              data={cityResults}
-              keyExtractor={(item) => `${item.lat}_${item.lng}`}
-              renderItem={({ item }) => (
-                <Pressable style={styles.cityRow} onPress={() => handleCityPick(item)}>
-                  <Text style={styles.cityName}>{item.name}</Text>
-                  <Text style={styles.cityCountry}>{item.country}</Text>
-                </Pressable>
-              )}
-              keyboardShouldPersistTaps="handled"
-              ListEmptyComponent={
-                <Text style={styles.searchHint}>
-                  {query.length >= 2 ? 'No cities found.' : 'Type at least 2 characters to search.'}
-                </Text>
-              }
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        title="Change Location"
+        onClose={() => setPickerOpen(false)}
+        onSelect={handleCityPick}
+      />
     </GestureHandlerRootView>
   );
 };
@@ -437,50 +382,4 @@ const styles = StyleSheet.create({
   confirmHint: { color: "#8892A4", fontSize: 14 },
 
   locationChevron: { color: "#4A5568", fontSize: 16, marginLeft: 2, lineHeight: 20 },
-
-  // Location picker modal
-  modalRoot: { flex: 1, backgroundColor: "#060C1A" },
-  modalSafe: { flex: 1 },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#1E2D4A",
-  },
-  modalTitle: { color: "#ffffff", fontSize: 20, fontWeight: "600" },
-  modalCloseBtn: { padding: 6 },
-  modalCloseText: { color: "#8892A4", fontSize: 20 },
-  modalSearchWrap: { paddingHorizontal: 24, paddingVertical: 16 },
-  modalSearchInput: {
-    backgroundColor: "#0D1526",
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    color: "#ffffff",
-    fontSize: 16,
-  },
-  cityRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#0D1526",
-  },
-  cityName: { color: "#ffffff", fontSize: 16 },
-  cityCountry: { color: "#4A5568", fontSize: 13 },
-  searchHint: {
-    color: "#4A5568",
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 40,
-    paddingHorizontal: 24,
-  },
 });

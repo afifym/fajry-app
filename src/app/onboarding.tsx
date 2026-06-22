@@ -1,21 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
+import { CitySearchList } from '@/components/CityPickerModal';
 import { useSettingsStore } from '@/store/settingsStore';
-import { inferRegionalDefault, requestGPSLocation, searchCities } from '@/utils/location';
+import { inferRegionalDefault, requestGPSLocation } from '@/utils/location';
 import { requestNotificationPermissions } from '@/utils/notifications';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
 import type { City, Location } from '@/types';
@@ -48,11 +47,6 @@ const OnboardingScreen = () => {
   useEffect(() => {
     useSettingsStore.getState().setCalculationMethod(DEFAULT_METHOD);
   }, []);
-
-  const cityResults = useMemo(
-    () => (query.length >= 2 ? searchCities(query) : []),
-    [query],
-  );
 
   async function handleGetStarted() {
     setStep('loading');
@@ -133,29 +127,14 @@ const OnboardingScreen = () => {
         <View style={s.searchHeader}>
           <Text style={s.title}>Find your city</Text>
           <Text style={s.body}>Location access was denied. Search for your city to continue.</Text>
-          <TextInput
-            style={s.searchInput}
-            placeholder="City name…"
-            placeholderTextColor="#4A5568"
-            value={query}
-            onChangeText={setQuery}
-            autoFocus
-            autoCorrect={false}
-            returnKeyType="search"
-            accessibilityLabel="City search"
-          />
         </View>
 
-        <FlatList<City>
-          data={cityResults}
-          keyExtractor={(item) => `${item.lat}_${item.lng}`}
-          renderItem={({ item }) => (
-            <Pressable style={s.cityRow} onPress={() => handleCitySelected(item)}>
-              <Text style={s.cityName}>{item.name}</Text>
-              <Text style={s.cityCountry}>{item.country}</Text>
-            </Pressable>
-          )}
-          keyboardShouldPersistTaps="handled"
+        <CitySearchList
+          query={query}
+          onQueryChange={setQuery}
+          onSelect={handleCitySelected}
+          autoFocus
+          searchPlaceholder="City name…"
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -199,26 +178,4 @@ const s = StyleSheet.create({
   loadingText: { color: '#9EA3AD', fontSize: 16, marginTop: 8 },
 
   searchHeader: { padding: 24, gap: 14 },
-  searchInput: {
-    backgroundColor: '#0D1526',
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#253352',
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    color: '#ffffff',
-    fontSize: 16,
-  },
-
-  cityRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#141416',
-  },
-  cityName: { color: '#ffffff', fontSize: 16 },
-  cityCountry: { color: '#5A5E6A', fontSize: 13 },
 });
