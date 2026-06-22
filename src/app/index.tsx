@@ -9,7 +9,7 @@ import { FajrClockRing } from "@/components/FajrClockRing";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import type { AlarmDay, City } from "@/types";
+import type { AlarmDay, City, Location } from "@/types";
 import { detectLocationChange, requestGPSLocation, searchCities } from "@/utils/location";
 import { isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
@@ -140,6 +140,22 @@ const HomeScreenContent = () => {
     return () => clearInterval(id);
   }, [schedule, checkConfirmationWindow]);
 
+  async function applyLocationChange(loc: Location) {
+    useSettingsStore.getState().setLocation(loc);
+    const s = useSettingsStore.getState();
+    const newSchedule = await rebuildScheduleOnAppOpen({
+      location: loc,
+      calculationMethod: s.calculationMethod,
+      adhanRecitation: s.adhanRecitation,
+      preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
+      alarmEnabled: s.alarmEnabled,
+      sleepReminderEnabled: s.sleepReminderEnabled,
+      desiredSleepHours: s.desiredSleepHours,
+    });
+    setSchedule(newSchedule);
+    checkConfirmationWindow(newSchedule);
+  }
+
   useEffect(() => {
     // Check for location change in background (non-blocking)
     async function checkLocation() {
@@ -155,7 +171,7 @@ const HomeScreenContent = () => {
               {
                 text: "Update",
                 onPress: () => {
-                  useSettingsStore.getState().setLocation({
+                  void applyLocationChange({
                     lat: gps.lat,
                     lng: gps.lng,
                     cityName: gps.cityName,
@@ -180,22 +196,14 @@ const HomeScreenContent = () => {
   }
 
   async function handleCityPick(city: City) {
-    const loc = { lat: city.lat, lng: city.lng, cityName: city.name, country: city.country };
-    useSettingsStore.getState().setLocation(loc);
     setPickerOpen(false);
     setQuery('');
-    const s = useSettingsStore.getState();
-    const newSchedule = await rebuildScheduleOnAppOpen({
-      location: loc,
-      calculationMethod: s.calculationMethod,
-      adhanRecitation: s.adhanRecitation,
-      preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
-      alarmEnabled: s.alarmEnabled,
-      sleepReminderEnabled: s.sleepReminderEnabled,
-      desiredSleepHours: s.desiredSleepHours,
+    await applyLocationChange({
+      lat: city.lat,
+      lng: city.lng,
+      cityName: city.name,
+      country: city.country,
     });
-    setSchedule(newSchedule);
-    checkConfirmationWindow(newSchedule);
   }
 
   return (
