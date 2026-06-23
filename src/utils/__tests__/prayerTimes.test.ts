@@ -1,6 +1,7 @@
 import {
   buildAlarmSchedule,
   getFajrAndSunrise,
+  getNextBedtime,
   isConfirmationWindowOpen,
   toISODate,
 } from '../prayerTimes';
@@ -87,5 +88,31 @@ describe('toISODate', () => {
   it('formats a date as YYYY-MM-DD', () => {
     const d = new Date(2024, 0, 5); // 5 Jan 2024
     expect(toISODate(d)).toBe('2024-01-05');
+  });
+});
+
+describe('getNextBedtime', () => {
+  it('returns Fajr minus desired sleep hours for the first future slot', () => {
+    const schedule = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 0);
+    const desiredSleepHours = 6;
+    const now = new Date(schedule[0].fajrTime.getTime() - desiredSleepHours * 3_600_000 - 60_000);
+
+    const bed = getNextBedtime(schedule, desiredSleepHours, now);
+    expect(bed).not.toBeNull();
+    expect(bed!.getTime()).toBe(
+      schedule[0].fajrTime.getTime() - desiredSleepHours * 3_600_000,
+    );
+  });
+
+  it('skips past bedtimes and returns the next day when tonight has passed', () => {
+    const schedule = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 0);
+    const desiredSleepHours = 6;
+    const now = new Date(schedule[0].fajrTime.getTime() - 60_000);
+
+    const bed = getNextBedtime(schedule, desiredSleepHours, now);
+    expect(bed).not.toBeNull();
+    expect(bed!.getTime()).toBe(
+      schedule[1].fajrTime.getTime() - desiredSleepHours * 3_600_000,
+    );
   });
 });

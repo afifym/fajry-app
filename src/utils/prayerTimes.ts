@@ -62,3 +62,17 @@ export function toISODate(date: Date): string {
 export function todayISODate(): string {
   return toISODate(new Date());
 }
+
+/** Next sleep-reminder time: first future (Fajr − desired sleep hours) in the schedule. */
+export function getNextBedtime(
+  schedule: AlarmDay[],
+  desiredSleepHours: number,
+  now = new Date(),
+): Date | null {
+  const nowMs = now.getTime();
+  for (const day of schedule) {
+    const bedMs = day.fajrTime.getTime() - desiredSleepHours * 3_600_000;
+    if (bedMs > nowMs) return new Date(bedMs);
+  }
+  return null;
+}

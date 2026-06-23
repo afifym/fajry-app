@@ -25,6 +25,7 @@ export {
   Sunrise,
   X,
   AlarmClock,
+  Bed,
   Minus,
   Plus,
 } from 'lucide-react-native';

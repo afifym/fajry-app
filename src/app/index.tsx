@@ -1,21 +1,25 @@
-import { Redirect, router } from "expo-router";
+import { Redirect, router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityPickerModal } from "@/components/CityPickerModal";
-import { FajrClockRing } from "@/components/FajrClockRing";
-import { Icon, ChevronRight, MapPin, Moon, Settings, Sunrise } from "@/components/Icon";
+import { BedtimeEditModal } from "@/components/BedtimeEditModal";
+import { SleepWakeClock } from "@/components/SleepWakeClock";
+import { GoToBedCard } from "@/components/GoToBedCard";
+import { StreakButton } from "@/components/StreakButton";
+import { Icon, ChevronRight, Moon, Settings } from "@/components/Icon";
 import { HomeBg } from "@/components/HomeBg";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { WakeUpCard } from "@/components/WakeUpCard";
+import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
 import { detectLocationChange, requestGPSLocation } from "@/utils/location";
-import { isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
-import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
+import { getNextBedtime, isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
+import { rebuildScheduleOnAppOpen, type RebuildSettings } from "@/utils/scheduling";
 
 const HomeScreen = () => {
   const location = useSettingsStore((state) => state.location);
@@ -34,6 +38,12 @@ const formatTodayLabel = (date: Date) =>
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
+function formatFajrTime(date: Date): string {
+  const h = date.getHours() % 12 || 12;
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+}
+
 const HomeScreenContent = () => {
   const settings = useSettingsStore();
   const { streak, confirm } = useConsistencyStore();
@@ -45,6 +55,7 @@ const HomeScreenContent = () => {
     return !!useConsistencyStore.getState().confirmations[today]?.confirmedAt;
   });
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [editSheet, setEditSheet] = useState<'bedtime' | 'wakeup' | null>(null);
   const [now, setNow] = useState(() => new Date());
 
   const location = settings.location!;
@@ -58,22 +69,26 @@ const HomeScreenContent = () => {
     );
   }, []);
 
-  useEffect(() => {
-    async function rebuild() {
-      const s = await rebuildScheduleOnAppOpen({
-        location,
-        calculationMethod: settings.calculationMethod,
-        adhanRecitation: settings.adhanRecitation,
-        preAlarmOffsetMinutes: settings.preAlarmOffsetMinutes,
-        alarmEnabled: settings.alarmEnabled,
-        sleepReminderEnabled: settings.sleepReminderEnabled,
-        desiredSleepHours: settings.desiredSleepHours,
-      });
-      setSchedule(s);
-      checkConfirmationWindow(s);
-    }
-    rebuild();
-  }, []); // intentionally run only on mount
+  useFocusEffect(
+    useCallback(() => {
+      async function rebuild() {
+        const s = useSettingsStore.getState();
+        if (!s.location) return;
+        const next = await rebuildScheduleOnAppOpen({
+          location: s.location,
+          calculationMethod: s.calculationMethod,
+          adhanRecitation: s.adhanRecitation,
+          preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
+          alarmEnabled: s.alarmEnabled,
+          sleepReminderEnabled: s.sleepReminderEnabled,
+          desiredSleepHours: s.desiredSleepHours,
+        });
+        setSchedule(next);
+        checkConfirmationWindow(next);
+      }
+      void rebuild();
+    }, [checkConfirmationWindow]),
+  );
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -83,20 +98,21 @@ const HomeScreenContent = () => {
     return () => clearInterval(id);
   }, [schedule, checkConfirmationWindow]);
 
+  const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
   const nextAlarm = schedule.find((d) => d.alarmTime.getTime() > Date.now());
+  const nextBedtime = getNextBedtime(schedule, settings.desiredSleepHours, now);
 
-  async function applyOffsetChange(minutes: number) {
-    const clamped = Math.max(0, Math.min(60, minutes));
-    useSettingsStore.getState().setPreAlarmOffset(clamped);
+  async function rebuildFromSettings(overrides: Partial<RebuildSettings> = {}) {
     const s = useSettingsStore.getState();
     const newSchedule = await rebuildScheduleOnAppOpen({
       location: s.location!,
       calculationMethod: s.calculationMethod,
       adhanRecitation: s.adhanRecitation,
-      preAlarmOffsetMinutes: clamped,
+      preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
       alarmEnabled: s.alarmEnabled,
       sleepReminderEnabled: s.sleepReminderEnabled,
       desiredSleepHours: s.desiredSleepHours,
+      ...overrides,
     });
     setSchedule(newSchedule);
     checkConfirmationWindow(newSchedule);
@@ -104,18 +120,7 @@ const HomeScreenContent = () => {
 
   async function applyLocationChange(loc: Location) {
     useSettingsStore.getState().setLocation(loc);
-    const s = useSettingsStore.getState();
-    const newSchedule = await rebuildScheduleOnAppOpen({
-      location: loc,
-      calculationMethod: s.calculationMethod,
-      adhanRecitation: s.adhanRecitation,
-      preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
-      alarmEnabled: s.alarmEnabled,
-      sleepReminderEnabled: s.sleepReminderEnabled,
-      desiredSleepHours: s.desiredSleepHours,
-    });
-    setSchedule(newSchedule);
-    checkConfirmationWindow(newSchedule);
+    await rebuildFromSettings({ location: loc });
   }
 
   useEffect(() => {
@@ -171,19 +176,9 @@ const HomeScreenContent = () => {
     <GestureHandlerRootView style={styles.root}>
       <HomeBg />
       <SafeAreaView style={styles.safe}>
-        {/* Header */}
+        {/* Nav */}
         <View style={styles.header}>
-          <Pressable
-            onPress={() => setPickerOpen(true)}
-            accessibilityLabel="Change location"
-          >
-            <View style={styles.locationNameRow}>
-              <Icon icon={MapPin} size={13} />
-              <Text style={styles.locationText}>{location.cityName}</Text>
-              <Icon icon={ChevronRight} size={16} color="#4A5568" />
-            </View>
-            <Text style={styles.locationCountry}>{location.country}</Text>
-          </Pressable>
+          <View style={styles.headerSpacer} />
           <View style={styles.navIcons}>
             <Pressable
               style={styles.navButton}
@@ -202,40 +197,57 @@ const HomeScreenContent = () => {
           </View>
         </View>
 
-        {/* Date strip */}
-        <Text style={styles.dateText}>{formatTodayLabel(now)}</Text>
-
         {/* Main */}
         <View style={styles.main}>
-          {/* Clock ring — vertically centered in the flex:1 area */}
+          <View style={styles.infoSection}>
+            <View style={styles.infoLeft}>
+              <Text style={styles.dateText}>{formatTodayLabel(now)}</Text>
+              <Text style={styles.fajrTime}>
+                {nextFajr ? formatFajrTime(nextFajr.fajrTime) : '—'}
+              </Text>
+              <Pressable
+                onPress={() => setPickerOpen(true)}
+                accessibilityLabel="Change location"
+              >
+                <View style={styles.locationRow}>
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    <Text style={styles.locationIn}>in </Text>
+                    {location.cityName}, {location.country}
+                  </Text>
+                  <Icon icon={ChevronRight} size={14} color="#4A5568" />
+                </View>
+              </Pressable>
+            </View>
+
+            <StreakButton
+              streak={streak}
+              onPress={() => router.push("/consistency")}
+            />
+          </View>
+
+          {/* Clock ring */}
           <View style={styles.clockSection}>
-            <FajrClockRing
-              fajrTime={
-                schedule.find((d) => d.fajrTime.getTime() > Date.now())
-                  ?.fajrTime ?? null
-              }
+            <SleepWakeClock
+              bedTime={nextBedtime}
+              wakeTime={nextAlarm?.alarmTime ?? null}
+              bedEnabled={settings.sleepReminderEnabled}
+              wakeEnabled={settings.alarmEnabled}
             />
           </View>
 
           {/* Bottom: streak card + optional confirm */}
           <View style={styles.bottomSection}>
-            <WakeUpCard
-              wakeTime={nextAlarm?.alarmTime ?? null}
-              offsetMinutes={settings.preAlarmOffsetMinutes}
-              onOffsetChange={(m) => void applyOffsetChange(m)}
-            />
-            <View style={styles.streakCard}>
-              <View style={styles.streakLabelRow}>
-                <Icon icon={Sunrise} size={14} color="#C9A84C" />
-                <Text style={styles.streakLabel}>STREAK</Text>
-              </View>
-              <View style={styles.streakRight}>
-                <Text style={styles.streakValue}>{streak}</Text>
-                <Text style={styles.streakUnit}>
-                  {" "}
-                  {streak === 1 ? "day" : "days"}
-                </Text>
-              </View>
+            <View style={styles.alarmCardsRow}>
+              <GoToBedCard
+                bedTime={nextBedtime}
+                enabled={settings.sleepReminderEnabled}
+                onPress={() => setEditSheet('bedtime')}
+              />
+              <WakeUpCard
+                wakeTime={nextAlarm?.alarmTime ?? null}
+                enabled={settings.alarmEnabled}
+                onPress={() => setEditSheet('wakeup')}
+              />
             </View>
 
             {confirmationOpen && !confirmed && (
@@ -258,6 +270,26 @@ const HomeScreenContent = () => {
         onClose={() => setPickerOpen(false)}
         onSelect={handleCityPick}
       />
+
+      <BedtimeEditModal
+        visible={editSheet === 'bedtime'}
+        onClose={() => setEditSheet(null)}
+        schedule={schedule}
+        onScheduleChange={(s) => {
+          setSchedule(s);
+          checkConfirmationWindow(s);
+        }}
+        now={now}
+      />
+      <WakeUpEditModal
+        visible={editSheet === 'wakeup'}
+        onClose={() => setEditSheet(null)}
+        schedule={schedule}
+        onScheduleChange={(s) => {
+          setSchedule(s);
+          checkConfirmationWindow(s);
+        }}
+      />
     </GestureHandlerRootView>
   );
 };
@@ -268,15 +300,13 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 4,
   },
-  locationNameRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  locationText: { color: "#ffffff", fontSize: 15, fontWeight: "500" },
-  locationCountry: { color: "#8892A4", fontSize: 12, marginTop: 1 },
+  headerSpacer: { flex: 1 },
   navIcons: { flexDirection: "row", gap: 8 },
   navButton: {
     width: 38,
@@ -290,19 +320,43 @@ const styles = StyleSheet.create({
   },
 
   dateText: {
-    textAlign: "center",
     color: "#4A5568",
     fontSize: 13,
     fontWeight: "500",
     letterSpacing: 0.3,
-    paddingBottom: 4,
   },
 
   main: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingTop: 28,
     paddingBottom: 16,
   },
+
+  infoSection: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    paddingBottom: 12,
+    gap: 16,
+  },
+  infoLeft: { flex: 1, gap: 6 },
+  fajrTime: {
+    color: "#ffffff",
+    fontSize: 42,
+    fontWeight: "700",
+    letterSpacing: -0.5,
+    lineHeight: 46,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+    flexShrink: 1,
+  },
+  locationText: { color: "#8892A4", fontSize: 14, fontWeight: "500", flexShrink: 1 },
+  locationIn: { color: "#4A5568", fontWeight: "400" },
 
   clockSection: {
     flex: 1,
@@ -314,34 +368,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  streakCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#0D1526",
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+  alarmCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  streakLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  streakLabel: {
-    color: "#C9A84C",
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 2,
-  },
-  streakRight: {
-    flexDirection: "row",
-    alignItems: "baseline",
-  },
-  streakValue: { color: "#06B6D4", fontSize: 36, fontWeight: "300" },
-  streakUnit: { color: "#8892A4", fontSize: 14 },
 
   confirmCard: {
     backgroundColor: "#0D1526",

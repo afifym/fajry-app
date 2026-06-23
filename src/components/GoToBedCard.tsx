@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 type Props = {
-  wakeTime: Date | null;
+  bedTime: Date | null;
   enabled: boolean;
   onPress: () => void;
 };
@@ -12,18 +12,18 @@ function formatTime(date: Date): string {
   return `${h}:${m} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
 }
 
-export const WakeUpCard = ({ wakeTime, enabled, onPress }: Props) => (
+export const GoToBedCard = ({ bedTime, enabled, onPress }: Props) => (
   <Pressable
     onPress={onPress}
     style={s.card}
-    accessibilityLabel="Edit wake up alarm"
+    accessibilityLabel="Edit go to bed reminder"
     accessibilityRole="button"
   >
     <Text style={s.label} numberOfLines={1}>
-      WAKE UP
+      GO TO BED
     </Text>
     <Text style={[s.time, !enabled && s.timeMuted]} numberOfLines={1}>
-      {wakeTime ? formatTime(wakeTime) : '—'}
+      {bedTime ? formatTime(bedTime) : '—'}
     </Text>
   </Pressable>
 );
