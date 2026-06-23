@@ -9,6 +9,7 @@ import { FajrClockRing } from "@/components/FajrClockRing";
 import { HomeBg } from "@/components/HomeBg";
 import { GearIcon, LocationPinIcon, MoonIcon } from "@/components/HomeIcons";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
+import { StreakCard } from "@/components/StreakCard";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
@@ -199,16 +200,7 @@ const HomeScreenContent = () => {
 
           {/* Bottom: streak card + optional confirm */}
           <View style={styles.bottomSection}>
-            <View style={styles.streakCard}>
-              <Text style={styles.streakLabel}>STREAK</Text>
-              <View style={styles.streakRight}>
-                <Text style={styles.streakValue}>{streak}</Text>
-                <Text style={styles.streakUnit}>
-                  {" "}
-                  {streak === 1 ? "day" : "days"}
-                </Text>
-              </View>
-            </View>
+            <StreakCard streak={streak} />
 
             {confirmationOpen && !confirmed && (
               <View style={styles.confirmCard}>
@@ -285,30 +277,6 @@ const styles = StyleSheet.create({
   bottomSection: {
     gap: 12,
   },
-
-  streakCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#0D1526",
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-  },
-  streakLabel: {
-    color: "#C9A84C",
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 2,
-  },
-  streakRight: {
-    flexDirection: "row",
-    alignItems: "baseline",
-  },
-  streakValue: { color: "#06B6D4", fontSize: 36, fontWeight: "300" },
-  streakUnit: { color: "#8892A4", fontSize: 14 },
 
   confirmCard: {
     backgroundColor: "#0D1526",
