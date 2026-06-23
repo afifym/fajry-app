@@ -1,11 +1,13 @@
+import { StyleSheet, Switch, Text, View } from 'react-native';
+
 import { AlarmClock, Icon } from '@/components/Icon';
 import { AlarmEditSheet } from '@/components/AlarmEditSheet';
 import { TimeWheelPicker } from '@/components/TimeWheelPicker';
+import { Palette } from '@/constants/theme';
 import { useSettingsStore } from '@/store/settingsStore';
-import { offsetFromWakeTime, wakeTimeFromOffset } from '@/utils/alarmPickerTime';
 import type { AlarmDay } from '@/types';
+import { offsetFromWakeTime, wakeTimeFromOffset } from '@/utils/alarmPickerTime';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
-import { StyleSheet, Switch, Text, View } from 'react-native';
 
 type Props = {
   visible: boolean;
@@ -77,7 +79,7 @@ export function WakeUpEditModal({ visible, onClose, schedule, onScheduleChange }
     <AlarmEditSheet visible={visible} onClose={onClose} title="Wake Up">
       <View style={s.body}>
         <View style={s.labelRow}>
-          <Icon icon={AlarmClock} size={14} color="#C9A84C" />
+          <Icon icon={AlarmClock} size={14} color={Palette.gold} />
           <Text style={s.label}>WAKE UP</Text>
         </View>
         <Text style={[s.time, !settings.alarmEnabled && s.timeMuted]}>
@@ -92,7 +94,7 @@ export function WakeUpEditModal({ visible, onClose, schedule, onScheduleChange }
           <Switch
             value={settings.alarmEnabled}
             onValueChange={(v) => void handleAlarmToggle(v)}
-            trackColor={{ true: '#C9A84C', false: '#253352' }}
+            trackColor={{ true: Palette.gold, false: Palette.border }}
             accessibilityLabel="Wake up alarm"
           />
         </View>
@@ -117,14 +119,14 @@ const s = StyleSheet.create({
   body: { alignItems: 'center', gap: 12, paddingBottom: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   label: {
-    color: '#C9A84C',
+    color: Palette.gold,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
   },
-  time: { color: '#ffffff', fontSize: 36, fontWeight: '300' },
+  time: { color: Palette.gold, fontSize: 36, fontWeight: '400' },
   timeMuted: { opacity: 0.45 },
-  hint: { color: '#4A5568', fontSize: 14 },
+  hint: { color: Palette.textMuted, fontSize: 14 },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,9 +134,9 @@ const s = StyleSheet.create({
     width: '100%',
     marginTop: 4,
   },
-  toggleLabel: { color: '#8892A4', fontSize: 14, flex: 1 },
+  toggleLabel: { color: Palette.textSecondary, fontSize: 14, flex: 1 },
   footerHint: {
-    color: '#4A5568',
+    color: Palette.textMuted,
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 20,

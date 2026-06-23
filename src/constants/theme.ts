@@ -61,3 +61,26 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+/** Premium dark teal + gold palette (home / prayer UI). */
+export const Palette = {
+  bg: '#0A1612',
+  bgCard: '#132520',
+  bgElevated: '#1A2E28',
+  bgInset: '#0F1F1B',
+  border: '#2A4540',
+  borderSubtle: '#1E3530',
+  gold: '#C9A84C',
+  goldMuted: '#A8893A',
+  goldDim: 'rgba(201, 168, 76, 0.22)',
+  text: '#F0EDE6',
+  textSecondary: '#8BA39C',
+  textMuted: '#5C726C',
+  pattern: '#1A3530',
+} as const;
+
+export const Radius = {
+  sm: 12,
+  md: 16,
+  lg: 20,
+} as const;

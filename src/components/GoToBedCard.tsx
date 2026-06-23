@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { Palette, Radius } from '@/constants/theme';
+
 type Props = {
   bedTime: Date | null;
   enabled: boolean;
@@ -32,17 +34,17 @@ const s = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: 0,
-    backgroundColor: '#0D1526',
-    borderRadius: 16,
+    backgroundColor: Palette.bgCard,
+    borderRadius: Radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2D4A',
+    borderColor: Palette.borderSubtle,
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 6,
     alignItems: 'center',
   },
   label: {
-    color: '#C9A84C',
+    color: Palette.gold,
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1.5,
@@ -50,9 +52,9 @@ const s = StyleSheet.create({
     alignSelf: 'stretch',
   },
   time: {
-    color: '#ffffff',
+    color: Palette.text,
     fontSize: 20,
-    fontWeight: '300',
+    fontWeight: '400',
     textAlign: 'center',
     alignSelf: 'stretch',
   },

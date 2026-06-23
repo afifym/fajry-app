@@ -76,3 +76,44 @@ export function getNextBedtime(
   }
   return null;
 }
+
+/** Bed + wake for the upcoming (or in-progress) sleep session, paired to one Fajr night. */
+export type SleepSession = {
+  bedTime: Date;
+  wakeTime: Date;
+  fajrTime: Date;
+  durationMs: number;
+};
+
+export function getNextSleepSession(
+  schedule: AlarmDay[],
+  desiredSleepHours: number,
+  now = new Date(),
+): SleepSession | null {
+  const nowMs = now.getTime();
+
+  for (const day of schedule) {
+    const bedMs = day.fajrTime.getTime() - desiredSleepHours * 3_600_000;
+    const wakeMs = day.alarmTime.getTime();
+    if (bedMs <= nowMs && wakeMs > nowMs) {
+      return {
+        bedTime: new Date(bedMs),
+        wakeTime: new Date(wakeMs),
+        fajrTime: day.fajrTime,
+        durationMs: wakeMs - bedMs,
+      };
+    }
+  }
+
+  const day = schedule.find((d) => d.alarmTime.getTime() > nowMs);
+  if (!day) return null;
+
+  const bedMs = day.fajrTime.getTime() - desiredSleepHours * 3_600_000;
+  const wakeMs = day.alarmTime.getTime();
+  return {
+    bedTime: new Date(bedMs),
+    wakeTime: new Date(wakeMs),
+    fajrTime: day.fajrTime,
+    durationMs: wakeMs - bedMs,
+  };
+}

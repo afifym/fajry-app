@@ -4,6 +4,8 @@ import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react-native';
 
+import { Palette } from '@/constants/theme';
+
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: !__DEV__,
@@ -20,7 +22,7 @@ const RootLayout = () => {
           headerShown: false,
           animation: 'fade',
           animationDuration: 200,
-          contentStyle: { backgroundColor: '#000000' },
+          contentStyle: { backgroundColor: Palette.bg },
         }}
       >
         {/* Alarm slides up from the bottom — matches the urgency of the notification */}

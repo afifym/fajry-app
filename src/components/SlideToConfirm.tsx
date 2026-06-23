@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Icon, ChevronRight } from '@/components/Icon';
+import { Palette } from '@/constants/theme';
 
 const THUMB_SIZE = 56;
 // Clamp to screen width minus 24px horizontal padding on each side
@@ -59,7 +60,7 @@ export const SlideToConfirm = ({ onConfirm, label = 'Slide to confirm' }: Props)
       <Animated.Text style={[styles.label, labelOpacity]}>{label}</Animated.Text>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.thumb, thumbStyle]}>
-          <Icon icon={ChevronRight} size={22} color="#060C1A" strokeWidth={2.5} />
+          <Icon icon={ChevronRight} size={22} color={Palette.bg} strokeWidth={2.5} />
         </Animated.View>
       </GestureDetector>
     </View>
@@ -70,17 +71,19 @@ const styles = StyleSheet.create({
   track: {
     width: TRACK_WIDTH,
     height: THUMB_SIZE + 8,
-    backgroundColor: '#0D1526',
+    backgroundColor: Palette.bgElevated,
     borderRadius: (THUMB_SIZE + 8) / 2,
     justifyContent: 'center',
     paddingHorizontal: 4,
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Palette.borderSubtle,
   },
   label: {
     position: 'absolute',
     width: '100%',
     textAlign: 'center',
-    color: '#8892A4',
+    color: Palette.textSecondary,
     fontSize: 15,
     fontWeight: '500',
     letterSpacing: 0.3,
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
-    backgroundColor: '#ffffff',
+    backgroundColor: Palette.gold,
     alignItems: 'center',
     justifyContent: 'center',
   },

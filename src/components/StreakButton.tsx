@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ChevronRight, Icon } from '@/components/Icon';
+import { ChevronRight, Flame, Icon } from '@/components/Icon';
+import { Palette, Radius } from '@/constants/theme';
 
 type Props = {
   streak: number;
@@ -12,80 +13,64 @@ export function StreakButton({ streak, onPress }: Props) {
 
   return (
     <Pressable
-      style={({ pressed }) => [s.card, pressed && s.cardPressed]}
+      style={({ pressed }) => [s.button, pressed && s.buttonPressed]}
       onPress={onPress}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={`Streak, ${streak} ${unit}`}
       accessibilityHint="Opens your prayer consistency calendar"
     >
-      <View style={s.header}>
-        <Text style={s.label}>STREAK</Text>
-        <Icon icon={ChevronRight} size={15} color="#4A5568" />
+      <View style={s.topRow}>
+        <View style={s.labelRow}>
+          <Icon icon={Flame} size={14} color={Palette.gold} />
+          <Text style={s.label}>STREAK</Text>
+        </View>
+        <Icon icon={ChevronRight} size={14} color={Palette.textMuted} />
       </View>
-
-      <View style={s.stat}>
-        <Text style={[s.value, streak === 0 && s.valueMuted]}>{streak}</Text>
-        <Text style={s.unit}>{unit}</Text>
-      </View>
-
-      <Text style={s.caption}>
-        {streak === 0 ? 'Tap to start' : 'Consecutive Fajrs'}
-      </Text>
+      <Text style={[s.value, streak === 0 && s.valueMuted]}>{streak}</Text>
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  card: {
-    minWidth: 112,
-    backgroundColor: '#0D1526',
-    borderRadius: 16,
+  button: {
+    minWidth: 92,
+    backgroundColor: Palette.bgElevated,
+    borderRadius: Radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2D4A',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 6,
+    borderColor: Palette.borderSubtle,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 2,
   },
-  cardPressed: {
+  buttonPressed: {
     opacity: 0.88,
-    borderColor: '#06B6D4',
+    borderColor: Palette.goldMuted,
   },
-  header: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   label: {
-    color: '#C9A84C',
+    color: Palette.gold,
     fontSize: 10,
     fontWeight: '600',
-    letterSpacing: 2,
-  },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 2,
+    letterSpacing: 1.5,
   },
   value: {
-    color: '#06B6D4',
-    fontSize: 40,
+    color: Palette.gold,
+    fontSize: 32,
     fontWeight: '700',
-    lineHeight: 44,
+    lineHeight: 36,
+    textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },
-  valueMuted: { color: '#4A5568' },
-  unit: {
-    color: '#8892A4',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  caption: {
-    color: '#4A5568',
-    fontSize: 11,
-    textAlign: 'center',
-    lineHeight: 14,
-  },
+  valueMuted: { color: Palette.textMuted },
 });

@@ -24,3 +24,11 @@ export function sleepHoursFromBedtime(fajrTime: Date, picked: Date): number {
 export function bedtimeFromSleepHours(fajrTime: Date, sleepHours: number): Date {
   return new Date(fajrTime.getTime() - sleepHours * 3_600_000);
 }
+
+/** Milliseconds from bedtime to wake, assuming wake is the following morning when needed. */
+export function sleepDurationBetween(bed: Date, wake: Date): number {
+  let wakeMs = wake.getTime();
+  const bedMs = bed.getTime();
+  if (wakeMs <= bedMs) wakeMs += 86_400_000;
+  return wakeMs - bedMs;
+}

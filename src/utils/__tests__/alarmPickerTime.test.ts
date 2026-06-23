@@ -1,5 +1,6 @@
 import {
   offsetFromWakeTime,
+  sleepDurationBetween,
   sleepHoursFromBedtime,
   wakeTimeFromOffset,
   bedtimeFromSleepHours,
@@ -40,6 +41,20 @@ describe('alarmPickerTime', () => {
 
       const tooEarly = new Date(fajr.getTime() - 14 * 3_600_000);
       expect(sleepHoursFromBedtime(fajr, tooEarly)).toBe(12);
+    });
+  });
+
+  describe('sleepDurationBetween', () => {
+    it('measures overnight sleep using full timestamps', () => {
+      const bed = new Date(2024, 0, 14, 23, 0, 0);
+      const wake = new Date(2024, 0, 15, 5, 0, 0);
+      expect(sleepDurationBetween(bed, wake)).toBe(6 * 3_600_000);
+    });
+
+    it('does not fake 6 hours when wake is earlier on the same calendar day', () => {
+      const bed = new Date(2024, 0, 15, 23, 0, 0);
+      const wake = new Date(2024, 0, 15, 5, 0, 0);
+      expect(sleepDurationBetween(bed, wake)).toBe(6 * 3_600_000);
     });
   });
 });

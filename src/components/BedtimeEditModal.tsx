@@ -3,12 +3,13 @@ import { StyleSheet, Switch, Text, View } from 'react-native';
 import { Bed, Icon } from '@/components/Icon';
 import { AlarmEditSheet } from '@/components/AlarmEditSheet';
 import { TimeWheelPicker } from '@/components/TimeWheelPicker';
+import { Palette } from '@/constants/theme';
 import { useSettingsStore } from '@/store/settingsStore';
 import {
   bedtimeFromSleepHours,
   sleepHoursFromBedtime,
 } from '@/utils/alarmPickerTime';
-import { getNextBedtime } from '@/utils/prayerTimes';
+import { getNextSleepSession } from '@/utils/prayerTimes';
 import type { AlarmDay } from '@/types';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
 
@@ -79,7 +80,8 @@ export function BedtimeEditModal({
   }
 
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
-  const bedTime = getNextBedtime(schedule, settings.desiredSleepHours, now);
+  const sleepSession = getNextSleepSession(schedule, settings.desiredSleepHours, now);
+  const bedTime = sleepSession?.bedTime ?? null;
   const pickerValue = bedTime
     ?? (nextFajr ? bedtimeFromSleepHours(nextFajr.fajrTime, settings.desiredSleepHours) : new Date());
 
@@ -95,7 +97,7 @@ export function BedtimeEditModal({
     <AlarmEditSheet visible={visible} onClose={onClose} title="Go to Bed">
       <View style={s.body}>
         <View style={s.labelRow}>
-          <Icon icon={Bed} size={14} color="#C9A84C" />
+          <Icon icon={Bed} size={14} color={Palette.gold} />
           <Text style={s.label}>GO TO BED</Text>
         </View>
         <Text style={[s.time, !settings.sleepReminderEnabled && s.timeMuted]}>
@@ -110,7 +112,7 @@ export function BedtimeEditModal({
           <Switch
             value={settings.sleepReminderEnabled}
             onValueChange={(v) => void handleReminderToggle(v)}
-            trackColor={{ true: '#C9A84C', false: '#253352' }}
+            trackColor={{ true: Palette.gold, false: Palette.border }}
             accessibilityLabel="Sleep reminder"
           />
         </View>
@@ -135,14 +137,14 @@ const s = StyleSheet.create({
   body: { alignItems: 'center', gap: 12, paddingBottom: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   label: {
-    color: '#C9A84C',
+    color: Palette.gold,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
   },
-  time: { color: '#ffffff', fontSize: 36, fontWeight: '300' },
+  time: { color: Palette.gold, fontSize: 36, fontWeight: '400' },
   timeMuted: { opacity: 0.45 },
-  hint: { color: '#4A5568', fontSize: 14 },
+  hint: { color: Palette.textMuted, fontSize: 14 },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,9 +152,9 @@ const s = StyleSheet.create({
     width: '100%',
     marginTop: 4,
   },
-  toggleLabel: { color: '#8892A4', fontSize: 14, flex: 1 },
+  toggleLabel: { color: Palette.textSecondary, fontSize: 14, flex: 1 },
   footerHint: {
-    color: '#4A5568',
+    color: Palette.textMuted,
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 20,

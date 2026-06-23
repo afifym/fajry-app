@@ -10,6 +10,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, X } from '@/components/Icon';
+import { Palette, Radius } from '@/constants/theme';
 
 type Props = {
   visible: boolean;
@@ -83,14 +84,14 @@ export function AlarmEditSheet({ visible, onClose, title, children }: Props) {
 
 const s = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: '#000000' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: Palette.bg },
   sheet: {
-    backgroundColor: '#0D1526',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: Palette.bgCard,
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: 0,
-    borderColor: '#1E2D4A',
+    borderColor: Palette.borderSubtle,
     paddingHorizontal: 24,
     paddingTop: 8,
     gap: 8,
@@ -100,7 +101,7 @@ const s = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#253352',
+    backgroundColor: Palette.border,
     marginBottom: 4,
   },
   header: {
@@ -109,6 +110,6 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 4,
   },
-  title: { color: '#ffffff', fontSize: 17, fontWeight: '600' },
+  title: { color: Palette.text, fontSize: 17, fontWeight: '600' },
   closeBtn: { padding: 6 },
 });

@@ -2,6 +2,7 @@ import {
   buildAlarmSchedule,
   getFajrAndSunrise,
   getNextBedtime,
+  getNextSleepSession,
   isConfirmationWindowOpen,
   toISODate,
 } from '../prayerTimes';
@@ -114,5 +115,46 @@ describe('getNextBedtime', () => {
     expect(bed!.getTime()).toBe(
       schedule[1].fajrTime.getTime() - desiredSleepHours * 3_600_000,
     );
+  });
+});
+
+describe('getNextSleepSession', () => {
+  it('keeps tonight\'s bedtime paired with the upcoming alarm after bed has passed', () => {
+    const schedule = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 0);
+    const desiredSleepHours = 6;
+    const fajr = schedule[0].fajrTime;
+    const bedMs = fajr.getTime() - desiredSleepHours * 3_600_000;
+    const now = new Date(bedMs + 2 * 3_600_000);
+
+    const session = getNextSleepSession(schedule, desiredSleepHours, now);
+    expect(session).not.toBeNull();
+    expect(session!.bedTime.getTime()).toBe(bedMs);
+    expect(session!.wakeTime.getTime()).toBe(schedule[0].alarmTime.getTime());
+  });
+
+  it('duration reflects wake offset before Fajr', () => {
+    const offsetMinutes = 30;
+    const schedule = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', offsetMinutes);
+    const desiredSleepHours = 8;
+    const fajr = schedule[0].fajrTime;
+    const now = new Date(fajr.getTime() - desiredSleepHours * 3_600_000 - 60_000);
+
+    const session = getNextSleepSession(schedule, desiredSleepHours, now);
+    expect(session).not.toBeNull();
+    expect(session!.durationMs).toBe(
+      desiredSleepHours * 3_600_000 - offsetMinutes * 60_000,
+    );
+  });
+
+  it('uses in-progress session after bedtime has passed', () => {
+    const schedule = buildAlarmSchedule(CAIRO, 'MuslimWorldLeague', 0);
+    const desiredSleepHours = 8;
+    const fajr = schedule[0].fajrTime;
+    const bedMs = fajr.getTime() - desiredSleepHours * 3_600_000;
+    const now = new Date(bedMs + 2 * 3_600_000);
+
+    const session = getNextSleepSession(schedule, desiredSleepHours, now);
+    expect(session).not.toBeNull();
+    expect(session!.durationMs).toBe(8 * 3_600_000);
   });
 });

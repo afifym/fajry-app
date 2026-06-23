@@ -9,16 +9,17 @@ import { BedtimeEditModal } from "@/components/BedtimeEditModal";
 import { SleepWakeClock } from "@/components/SleepWakeClock";
 import { GoToBedCard } from "@/components/GoToBedCard";
 import { StreakButton } from "@/components/StreakButton";
-import { Icon, ChevronRight, Moon, Settings } from "@/components/Icon";
+import { Icon, ChevronRight, MapPin, Moon, Settings } from "@/components/Icon";
 import { HomeBg } from "@/components/HomeBg";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { WakeUpCard } from "@/components/WakeUpCard";
 import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { Palette, Radius } from "@/constants/theme";
 import type { AlarmDay, City, Location } from "@/types";
 import { detectLocationChange, requestGPSLocation } from "@/utils/location";
-import { getNextBedtime, isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
+import { getNextSleepSession, isConfirmationWindowOpen, todayISODate } from "@/utils/prayerTimes";
 import { rebuildScheduleOnAppOpen, type RebuildSettings } from "@/utils/scheduling";
 
 const HomeScreen = () => {
@@ -38,7 +39,7 @@ const formatTodayLabel = (date: Date) =>
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
-function formatFajrTime(date: Date): string {
+function formatPrayerTime(date: Date): string {
   const h = date.getHours() % 12 || 12;
   const m = String(date.getMinutes()).padStart(2, '0');
   return `${h}:${m} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
@@ -99,8 +100,7 @@ const HomeScreenContent = () => {
   }, [schedule, checkConfirmationWindow]);
 
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
-  const nextAlarm = schedule.find((d) => d.alarmTime.getTime() > Date.now());
-  const nextBedtime = getNextBedtime(schedule, settings.desiredSleepHours, now);
+  const sleepSession = getNextSleepSession(schedule, settings.desiredSleepHours, now);
 
   async function rebuildFromSettings(overrides: Partial<RebuildSettings> = {}) {
     const s = useSettingsStore.getState();
@@ -121,6 +121,16 @@ const HomeScreenContent = () => {
   async function applyLocationChange(loc: Location) {
     useSettingsStore.getState().setLocation(loc);
     await rebuildFromSettings({ location: loc });
+  }
+
+  async function handleBedTimeChange(sleepHours: number) {
+    useSettingsStore.getState().setDesiredSleepHours(sleepHours);
+    await rebuildFromSettings({ desiredSleepHours: sleepHours });
+  }
+
+  async function handleWakeTimeChange(offsetMinutes: number) {
+    useSettingsStore.getState().setPreAlarmOffset(offsetMinutes);
+    await rebuildFromSettings({ preAlarmOffsetMinutes: offsetMinutes });
   }
 
   useEffect(() => {
@@ -178,21 +188,31 @@ const HomeScreenContent = () => {
       <SafeAreaView style={styles.safe}>
         {/* Nav */}
         <View style={styles.header}>
-          <View style={styles.headerSpacer} />
+          <Pressable
+            style={styles.headerLocation}
+            onPress={() => setPickerOpen(true)}
+            accessibilityLabel="Change location"
+          >
+            <Icon icon={MapPin} size={15} color={Palette.gold} />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {location.cityName}, {location.country}
+            </Text>
+            <Icon icon={ChevronRight} size={14} color={Palette.textMuted} />
+          </Pressable>
           <View style={styles.navIcons}>
             <Pressable
               style={styles.navButton}
               onPress={() => router.push("/settings")}
               accessibilityLabel="Settings"
             >
-              <Icon icon={Settings} size={17} />
+              <Icon icon={Settings} size={17} color={Palette.gold} />
             </Pressable>
             <Pressable
               style={styles.navButton}
               onPress={() => router.push("/consistency")}
               accessibilityLabel="Prayer consistency"
             >
-              <Icon icon={Moon} size={18} />
+              <Icon icon={Moon} size={18} color={Palette.gold} />
             </Pressable>
           </View>
         </View>
@@ -202,21 +222,14 @@ const HomeScreenContent = () => {
           <View style={styles.infoSection}>
             <View style={styles.infoLeft}>
               <Text style={styles.dateText}>{formatTodayLabel(now)}</Text>
-              <Text style={styles.fajrTime}>
-                {nextFajr ? formatFajrTime(nextFajr.fajrTime) : '—'}
+              <Text style={styles.prayerLabel}>FAJR</Text>
+              <Text style={styles.prayerTime}>
+                {nextFajr ? formatPrayerTime(nextFajr.fajrTime) : '—'}
               </Text>
-              <Pressable
-                onPress={() => setPickerOpen(true)}
-                accessibilityLabel="Change location"
-              >
-                <View style={styles.locationRow}>
-                  <Text style={styles.locationText} numberOfLines={1}>
-                    <Text style={styles.locationIn}>in </Text>
-                    {location.cityName}, {location.country}
-                  </Text>
-                  <Icon icon={ChevronRight} size={14} color="#4A5568" />
-                </View>
-              </Pressable>
+              <Text style={styles.shurooqSubtitle}>
+                Shurooq{' '}
+                {nextFajr ? formatPrayerTime(nextFajr.sunriseTime) : '—'}
+              </Text>
             </View>
 
             <StreakButton
@@ -228,10 +241,14 @@ const HomeScreenContent = () => {
           {/* Clock ring */}
           <View style={styles.clockSection}>
             <SleepWakeClock
-              bedTime={nextBedtime}
-              wakeTime={nextAlarm?.alarmTime ?? null}
+              bedTime={sleepSession?.bedTime ?? null}
+              wakeTime={sleepSession?.wakeTime ?? null}
+              fajrTime={sleepSession?.fajrTime ?? null}
+              durationMs={sleepSession?.durationMs}
               bedEnabled={settings.sleepReminderEnabled}
               wakeEnabled={settings.alarmEnabled}
+              onBedTimeChange={handleBedTimeChange}
+              onWakeTimeChange={handleWakeTimeChange}
             />
           </View>
 
@@ -239,12 +256,12 @@ const HomeScreenContent = () => {
           <View style={styles.bottomSection}>
             <View style={styles.alarmCardsRow}>
               <GoToBedCard
-                bedTime={nextBedtime}
+                bedTime={sleepSession?.bedTime ?? null}
                 enabled={settings.sleepReminderEnabled}
                 onPress={() => setEditSheet('bedtime')}
               />
               <WakeUpCard
-                wakeTime={nextAlarm?.alarmTime ?? null}
+                wakeTime={sleepSession?.wakeTime ?? null}
                 enabled={settings.alarmEnabled}
                 onPress={() => setEditSheet('wakeup')}
               />
@@ -295,32 +312,46 @@ const HomeScreenContent = () => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#060C1A" },
+  root: { flex: 1, backgroundColor: Palette.bg },
   safe: { flex: 1 },
 
   header: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 4,
+    gap: 12,
   },
-  headerSpacer: { flex: 1 },
-  navIcons: { flexDirection: "row", gap: 8 },
-  navButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: "#0D1526",
+  headerLocation: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    height: 40,
+    paddingHorizontal: 12,
+    borderRadius: Radius.sm,
+    backgroundColor: Palette.bgElevated,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
+    borderColor: Palette.borderSubtle,
+    alignSelf: "flex-start",
+    flexShrink: 1,
+    maxWidth: "100%",
+  },
+  navIcons: { flexDirection: "row", gap: 10 },
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    backgroundColor: Palette.bgElevated,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Palette.borderSubtle,
     alignItems: "center",
     justifyContent: "center",
   },
 
   dateText: {
-    color: "#4A5568",
+    color: Palette.textSecondary,
     fontSize: 13,
     fontWeight: "500",
     letterSpacing: 0.3,
@@ -335,28 +366,38 @@ const styles = StyleSheet.create({
 
   infoSection: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     paddingBottom: 12,
     gap: 16,
   },
-  infoLeft: { flex: 1, gap: 6 },
-  fajrTime: {
-    color: "#ffffff",
+  infoLeft: { flex: 1, gap: 4 },
+  prayerLabel: {
+    color: Palette.textMuted,
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    marginTop: 2,
+  },
+  prayerTime: {
+    color: Palette.gold,
     fontSize: 42,
-    fontWeight: "700",
+    fontWeight: '700',
     letterSpacing: -0.5,
     lineHeight: 46,
   },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+  shurooqSubtitle: {
+    color: Palette.textSecondary,
+    fontSize: 15,
+    fontWeight: '500',
     marginTop: 2,
+  },
+  locationText: {
+    color: Palette.textSecondary,
+    fontSize: 13,
+    fontWeight: "500",
     flexShrink: 1,
   },
-  locationText: { color: "#8892A4", fontSize: 14, fontWeight: "500", flexShrink: 1 },
-  locationIn: { color: "#4A5568", fontWeight: "400" },
 
   clockSection: {
     flex: 1,
@@ -374,19 +415,19 @@ const styles = StyleSheet.create({
   },
 
   confirmCard: {
-    backgroundColor: "#0D1526",
-    borderRadius: 16,
+    backgroundColor: Palette.bgCard,
+    borderRadius: Radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
+    borderColor: Palette.borderSubtle,
     padding: 20,
     gap: 10,
     alignItems: "center",
   },
   confirmTitle: {
-    color: "#C9A84C",
+    color: Palette.gold,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 2,
   },
-  confirmHint: { color: "#8892A4", fontSize: 14 },
+  confirmHint: { color: Palette.textSecondary, fontSize: 14 },
 });
