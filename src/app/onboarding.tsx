@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 import { CitySearchList } from '@/components/CityPickerModal';
+import { HomeBg } from '@/components/HomeBg';
 import { useSettingsStore } from '@/store/settingsStore';
 import { inferRegionalDefault, requestGPSLocation } from '@/utils/location';
 import { requestNotificationPermissions } from '@/utils/notifications';
@@ -82,6 +83,7 @@ const OnboardingScreen = () => {
   if (step === 'intro') {
     return (
       <SafeAreaView style={s.root}>
+        <HomeBg />
         <ScrollView contentContainerStyle={s.scrollContent} bounces={false}>
           <View style={s.hero}>
             <Text style={s.title}>Fajr</Text>
@@ -110,6 +112,7 @@ const OnboardingScreen = () => {
   if (step === 'loading') {
     return (
       <SafeAreaView style={s.root}>
+        <HomeBg />
         <View style={s.centred}>
           <ActivityIndicator size="large" color="#ffffff" />
           <Text style={s.loadingText}>Getting your location…</Text>
@@ -120,6 +123,7 @@ const OnboardingScreen = () => {
 
   return (
     <SafeAreaView style={s.root}>
+      <HomeBg />
       <KeyboardAvoidingView
         style={s.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
