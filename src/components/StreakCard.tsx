@@ -2,12 +2,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
   streak: number;
+  confirmedToday: boolean;
   onPress: () => void;
 };
 
-export const StreakCard = ({ streak, onPress }: Props) => {
-  const hint =
-    streak === 0
+export const StreakCard = ({ streak, confirmedToday, onPress }: Props) => {
+  const hint = confirmedToday
+    ? 'Fajr confirmed today.'
+    : streak === 0
       ? 'Confirm Fajr to begin your streak.'
       : 'Consecutive days with Fajr confirmed.';
 
@@ -19,7 +21,14 @@ export const StreakCard = ({ streak, onPress }: Props) => {
       accessibilityLabel={`Streak ${streak} ${streak === 1 ? 'day' : 'days'}. Open consistency calendar.`}
     >
       <View style={s.left}>
-        <Text style={s.label}>STREAK</Text>
+        <View style={s.labelRow}>
+          <Text style={s.label}>STREAK</Text>
+          {confirmedToday && (
+            <View style={s.todayBadge}>
+              <Text style={s.todayBadgeText}>TODAY</Text>
+            </View>
+          )}
+        </View>
         <Text style={s.hint}>{hint}</Text>
       </View>
       <View style={s.rightGroup}>
@@ -47,11 +56,24 @@ const s = StyleSheet.create({
     gap: 16,
   },
   left: { flex: 1, gap: 4 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   label: {
     color: '#C9A84C',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
+  },
+  todayBadge: {
+    backgroundColor: '#06B6D4',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  todayBadgeText: {
+    color: '#060C1A',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   hint: {
     color: '#4A5568',
