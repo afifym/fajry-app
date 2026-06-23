@@ -124,15 +124,15 @@ const LegendDot = ({ color, label }: { color: string; label: string }) => {
 const COLORS = {
   'on-time': '#06B6D4',
   late: '#FF9500',
-  missed: '#0D1526',
+  missed: '#060C1A',
   future: 'transparent',
 };
 
 const s = StyleSheet.create({
   container: { gap: 12 },
   monthLabel: {
-    color: '#C9A84C',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },

@@ -21,17 +21,22 @@ const ConsistencyScreen = () => {
 
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.streakCard}>
-          <Text style={s.streakLabel}>CURRENT STREAK</Text>
-          <Text style={s.streakValue}>{streak}</Text>
-          <Text style={s.streakUnit}>{streak === 1 ? 'day' : 'days'}</Text>
-          <Text style={s.streakHint}>
-            {streak === 0
-              ? 'Confirm your first prayer to begin.'
-              : 'Consecutive days with a confirmed Fajr.'}
-          </Text>
+          <Text style={s.streakLabel}>STREAK</Text>
+          <View style={s.streakRight}>
+            <Text style={s.streakValue}>{streak}</Text>
+            <Text style={s.streakUnit}> {streak === 1 ? 'day' : 'days'}</Text>
+          </View>
         </View>
 
-        <ConsistencyCalendar />
+        <Text style={s.streakHint}>
+          {streak === 0
+            ? 'Confirm your first prayer to begin.'
+            : 'Consecutive days with a confirmed Fajr.'}
+        </Text>
+
+        <View style={s.calendarCard}>
+          <ConsistencyCalendar />
+        </View>
 
         <Text style={s.editHint}>
           Tap any day within the last 7 days to toggle your prayer record.
@@ -57,21 +62,38 @@ const s = StyleSheet.create({
   backText: { color: '#8892A4', fontSize: 16 },
   title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
 
-  content: { padding: 24, gap: 28, paddingBottom: 48 },
+  content: { paddingHorizontal: 24, paddingTop: 8, gap: 12, paddingBottom: 48 },
 
   streakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#0D1526',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#1E2D4A',
-    padding: 28,
-    alignItems: 'center',
-    gap: 4,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
   },
-  streakLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 2 },
-  streakValue: { color: '#06B6D4', fontSize: 64, fontWeight: '200', lineHeight: 72 },
-  streakUnit: { color: '#8892A4', fontSize: 18 },
-  streakHint: { color: '#4A5568', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  streakLabel: {
+    color: '#C9A84C',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2,
+  },
+  streakRight: { flexDirection: 'row', alignItems: 'baseline' },
+  streakValue: { color: '#06B6D4', fontSize: 36, fontWeight: '300' },
+  streakUnit: { color: '#8892A4', fontSize: 14 },
+  streakHint: { color: '#4A5568', fontSize: 13, textAlign: 'center' },
+
+  calendarCard: {
+    backgroundColor: '#0D1526',
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1E2D4A',
+    padding: 20,
+    marginTop: 4,
+  },
 
   editHint: {
     color: '#4A5568',
