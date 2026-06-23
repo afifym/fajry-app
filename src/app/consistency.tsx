@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConsistencyCalendar } from '@/components/ConsistencyCalendar';
+import { Icon, ChevronLeft } from '@/components/Icon';
 import { HomeBg } from '@/components/HomeBg';
 import { useConsistencyStore } from '@/store/consistencyStore';
 
@@ -18,7 +19,7 @@ const ConsistencyScreen = () => {
           accessibilityLabel="Back"
           style={s.backBtn}
         >
-          <Text style={s.backText}>‹</Text>
+          <Icon icon={ChevronLeft} size={22} />
         </Pressable>
         <Text style={s.title}>Consistency</Text>
         <View style={s.headerSpacer} />
@@ -74,7 +75,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backText: { color: '#8892A4', fontSize: 22, lineHeight: 24, marginTop: -2 },
   title: { color: '#ffffff', fontSize: 17, fontWeight: '600' },
   headerSpacer: { width: 38 },
 

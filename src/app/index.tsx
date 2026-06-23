@@ -6,10 +6,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityPickerModal } from "@/components/CityPickerModal";
 import { FajrClockRing } from "@/components/FajrClockRing";
+import { Icon, ChevronRight, MapPin, Moon, Settings } from "@/components/Icon";
 import { HomeBg } from "@/components/HomeBg";
-import { GearIcon, LocationPinIcon, MoonIcon } from "@/components/HomeIcons";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
-import { StreakCard } from "@/components/StreakCard";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
@@ -159,9 +158,9 @@ const HomeScreenContent = () => {
             accessibilityLabel="Change location"
           >
             <View style={styles.locationNameRow}>
-              <LocationPinIcon />
+              <Icon icon={MapPin} size={13} />
               <Text style={styles.locationText}>{location.cityName}</Text>
-              <Text style={styles.locationChevron}>›</Text>
+              <Icon icon={ChevronRight} size={16} color="#4A5568" />
             </View>
             <Text style={styles.locationCountry}>{location.country}</Text>
           </Pressable>
@@ -171,14 +170,14 @@ const HomeScreenContent = () => {
               onPress={() => router.push("/settings")}
               accessibilityLabel="Settings"
             >
-              <GearIcon />
+              <Icon icon={Settings} size={17} />
             </Pressable>
             <Pressable
               style={styles.navButton}
               onPress={() => router.push("/consistency")}
               accessibilityLabel="Prayer consistency"
             >
-              <MoonIcon />
+              <Icon icon={Moon} size={18} />
             </Pressable>
           </View>
         </View>
@@ -200,11 +199,16 @@ const HomeScreenContent = () => {
 
           {/* Bottom: streak card + optional confirm */}
           <View style={styles.bottomSection}>
-            <StreakCard
-              streak={streak}
-              confirmedToday={confirmed}
-              onPress={() => router.push('/consistency')}
-            />
+            <View style={styles.streakCard}>
+              <Text style={styles.streakLabel}>STREAK</Text>
+              <View style={styles.streakRight}>
+                <Text style={styles.streakValue}>{streak}</Text>
+                <Text style={styles.streakUnit}>
+                  {" "}
+                  {streak === 1 ? "day" : "days"}
+                </Text>
+              </View>
+            </View>
 
             {confirmationOpen && !confirmed && (
               <View style={styles.confirmCard}>
@@ -282,6 +286,30 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
+  streakCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#0D1526",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#1E2D4A",
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+  },
+  streakLabel: {
+    color: "#C9A84C",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 2,
+  },
+  streakRight: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  streakValue: { color: "#06B6D4", fontSize: 36, fontWeight: "300" },
+  streakUnit: { color: "#8892A4", fontSize: 14 },
+
   confirmCard: {
     backgroundColor: "#0D1526",
     borderRadius: 16,
@@ -298,6 +326,4 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   confirmHint: { color: "#8892A4", fontSize: 14 },
-
-  locationChevron: { color: "#4A5568", fontSize: 16, marginLeft: 2, lineHeight: 20 },
 });

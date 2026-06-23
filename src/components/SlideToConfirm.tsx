@@ -8,6 +8,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import { Icon, ChevronRight } from '@/components/Icon';
+
 const THUMB_SIZE = 56;
 // Clamp to screen width minus 24px horizontal padding on each side
 const TRACK_WIDTH = Math.min(300, Dimensions.get('window').width - 48);
@@ -57,7 +59,7 @@ export const SlideToConfirm = ({ onConfirm, label = 'Slide to confirm' }: Props)
       <Animated.Text style={[styles.label, labelOpacity]}>{label}</Animated.Text>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.thumb, thumbStyle]}>
-          <Text style={styles.arrow}>›</Text>
+          <Icon icon={ChevronRight} size={22} color="#060C1A" strokeWidth={2.5} />
         </Animated.View>
       </GestureDetector>
     </View>
@@ -90,11 +92,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  arrow: {
-    color: '#000000',
-    fontSize: 24,
-    fontWeight: '600',
-    marginTop: -2,
   },
 });

@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Icon, X } from '@/components/Icon';
+
 import type { City } from '@/types';
 import { searchCities } from '@/utils/location';
 
@@ -89,7 +91,7 @@ export const CityPickerModal = ({
   onClose,
   onSelect,
   title,
-  closeLabel = '✕',
+  closeLabel = 'close',
   presentationStyle = 'fullScreen',
 }: CityPickerModalProps) => {
   const insets = useSafeAreaInsets();
@@ -114,7 +116,11 @@ export const CityPickerModal = ({
           style={s.closeBtn}
           accessibilityLabel="Close"
         >
-          <Text style={s.closeText}>{closeLabel}</Text>
+          {closeLabel === 'Done' ? (
+            <Text style={s.closeTextDone}>{closeLabel}</Text>
+          ) : (
+            <Icon icon={X} size={20} />
+          )}
         </Pressable>
       </View>
 
@@ -171,7 +177,7 @@ const s = StyleSheet.create({
   },
   title: { color: '#ffffff', fontSize: 20, fontWeight: '600' },
   closeBtn: { padding: 6 },
-  closeText: { color: '#8892A4', fontSize: 20 },
+  closeTextDone: { color: '#C9A84C', fontSize: 16 },
 
   searchWrap: { paddingHorizontal: 24, paddingVertical: 16 },
   searchInput: {

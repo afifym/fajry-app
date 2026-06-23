@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CityPickerModal } from '@/components/CityPickerModal';
+import { Icon, Check, ChevronLeft, ChevronRight } from '@/components/Icon';
 import { HomeBg } from '@/components/HomeBg';
 import { useSettingsStore } from '@/store/settingsStore';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
@@ -147,7 +148,7 @@ const SettingsScreen = () => {
           accessibilityLabel="Back"
           style={st.backBtn}
         >
-          <Text style={st.backText}>‹</Text>
+          <Icon icon={ChevronLeft} size={22} />
         </Pressable>
         <Text style={st.title}>Settings</Text>
         <View style={st.headerSpacer} />
@@ -158,7 +159,7 @@ const SettingsScreen = () => {
           <SettingRow label="Calculation Method" isLast={false}>
             <Pressable onPress={() => setMethodModalOpen(true)} style={st.picker}>
               <Text style={st.pickerValue} numberOfLines={1}>{currentMethodLabel}</Text>
-              <Text style={st.chevron}>›</Text>
+              <Icon icon={ChevronRight} size={20} color="#4A5568" />
             </Pressable>
           </SettingRow>
 
@@ -187,7 +188,7 @@ const SettingsScreen = () => {
           <SettingRow label="Adhan Recitation" isLast={false}>
             <Pressable onPress={() => setRecitationModalOpen(true)} style={st.picker}>
               <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
-              <Text style={st.chevron}>›</Text>
+              <Icon icon={ChevronRight} size={20} color="#4A5568" />
             </Pressable>
           </SettingRow>
 
@@ -233,7 +234,7 @@ const SettingsScreen = () => {
               <Text style={st.pickerValue} numberOfLines={1}>
                 {settings.location ? `${settings.location.cityName}, ${settings.location.country}` : 'Not set'}
               </Text>
-              <Text style={st.chevron}>›</Text>
+              <Icon icon={ChevronRight} size={20} color="#4A5568" />
             </Pressable>
           </SettingRow>
         </SettingSection>
@@ -260,7 +261,7 @@ const SettingsScreen = () => {
             <Text style={[st.optionText, m.key === settings.calculationMethod && st.optionTextActive]}>
               {m.label}
             </Text>
-            {m.key === settings.calculationMethod && <Text style={st.checkmark}>✓</Text>}
+            {m.key === settings.calculationMethod && <Icon icon={Check} size={18} color="#C9A84C" />}
           </Pressable>
         ))}
       </PickerModal>
@@ -280,7 +281,7 @@ const SettingsScreen = () => {
             <Text style={[st.optionText, r.key === settings.adhanRecitation && st.optionTextActive]}>
               {r.label}
             </Text>
-            {r.key === settings.adhanRecitation && <Text style={st.checkmark}>✓</Text>}
+            {r.key === settings.adhanRecitation && <Icon icon={Check} size={18} color="#C9A84C" />}
           </Pressable>
         ))}
       </PickerModal>
@@ -377,7 +378,6 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backText: { color: '#8892A4', fontSize: 22, lineHeight: 24, marginTop: -2 },
   title: { color: '#ffffff', fontSize: 17, fontWeight: '600' },
   headerSpacer: { width: 38 },
 
@@ -432,7 +432,6 @@ const st = StyleSheet.create({
     maxWidth: '55%',
   },
   pickerValue: { color: '#8892A4', fontSize: 16, textAlign: 'right' },
-  chevron: { color: '#4A5568', fontSize: 20 },
 
   numInput: {
     color: '#ffffff',
@@ -473,5 +472,4 @@ const st = StyleSheet.create({
   optionRowActive: { backgroundColor: '#0D1526' },
   optionText: { color: '#ffffff', fontSize: 16 },
   optionTextActive: { color: '#C9A84C', fontWeight: '500' },
-  checkmark: { color: '#C9A84C', fontSize: 16 },
 });
