@@ -142,10 +142,15 @@ const SettingsScreen = () => {
     <SafeAreaView style={st.root}>
       <HomeBg />
       <View style={st.header}>
-        <Pressable onPress={() => router.back()} accessibilityLabel="Back" style={st.backBtn}>
-          <Text style={st.backText}>‹ Back</Text>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityLabel="Back"
+          style={st.backBtn}
+        >
+          <Text style={st.backText}>‹</Text>
         </Pressable>
         <Text style={st.title}>Settings</Text>
+        <View style={st.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={st.content}>
@@ -355,15 +360,26 @@ const st = StyleSheet.create({
   flex: { flex: 1 },
 
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1E2D4A',
   },
-  backBtn: { marginBottom: 4 },
-  backText: { color: '#8892A4', fontSize: 16 },
-  title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#0D1526',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1E2D4A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backText: { color: '#8892A4', fontSize: 22, lineHeight: 24, marginTop: -2 },
+  title: { color: '#ffffff', fontSize: 17, fontWeight: '600' },
+  headerSpacer: { width: 38 },
 
   content: { paddingBottom: 40, paddingHorizontal: 24, gap: 8 },
 
