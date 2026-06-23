@@ -2,14 +2,16 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useConsistencyStore } from '@/store/consistencyStore';
 import { ConsistencyCalendar } from '@/components/ConsistencyCalendar';
+import { HomeBg } from '@/components/HomeBg';
+import { useConsistencyStore } from '@/store/consistencyStore';
 
 const ConsistencyScreen = () => {
   const streak = useConsistencyStore((state) => state.streak);
 
   return (
     <SafeAreaView style={s.root}>
+      <HomeBg />
       <View style={s.header}>
         <Pressable onPress={() => router.back()} accessibilityLabel="Back" style={s.backBtn}>
           <Text style={s.backText}>‹ Back</Text>
