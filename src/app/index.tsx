@@ -6,9 +6,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityPickerModal } from "@/components/CityPickerModal";
 import { FajrClockRing } from "@/components/FajrClockRing";
-import { Icon, ChevronRight, MapPin, Moon, Settings } from "@/components/Icon";
+import { Icon, ChevronRight, MapPin, Moon, Settings, Sunrise } from "@/components/Icon";
 import { HomeBg } from "@/components/HomeBg";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
+import { WakeUpCard } from "@/components/WakeUpCard";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
@@ -81,6 +82,8 @@ const HomeScreenContent = () => {
     }, 60_000);
     return () => clearInterval(id);
   }, [schedule, checkConfirmationWindow]);
+
+  const nextAlarm = schedule.find((d) => d.alarmTime.getTime() > Date.now());
 
   async function applyLocationChange(loc: Location) {
     useSettingsStore.getState().setLocation(loc);
@@ -199,8 +202,15 @@ const HomeScreenContent = () => {
 
           {/* Bottom: streak card + optional confirm */}
           <View style={styles.bottomSection}>
+            <WakeUpCard
+              wakeTime={nextAlarm?.alarmTime ?? null}
+              offsetMinutes={settings.preAlarmOffsetMinutes}
+            />
             <View style={styles.streakCard}>
-              <Text style={styles.streakLabel}>STREAK</Text>
+              <View style={styles.streakLabelRow}>
+                <Icon icon={Sunrise} size={14} color="#C9A84C" />
+                <Text style={styles.streakLabel}>STREAK</Text>
+              </View>
               <View style={styles.streakRight}>
                 <Text style={styles.streakValue}>{streak}</Text>
                 <Text style={styles.streakUnit}>
@@ -296,6 +306,11 @@ const styles = StyleSheet.create({
     borderColor: "#1E2D4A",
     paddingHorizontal: 24,
     paddingVertical: 18,
+  },
+  streakLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   streakLabel: {
     color: "#C9A84C",
