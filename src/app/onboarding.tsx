@@ -114,7 +114,7 @@ const OnboardingScreen = () => {
       <SafeAreaView style={s.root}>
         <HomeBg />
         <View style={s.centred}>
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color="#C9A84C" />
           <Text style={s.loadingText}>Getting your location…</Text>
         </View>
       </SafeAreaView>
@@ -129,8 +129,8 @@ const OnboardingScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={s.searchHeader}>
-          <Text style={s.title}>Find your city</Text>
-          <Text style={s.body}>Location access was denied. Search for your city to continue.</Text>
+          <Text style={s.searchTitle}>Find your city</Text>
+          <Text style={s.searchBody}>Location access was denied. Search for your city to continue.</Text>
         </View>
 
         <CitySearchList
@@ -179,7 +179,14 @@ const s = StyleSheet.create({
   },
   ctaText: { color: '#060C1A', fontSize: 17, fontWeight: '600' },
 
-  loadingText: { color: '#9EA3AD', fontSize: 16, marginTop: 8 },
+  loadingText: { color: '#8892A4', fontSize: 16, marginTop: 8 },
 
-  searchHeader: { padding: 24, gap: 14 },
+  searchHeader: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  searchTitle: { color: '#ffffff', fontSize: 20, fontWeight: '600' },
+  searchBody: { color: '#8892A4', fontSize: 15, lineHeight: 22 },
 });
