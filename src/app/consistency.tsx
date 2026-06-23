@@ -13,10 +13,15 @@ const ConsistencyScreen = () => {
     <SafeAreaView style={s.root}>
       <HomeBg />
       <View style={s.header}>
-        <Pressable onPress={() => router.back()} accessibilityLabel="Back" style={s.backBtn}>
-          <Text style={s.backText}>‹ Back</Text>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityLabel="Back"
+          style={s.backBtn}
+        >
+          <Text style={s.backText}>‹</Text>
         </Pressable>
         <Text style={s.title}>Consistency</Text>
+        <View style={s.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
@@ -52,15 +57,26 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#060C1A' },
 
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1E2D4A',
   },
-  backBtn: { marginBottom: 4 },
-  backText: { color: '#8892A4', fontSize: 16 },
-  title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#0D1526',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1E2D4A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backText: { color: '#8892A4', fontSize: 22, lineHeight: 24, marginTop: -2 },
+  title: { color: '#ffffff', fontSize: 17, fontWeight: '600' },
+  headerSpacer: { width: 38 },
 
   content: { paddingHorizontal: 24, paddingTop: 8, gap: 12, paddingBottom: 48 },
 
