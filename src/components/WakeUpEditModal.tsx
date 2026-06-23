@@ -6,7 +6,7 @@ import { TimeWheelPicker } from '@/components/TimeWheelPicker';
 import { Palette } from '@/constants/theme';
 import { useSettingsStore } from '@/store/settingsStore';
 import type { AlarmDay } from '@/types';
-import { offsetFromWakeTime, wakeTimeFromOffset } from '@/utils/alarmPickerTime';
+import { clampWakeOffsetMinutes, offsetFromWakeTime, snapToFiveMinutes, wakeTimeFromOffset } from '@/utils/alarmPickerTime';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
 
 type Props = {
@@ -25,8 +25,13 @@ function formatTime(date: Date): string {
 function offsetLabel(minutes: number, enabled: boolean): string {
   if (!enabled) return 'Alarm off';
   if (minutes === 0) return 'At Fajr time';
-  if (minutes === 1) return '1 min before Fajr';
-  return `${minutes} min before Fajr`;
+  if (minutes > 0) {
+    if (minutes === 1) return '1 min before Fajr';
+    return `${minutes} min before Fajr`;
+  }
+  const after = Math.abs(minutes);
+  if (after === 1) return '1 min after Fajr';
+  return `${after} min after Fajr`;
 }
 
 async function applyAndRebuild(
@@ -56,7 +61,9 @@ export function WakeUpEditModal({ visible, onClose, schedule, onScheduleChange }
   }
 
   async function handleOffsetChange(minutes: number) {
-    const clamped = Math.max(0, Math.min(60, minutes));
+    if (!nextFajr) return;
+    const snapped = snapToFiveMinutes(minutes);
+    const clamped = clampWakeOffsetMinutes(snapped, nextFajr.fajrTime, nextFajr.sunriseTime);
     useSettingsStore.getState().setPreAlarmOffset(clamped);
     const next = await applyAndRebuild({ preAlarmOffsetMinutes: clamped });
     if (next) onScheduleChange(next);
@@ -69,11 +76,11 @@ export function WakeUpEditModal({ visible, onClose, schedule, onScheduleChange }
 
   function handleWakeTimeChange(date: Date) {
     if (!nextFajr) return;
-    void handleOffsetChange(offsetFromWakeTime(nextFajr.fajrTime, date));
+    void handleOffsetChange(offsetFromWakeTime(nextFajr.fajrTime, date, nextFajr.sunriseTime));
   }
 
   const minTime = nextFajr ? wakeTimeFromOffset(nextFajr.fajrTime, 60) : undefined;
-  const maxTime = nextFajr?.fajrTime;
+  const maxTime = nextFajr?.sunriseTime;
 
   return (
     <AlarmEditSheet visible={visible} onClose={onClose} title="Wake Up">

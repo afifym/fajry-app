@@ -8,6 +8,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import {
   bedtimeFromSleepHours,
   sleepHoursFromBedtime,
+  snapToFiveMinutes,
 } from '@/utils/alarmPickerTime';
 import { getNextSleepSession } from '@/utils/prayerTimes';
 import type { AlarmDay } from '@/types';
@@ -67,7 +68,8 @@ export function BedtimeEditModal({
   const settings = useSettingsStore();
 
   async function handleSleepHoursChange(hours: number) {
-    const clamped = Math.max(0.5, Math.min(12, Math.round(hours * 2) / 2));
+    const minutes = snapToFiveMinutes(Math.round(hours * 60));
+    const clamped = Math.max(30, Math.min(12 * 60, minutes)) / 60;
     useSettingsStore.getState().setDesiredSleepHours(clamped);
     const next = await applyAndRebuild({ desiredSleepHours: clamped });
     if (next) onScheduleChange(next);

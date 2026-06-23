@@ -1,9 +1,53 @@
-/** Map a time-wheel selection to pre-alarm offset minutes before Fajr. */
-export function offsetFromWakeTime(fajrTime: Date, picked: Date): number {
+/** Snap times and offsets to five-minute increments. */
+export const TIME_SNAP_MINUTES = 5;
+
+export function snapToFiveMinutes(minutes: number): number {
+  return Math.round(minutes / TIME_SNAP_MINUTES) * TIME_SNAP_MINUTES;
+}
+
+/** Map a time-wheel selection to pre-alarm offset minutes before Fajr (negative = after Fajr). */
+export function maxMinutesAfterFajrUntilSunrise(fajrTime: Date, sunriseTime: Date): number {
+  return Math.max(0, Math.round((sunriseTime.getTime() - fajrTime.getTime()) / 60_000));
+}
+
+export function clampWakeTime(picked: Date, fajrTime: Date, sunriseTime: Date): Date {
   const aligned = new Date(picked);
   aligned.setFullYear(fajrTime.getFullYear(), fajrTime.getMonth(), fajrTime.getDate());
-  const minutes = Math.round((fajrTime.getTime() - aligned.getTime()) / 60_000);
-  return Math.max(0, Math.min(60, minutes));
+
+  const sunriseAligned = new Date(sunriseTime);
+  sunriseAligned.setFullYear(fajrTime.getFullYear(), fajrTime.getMonth(), fajrTime.getDate());
+
+  const earliest = new Date(fajrTime.getTime() - 60 * 60_000);
+  if (aligned.getTime() < earliest.getTime()) return earliest;
+  if (aligned.getTime() > sunriseAligned.getTime()) return sunriseAligned;
+  return aligned;
+}
+
+export function clampWakeOffsetMinutes(
+  offsetMinutes: number,
+  fajrTime: Date,
+  sunriseTime?: Date,
+): number {
+  const minOffset = sunriseTime ? -maxMinutesAfterFajrUntilSunrise(fajrTime, sunriseTime) : 0;
+  const clamped = Math.max(minOffset, Math.min(60, offsetMinutes));
+  return snapToFiveMinutes(clamped);
+}
+
+export function offsetFromWakeTime(fajrTime: Date, picked: Date, sunriseTime?: Date): number {
+  const aligned = sunriseTime
+    ? clampWakeTime(picked, fajrTime, sunriseTime)
+    : (() => {
+        const d = new Date(picked);
+        d.setFullYear(fajrTime.getFullYear(), fajrTime.getMonth(), fajrTime.getDate());
+        const earliest = new Date(fajrTime.getTime() - 60 * 60_000);
+        if (d.getTime() < earliest.getTime()) return earliest;
+        if (d.getTime() > fajrTime.getTime()) return new Date(fajrTime);
+        return d;
+      })();
+  const minutes = snapToFiveMinutes(
+    Math.round((fajrTime.getTime() - aligned.getTime()) / 60_000),
+  );
+  return clampWakeOffsetMinutes(minutes, fajrTime, sunriseTime);
 }
 
 export function wakeTimeFromOffset(fajrTime: Date, offsetMinutes: number): Date {
@@ -17,8 +61,11 @@ export function sleepHoursFromBedtime(fajrTime: Date, picked: Date): number {
   if (aligned.getTime() >= fajrTime.getTime()) {
     aligned.setDate(aligned.getDate() - 1);
   }
-  const hours = (fajrTime.getTime() - aligned.getTime()) / 3_600_000;
-  return Math.max(0.5, Math.min(12, Math.round(hours * 2) / 2));
+  const minutes = snapToFiveMinutes(
+    Math.round((fajrTime.getTime() - aligned.getTime()) / 60_000),
+  );
+  const clamped = Math.max(30, Math.min(12 * 60, minutes));
+  return clamped / 60;
 }
 
 export function bedtimeFromSleepHours(fajrTime: Date, sleepHours: number): Date {

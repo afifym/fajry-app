@@ -82,6 +82,7 @@ export type SleepSession = {
   bedTime: Date;
   wakeTime: Date;
   fajrTime: Date;
+  sunriseTime: Date;
   durationMs: number;
 };
 
@@ -100,6 +101,7 @@ export function getNextSleepSession(
         bedTime: new Date(bedMs),
         wakeTime: new Date(wakeMs),
         fajrTime: day.fajrTime,
+        sunriseTime: day.sunriseTime,
         durationMs: wakeMs - bedMs,
       };
     }
@@ -114,6 +116,7 @@ export function getNextSleepSession(
     bedTime: new Date(bedMs),
     wakeTime: new Date(wakeMs),
     fajrTime: day.fajrTime,
+    sunriseTime: day.sunriseTime,
     durationMs: wakeMs - bedMs,
   };
 }

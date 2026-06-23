@@ -11,6 +11,9 @@ import { sleepDurationBetween } from '@/utils/alarmPickerTime';
 import {
   angleFromPoint,
   bedDateFrom12hAngle,
+  dateTo12Angle,
+  snapBedAngle,
+  snapWakeAngle,
   sleepHoursFrom12hAngle,
   wakeDateFrom12hAngle,
   wakeOffsetFrom12hAngle,
@@ -27,17 +30,13 @@ type Props = {
   bedTime: Date | null;
   wakeTime: Date | null;
   fajrTime: Date | null;
+  sunriseTime?: Date | null;
   durationMs?: number;
   bedEnabled?: boolean;
   wakeEnabled?: boolean;
   onBedTimeChange?: (sleepHours: number) => void;
   onWakeTimeChange?: (offsetMinutes: number) => void;
 };
-
-function dateTo12Angle(date: Date): number {
-  const mins = (date.getHours() % 12) * 60 + date.getMinutes();
-  return (mins / 720) * 360;
-}
 
 function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -75,6 +74,7 @@ function DraggableHandle({
   muted,
   disabled,
   dialPageOffset,
+  onDragStart,
   onAngleChange,
   onDragEnd,
   accessibilityLabel,
@@ -84,6 +84,7 @@ function DraggableHandle({
   muted?: boolean;
   disabled?: boolean;
   dialPageOffset: RefObject<{ x: number; y: number }>;
+  onDragStart?: () => void;
   onAngleChange: (angle: number) => void;
   onDragEnd: (angle: number) => void;
   accessibilityLabel: string;
@@ -112,6 +113,9 @@ function DraggableHandle({
 
   const pan = Gesture.Pan()
     .enabled(!disabled)
+    .onBegin(() => {
+      if (onDragStart) runOnJS(onDragStart)();
+    })
     .onUpdate((e) => {
       runOnJS(handleUpdate)(e.absoluteX, e.absoluteY);
     })
@@ -144,6 +148,7 @@ export const SleepWakeClock = ({
   bedTime,
   wakeTime,
   fajrTime,
+  sunriseTime,
   durationMs,
   bedEnabled = true,
   wakeEnabled = true,
@@ -164,7 +169,9 @@ export const SleepWakeClock = ({
   const previewBed =
     fajrTime && dragBedAngle != null ? bedDateFrom12hAngle(dragBedAngle, fajrTime) : bedTime;
   const previewWake =
-    fajrTime && dragWakeAngle != null ? wakeDateFrom12hAngle(dragWakeAngle, fajrTime) : wakeTime;
+    fajrTime && dragWakeAngle != null
+      ? wakeDateFrom12hAngle(dragWakeAngle, fajrTime, sunriseTime ?? undefined)
+      : wakeTime;
 
   const hasArc = previewBed && previewWake;
   const arcPath = hasArc
@@ -191,18 +198,44 @@ export const SleepWakeClock = ({
     (angle: number) => {
       setDragBedAngle(null);
       if (!fajrTime || !onBedTimeChange) return;
-      onBedTimeChange(sleepHoursFrom12hAngle(angle, fajrTime));
+      const snapped = snapBedAngle(angle, fajrTime);
+      onBedTimeChange(sleepHoursFrom12hAngle(snapped, fajrTime));
     },
     [fajrTime, onBedTimeChange],
+  );
+
+  const handleBedAngleChange = useCallback(
+    (angle: number) => {
+      if (!fajrTime) {
+        setDragBedAngle(angle);
+        return;
+      }
+      setDragBedAngle(snapBedAngle(angle, fajrTime));
+    },
+    [fajrTime],
   );
 
   const handleWakeDragEnd = useCallback(
     (angle: number) => {
       setDragWakeAngle(null);
       if (!fajrTime || !onWakeTimeChange) return;
-      onWakeTimeChange(wakeOffsetFrom12hAngle(angle, fajrTime));
+      const snapped = snapWakeAngle(angle, fajrTime, sunriseTime ?? undefined);
+      onWakeTimeChange(
+        wakeOffsetFrom12hAngle(snapped, fajrTime, sunriseTime ?? undefined),
+      );
     },
-    [fajrTime, onWakeTimeChange],
+    [fajrTime, sunriseTime, onWakeTimeChange],
+  );
+
+  const handleWakeAngleChange = useCallback(
+    (angle: number) => {
+      if (!fajrTime) {
+        setDragWakeAngle(angle);
+        return;
+      }
+      setDragWakeAngle(snapWakeAngle(angle, fajrTime, sunriseTime ?? undefined));
+    },
+    [fajrTime, sunriseTime],
   );
 
   const bedDragDisabled = !fajrTime || !bedEnabled || !onBedTimeChange;
@@ -266,7 +299,8 @@ export const SleepWakeClock = ({
           muted={!bedEnabled}
           disabled={bedDragDisabled}
           dialPageOffset={dialPageOffset}
-          onAngleChange={setDragBedAngle}
+          onDragStart={measureDial}
+          onAngleChange={handleBedAngleChange}
           onDragEnd={handleBedDragEnd}
           accessibilityLabel="Adjust go to bed time"
         />
@@ -279,7 +313,8 @@ export const SleepWakeClock = ({
           muted={!wakeEnabled}
           disabled={wakeDragDisabled}
           dialPageOffset={dialPageOffset}
-          onAngleChange={setDragWakeAngle}
+          onDragStart={measureDial}
+          onAngleChange={handleWakeAngleChange}
           onDragEnd={handleWakeDragEnd}
           accessibilityLabel="Adjust wake up time"
         />
