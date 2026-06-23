@@ -1,76 +1,68 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ChevronRight, Flame, Icon } from '@/components/Icon';
-import { Palette, Radius } from '@/constants/theme';
+import { Flame, Icon } from '@/components/Icon';
+import { Palette } from '@/constants/theme';
 
 type Props = {
   streak: number;
   onPress: () => void;
 };
 
+const FLAME_SIZE = 14;
+
 export function StreakButton({ streak, onPress }: Props) {
   const unit = streak === 1 ? 'day' : 'days';
+  const active = streak > 0;
 
   return (
     <Pressable
-      style={({ pressed }) => [s.button, pressed && s.buttonPressed]}
+      style={({ pressed }) => [s.root, pressed && s.rootPressed]}
       onPress={onPress}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={`Streak, ${streak} ${unit}`}
       accessibilityHint="Opens your prayer consistency calendar"
     >
-      <View style={s.topRow}>
-        <View style={s.labelRow}>
-          <Icon icon={Flame} size={14} color={Palette.gold} />
-          <Text style={s.label}>STREAK</Text>
-        </View>
-        <Icon icon={ChevronRight} size={14} color={Palette.textMuted} />
+      <View style={s.row}>
+        <Icon
+          icon={Flame}
+          size={FLAME_SIZE}
+          color={active ? Palette.gold : Palette.textMuted}
+        />
+        <Text style={s.line}>
+          <Text style={[s.count, !active && s.countMuted]}>{streak} </Text>
+          <Text style={s.label}>{unit} streak</Text>
+        </Text>
       </View>
-      <Text style={[s.value, streak === 0 && s.valueMuted]}>{streak}</Text>
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  button: {
-    minWidth: 92,
-    backgroundColor: Palette.bgElevated,
-    borderRadius: Radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Palette.borderSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 2,
+  root: {
+    alignItems: 'center',
   },
-  buttonPressed: {
-    opacity: 0.88,
-    borderColor: Palette.goldMuted,
+  rootPressed: {
+    opacity: 0.72,
   },
-  topRow: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+    gap: 6,
   },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  line: {
+    fontSize: 14,
+    fontWeight: '500',
   },
-  label: {
+  count: {
     color: Palette.gold,
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-  },
-  value: {
-    color: Palette.gold,
-    fontSize: 32,
     fontWeight: '700',
-    lineHeight: 36,
-    textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },
-  valueMuted: { color: Palette.textMuted },
+  countMuted: {
+    color: Palette.textMuted,
+  },
+  label: {
+    color: Palette.textSecondary,
+  },
 });

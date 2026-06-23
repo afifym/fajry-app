@@ -6,13 +6,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityPickerModal } from "@/components/CityPickerModal";
 import { BedtimeEditModal } from "@/components/BedtimeEditModal";
-import { SleepWakeClock } from "@/components/SleepWakeClock";
-import { GoToBedCard } from "@/components/GoToBedCard";
-import { StreakButton } from "@/components/StreakButton";
-import { Icon, ChevronRight, MapPin, Moon, Settings } from "@/components/Icon";
 import { HomeBg } from "@/components/HomeBg";
+import { Icon, ChevronRight, Flame, MapPin, Settings } from "@/components/Icon";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
-import { WakeUpCard } from "@/components/WakeUpCard";
+import { SleepScheduleCard } from "@/components/SleepScheduleCard";
+import { SleepWakeClock } from "@/components/SleepWakeClock";
+import { StreakButton } from "@/components/StreakButton";
 import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -33,11 +32,6 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
-
-const formatTodayLabel = (date: Date) =>
-  date.toLocaleDateString('en-US', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
 
 function formatPrayerTime(date: Date): string {
   const h = date.getHours() % 12 || 12;
@@ -212,72 +206,59 @@ const HomeScreenContent = () => {
               onPress={() => router.push("/consistency")}
               accessibilityLabel="Prayer consistency"
             >
-              <Icon icon={Moon} size={18} color={Palette.gold} />
+              <Icon icon={Flame} size={18} color={Palette.gold} />
             </Pressable>
           </View>
         </View>
 
         {/* Main */}
         <View style={styles.main}>
-          <View style={styles.infoSection}>
-            <View style={styles.infoLeft}>
-              <Text style={styles.dateText}>{formatTodayLabel(now)}</Text>
-              <Text style={styles.prayerLabel}>FAJR</Text>
+          <View style={styles.heroStack}>
+            <View style={styles.infoSection}>
+              <Text style={styles.prayerLabel}>Next Fajr</Text>
               <Text style={styles.prayerTime}>
                 {nextFajr ? formatPrayerTime(nextFajr.fajrTime) : '—'}
               </Text>
-              <Text style={styles.shurooqSubtitle}>
-                Shurooq{' '}
-                {nextFajr ? formatPrayerTime(nextFajr.sunriseTime) : '—'}
-              </Text>
+              <StreakButton
+                streak={streak}
+                onPress={() => router.push("/consistency")}
+              />
             </View>
 
-            <StreakButton
-              streak={streak}
-              onPress={() => router.push("/consistency")}
-            />
-          </View>
-
-          {/* Clock ring */}
-          <View style={styles.clockSection}>
-            <SleepWakeClock
+            <SleepScheduleCard
               bedTime={sleepSession?.bedTime ?? null}
               wakeTime={sleepSession?.wakeTime ?? null}
-              fajrTime={sleepSession?.fajrTime ?? null}
-              durationMs={sleepSession?.durationMs}
               bedEnabled={settings.sleepReminderEnabled}
               wakeEnabled={settings.alarmEnabled}
-              onBedTimeChange={handleBedTimeChange}
-              onWakeTimeChange={handleWakeTimeChange}
+              onBedPress={() => setEditSheet('bedtime')}
+              onWakePress={() => setEditSheet('wakeup')}
             />
-          </View>
 
-          {/* Bottom: streak card + optional confirm */}
-          <View style={styles.bottomSection}>
-            <View style={styles.alarmCardsRow}>
-              <GoToBedCard
+            <View style={styles.clockSection}>
+              <SleepWakeClock
                 bedTime={sleepSession?.bedTime ?? null}
-                enabled={settings.sleepReminderEnabled}
-                onPress={() => setEditSheet('bedtime')}
-              />
-              <WakeUpCard
                 wakeTime={sleepSession?.wakeTime ?? null}
-                enabled={settings.alarmEnabled}
-                onPress={() => setEditSheet('wakeup')}
+                fajrTime={sleepSession?.fajrTime ?? null}
+                sunriseTime={sleepSession?.sunriseTime ?? null}
+                durationMs={sleepSession?.durationMs}
+                bedEnabled={settings.sleepReminderEnabled}
+                wakeEnabled={settings.alarmEnabled}
+                onBedTimeChange={handleBedTimeChange}
+                onWakeTimeChange={handleWakeTimeChange}
               />
             </View>
-
-            {confirmationOpen && !confirmed && (
-              <View style={styles.confirmCard}>
-                <Text style={styles.confirmTitle}>FAJR WINDOW OPEN</Text>
-                <Text style={styles.confirmHint}>Did you pray on time?</Text>
-                <SlideToConfirm
-                  onConfirm={handleConfirm}
-                  label="Slide to confirm"
-                />
-              </View>
-            )}
           </View>
+
+          {confirmationOpen && !confirmed && (
+            <View style={styles.confirmCard}>
+              <Text style={styles.confirmTitle}>FAJR WINDOW OPEN</Text>
+              <Text style={styles.confirmHint}>Did you pray on time?</Text>
+              <SlideToConfirm
+                onConfirm={handleConfirm}
+                label="Slide to confirm"
+              />
+            </View>
+          )}
         </View>
       </SafeAreaView>
 
@@ -350,47 +331,39 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  dateText: {
-    color: Palette.textSecondary,
-    fontSize: 13,
-    fontWeight: "500",
-    letterSpacing: 0.3,
-  },
 
   main: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 28,
+    paddingTop: 8,
     paddingBottom: 16,
+    justifyContent: 'space-between',
+  },
+
+  heroStack: {
+    gap: 20,
+    paddingTop: 48,
   },
 
   infoSection: {
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 12,
-    gap: 16,
+    gap: 6,
+    marginBottom: 24,
   },
-  infoLeft: { flex: 1, gap: 4 },
   prayerLabel: {
     color: Palette.textMuted,
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1.5,
-    marginTop: 2,
+    textAlign: 'center',
   },
   prayerTime: {
     color: Palette.gold,
-    fontSize: 42,
+    fontSize: 56,
     fontWeight: '700',
     letterSpacing: -0.5,
-    lineHeight: 46,
-  },
-  shurooqSubtitle: {
-    color: Palette.textSecondary,
-    fontSize: 15,
-    fontWeight: '500',
-    marginTop: 2,
+    lineHeight: 60,
+    textAlign: 'center',
   },
   locationText: {
     color: Palette.textSecondary,
@@ -400,18 +373,7 @@ const styles = StyleSheet.create({
   },
 
   clockSection: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-  },
-
-  bottomSection: {
-    gap: 12,
-  },
-
-  alarmCardsRow: {
-    flexDirection: 'row',
-    gap: 12,
   },
 
   confirmCard: {
