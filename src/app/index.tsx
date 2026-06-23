@@ -85,6 +85,23 @@ const HomeScreenContent = () => {
 
   const nextAlarm = schedule.find((d) => d.alarmTime.getTime() > Date.now());
 
+  async function applyOffsetChange(minutes: number) {
+    const clamped = Math.max(0, Math.min(60, minutes));
+    useSettingsStore.getState().setPreAlarmOffset(clamped);
+    const s = useSettingsStore.getState();
+    const newSchedule = await rebuildScheduleOnAppOpen({
+      location: s.location!,
+      calculationMethod: s.calculationMethod,
+      adhanRecitation: s.adhanRecitation,
+      preAlarmOffsetMinutes: clamped,
+      alarmEnabled: s.alarmEnabled,
+      sleepReminderEnabled: s.sleepReminderEnabled,
+      desiredSleepHours: s.desiredSleepHours,
+    });
+    setSchedule(newSchedule);
+    checkConfirmationWindow(newSchedule);
+  }
+
   async function applyLocationChange(loc: Location) {
     useSettingsStore.getState().setLocation(loc);
     const s = useSettingsStore.getState();
@@ -205,6 +222,7 @@ const HomeScreenContent = () => {
             <WakeUpCard
               wakeTime={nextAlarm?.alarmTime ?? null}
               offsetMinutes={settings.preAlarmOffsetMinutes}
+              onOffsetChange={(m) => void applyOffsetChange(m)}
             />
             <View style={styles.streakCard}>
               <View style={styles.streakLabelRow}>
