@@ -150,34 +150,34 @@ export default OnboardingScreen;
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#060C1A' },
   flex: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 32, justifyContent: 'center', gap: 28 },
+  scrollContent: { flexGrow: 1, padding: 32, justifyContent: 'center', gap: 24 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
 
-  hero: { gap: 4 },
-  title: { color: '#ffffff', fontSize: 48, fontWeight: '700', letterSpacing: -1 },
-  tagline: { color: '#5A5E6A', fontSize: 18, fontWeight: '500' },
+  hero: { gap: 4, alignItems: 'center' },
+  title: { color: '#ffffff', fontSize: 52, fontWeight: '700', letterSpacing: -1 },
+  tagline: { color: '#C9A84C', fontSize: 16, fontWeight: '500', letterSpacing: 0.5 },
 
-  body: { color: '#9EA3AD', fontSize: 16, lineHeight: 26 },
+  body: { color: '#8892A4', fontSize: 16, lineHeight: 26, textAlign: 'center' },
 
   methodCard: {
     backgroundColor: '#0D1526',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#1E2D4A',
     padding: 20,
     gap: 6,
   },
-  methodLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
+  methodLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase' },
   methodValue: { color: '#ffffff', fontSize: 16, fontWeight: '500' },
   methodHint: { color: '#4A5568', fontSize: 13 },
 
   cta: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
+    backgroundColor: '#C9A84C',
+    borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
   },
-  ctaText: { color: '#000000', fontSize: 17, fontWeight: '600' },
+  ctaText: { color: '#060C1A', fontSize: 17, fontWeight: '600' },
 
   loadingText: { color: '#9EA3AD', fontSize: 16, marginTop: 8 },
 
