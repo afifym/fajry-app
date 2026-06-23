@@ -149,89 +149,89 @@ const SettingsScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={st.content}>
-        <SectionHeader label="Prayer" />
+        <SettingSection label="Prayer">
+          <SettingRow label="Calculation Method" isLast={false}>
+            <Pressable onPress={() => setMethodModalOpen(true)} style={st.picker}>
+              <Text style={st.pickerValue} numberOfLines={1}>{currentMethodLabel}</Text>
+              <Text style={st.chevron}>›</Text>
+            </Pressable>
+          </SettingRow>
 
-        <SettingRow label="Calculation Method">
-          <Pressable onPress={() => setMethodModalOpen(true)} style={st.picker}>
-            <Text style={st.pickerValue} numberOfLines={1}>{currentMethodLabel}</Text>
-            <Text style={st.chevron}>›</Text>
-          </Pressable>
-        </SettingRow>
-
-        <SettingRow label="Pre-alarm Offset (minutes)">
-          <TextInput
-            style={st.numInput}
-            keyboardType="number-pad"
-            defaultValue={String(settings.preAlarmOffsetMinutes)}
-            onEndEditing={(e) => handleOffsetChange(e.nativeEvent.text)}
-            selectTextOnFocus
-            accessibilityLabel="Pre-alarm offset in minutes"
-          />
-        </SettingRow>
-
-        <SectionHeader label="Alarm" />
-
-        <SettingRow label="Alarm Enabled">
-          <Switch
-            value={settings.alarmEnabled}
-            onValueChange={handleAlarmToggle}
-            trackColor={{ true: '#ffffff', false: '#253352' }}
-            thumbColor="#000000"
-          />
-        </SettingRow>
-
-        <SettingRow label="Adhan Recitation">
-          <Pressable onPress={() => setRecitationModalOpen(true)} style={st.picker}>
-            <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
-            <Text style={st.chevron}>›</Text>
-          </Pressable>
-        </SettingRow>
-
-        <SettingRow label="Snooze Duration (minutes)">
-          <TextInput
-            style={st.numInput}
-            keyboardType="number-pad"
-            defaultValue={String(settings.snoozeDurationMinutes)}
-            onEndEditing={(e) => handleSnoozeChange(e.nativeEvent.text)}
-            selectTextOnFocus
-            accessibilityLabel="Snooze duration in minutes"
-          />
-        </SettingRow>
-
-        <SectionHeader label="Sleep Reminder" />
-
-        <SettingRow label="Sleep Reminder">
-          <Switch
-            value={settings.sleepReminderEnabled}
-            onValueChange={handleSleepReminderToggle}
-            trackColor={{ true: '#ffffff', false: '#253352' }}
-            thumbColor="#000000"
-          />
-        </SettingRow>
-
-        {settings.sleepReminderEnabled && (
-          <SettingRow label="Desired Sleep (hours)">
+          <SettingRow label="Pre-alarm Offset (minutes)" isLast>
             <TextInput
               style={st.numInput}
-              keyboardType="decimal-pad"
-              defaultValue={String(settings.desiredSleepHours)}
-              onEndEditing={(e) => handleSleepHoursChange(e.nativeEvent.text)}
+              keyboardType="number-pad"
+              defaultValue={String(settings.preAlarmOffsetMinutes)}
+              onEndEditing={(e) => handleOffsetChange(e.nativeEvent.text)}
               selectTextOnFocus
-              accessibilityLabel="Desired sleep hours"
+              accessibilityLabel="Pre-alarm offset in minutes"
             />
           </SettingRow>
-        )}
+        </SettingSection>
 
-        <SectionHeader label="Location" />
+        <SettingSection label="Alarm">
+          <SettingRow label="Alarm Enabled" isLast={false}>
+            <Switch
+              value={settings.alarmEnabled}
+              onValueChange={handleAlarmToggle}
+              trackColor={{ true: '#C9A84C', false: '#253352' }}
+              thumbColor="#ffffff"
+            />
+          </SettingRow>
 
-        <SettingRow label="City">
-          <Pressable onPress={() => setCityModalOpen(true)} style={st.picker}>
-            <Text style={st.pickerValue} numberOfLines={1}>
-              {settings.location ? `${settings.location.cityName}, ${settings.location.country}` : 'Not set'}
-            </Text>
-            <Text style={st.chevron}>›</Text>
-          </Pressable>
-        </SettingRow>
+          <SettingRow label="Adhan Recitation" isLast={false}>
+            <Pressable onPress={() => setRecitationModalOpen(true)} style={st.picker}>
+              <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
+              <Text style={st.chevron}>›</Text>
+            </Pressable>
+          </SettingRow>
+
+          <SettingRow label="Snooze Duration (minutes)" isLast>
+            <TextInput
+              style={st.numInput}
+              keyboardType="number-pad"
+              defaultValue={String(settings.snoozeDurationMinutes)}
+              onEndEditing={(e) => handleSnoozeChange(e.nativeEvent.text)}
+              selectTextOnFocus
+              accessibilityLabel="Snooze duration in minutes"
+            />
+          </SettingRow>
+        </SettingSection>
+
+        <SettingSection label="Sleep Reminder">
+          <SettingRow label="Sleep Reminder" isLast={!settings.sleepReminderEnabled}>
+            <Switch
+              value={settings.sleepReminderEnabled}
+              onValueChange={handleSleepReminderToggle}
+              trackColor={{ true: '#C9A84C', false: '#253352' }}
+              thumbColor="#ffffff"
+            />
+          </SettingRow>
+
+          {settings.sleepReminderEnabled && (
+            <SettingRow label="Desired Sleep (hours)" isLast>
+              <TextInput
+                style={st.numInput}
+                keyboardType="decimal-pad"
+                defaultValue={String(settings.desiredSleepHours)}
+                onEndEditing={(e) => handleSleepHoursChange(e.nativeEvent.text)}
+                selectTextOnFocus
+                accessibilityLabel="Desired sleep hours"
+              />
+            </SettingRow>
+          )}
+        </SettingSection>
+
+        <SettingSection label="Location">
+          <SettingRow label="City" isLast>
+            <Pressable onPress={() => setCityModalOpen(true)} style={st.picker}>
+              <Text style={st.pickerValue} numberOfLines={1}>
+                {settings.location ? `${settings.location.cityName}, ${settings.location.country}` : 'Not set'}
+              </Text>
+              <Text style={st.chevron}>›</Text>
+            </Pressable>
+          </SettingRow>
+        </SettingSection>
 
         <SectionHeader label="Test" />
 
@@ -298,9 +298,26 @@ const SectionHeader = ({ label }: { label: string }) => {
   return <Text style={st.sectionHeader}>{label.toUpperCase()}</Text>;
 };
 
-const SettingRow = ({ label, children }: { label: string; children: React.ReactNode }) => {
+const SettingSection = ({ label, children }: { label: string; children: React.ReactNode }) => {
   return (
-    <View style={st.row}>
+    <View style={st.section}>
+      <SectionHeader label={label} />
+      <View style={st.sectionCard}>{children}</View>
+    </View>
+  );
+};
+
+const SettingRow = ({
+  label,
+  children,
+  isLast = true,
+}: {
+  label: string;
+  children: React.ReactNode;
+  isLast?: boolean;
+}) => {
+  return (
+    <View style={[st.row, !isLast && st.rowDivider]}>
       <Text style={st.rowLabel}>{label}</Text>
       {children}
     </View>
@@ -348,16 +365,25 @@ const st = StyleSheet.create({
   backText: { color: '#8892A4', fontSize: 16 },
   title: { color: '#ffffff', fontSize: 28, fontWeight: '600' },
 
-  content: { paddingBottom: 40 },
+  content: { paddingBottom: 40, paddingHorizontal: 24, gap: 8 },
+
+  section: { gap: 8 },
+  sectionCard: {
+    backgroundColor: '#0D1526',
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#1E2D4A',
+    overflow: 'hidden',
+  },
 
   testAlarmBtn: {
-    marginHorizontal: 24,
     marginTop: 8,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#C9A84C',
     paddingVertical: 16,
     alignItems: 'center',
+    backgroundColor: '#0D1526',
   },
   testAlarmText: { color: '#C9A84C', fontSize: 16 },
 
@@ -365,20 +391,21 @@ const st = StyleSheet.create({
     color: '#C9A84C',
     fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 1.2,
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 8,
+    letterSpacing: 2,
+    paddingTop: 20,
+    paddingBottom: 0,
   },
 
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 16,
+  },
+  rowDivider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#0A1020',
+    borderBottomColor: '#1E2D4A',
   },
   rowLabel: { color: '#ffffff', fontSize: 16, flex: 1 },
 
@@ -394,14 +421,14 @@ const st = StyleSheet.create({
   numInput: {
     color: '#ffffff',
     fontSize: 16,
-    backgroundColor: '#0A1020',
-    borderRadius: 8,
+    backgroundColor: '#060C1A',
+    borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     minWidth: 60,
     textAlign: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#253352',
+    borderColor: '#1E2D4A',
   },
 
   // Modals
@@ -427,8 +454,8 @@ const st = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#0A1020',
   },
-  optionRowActive: { backgroundColor: '#0E0E0E' },
+  optionRowActive: { backgroundColor: '#0D1526' },
   optionText: { color: '#ffffff', fontSize: 16 },
-  optionTextActive: { color: '#ffffff', fontWeight: '500' },
-  checkmark: { color: '#ffffff', fontSize: 16 },
+  optionTextActive: { color: '#C9A84C', fontWeight: '500' },
+  checkmark: { color: '#C9A84C', fontSize: 16 },
 });
