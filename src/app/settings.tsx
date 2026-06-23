@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CityPickerModal } from '@/components/CityPickerModal';
+import { HomeBg } from '@/components/HomeBg';
 import { useSettingsStore } from '@/store/settingsStore';
 import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
 import type { CalculationMethodKey, AdhanRecitation, City } from '@/types';
@@ -139,6 +140,7 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={st.root}>
+      <HomeBg />
       <View style={st.header}>
         <Pressable onPress={() => router.back()} accessibilityLabel="Back" style={st.backBtn}>
           <Text style={st.backText}>‹ Back</Text>
