@@ -1,26 +1,35 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
   streak: number;
+  onPress: () => void;
 };
 
-export const StreakCard = ({ streak }: Props) => {
+export const StreakCard = ({ streak, onPress }: Props) => {
   const hint =
     streak === 0
       ? 'Confirm Fajr to begin your streak.'
       : 'Consecutive days with Fajr confirmed.';
 
   return (
-    <View style={s.card}>
+    <Pressable
+      style={s.card}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Streak ${streak} ${streak === 1 ? 'day' : 'days'}. Open consistency calendar.`}
+    >
       <View style={s.left}>
         <Text style={s.label}>STREAK</Text>
         <Text style={s.hint}>{hint}</Text>
       </View>
-      <View style={s.right}>
-        <Text style={s.value}>{streak}</Text>
-        <Text style={s.unit}>{streak === 1 ? 'day' : 'days'}</Text>
+      <View style={s.rightGroup}>
+        <View style={s.right}>
+          <Text style={s.value}>{streak}</Text>
+          <Text style={s.unit}>{streak === 1 ? 'day' : 'days'}</Text>
+        </View>
+        <Text style={s.chevron}>›</Text>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -50,6 +59,8 @@ const s = StyleSheet.create({
     lineHeight: 18,
   },
   right: { flexDirection: 'row', alignItems: 'baseline' },
+  rightGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   value: { color: '#06B6D4', fontSize: 36, fontWeight: '300' },
   unit: { color: '#8892A4', fontSize: 14, marginLeft: 4 },
+  chevron: { color: '#4A5568', fontSize: 22, lineHeight: 24 },
 });

@@ -200,7 +200,7 @@ const HomeScreenContent = () => {
 
           {/* Bottom: streak card + optional confirm */}
           <View style={styles.bottomSection}>
-            <StreakCard streak={streak} />
+            <StreakCard streak={streak} onPress={() => router.push('/consistency')} />
 
             {confirmationOpen && !confirmed && (
               <View style={styles.confirmCard}>
