@@ -8,6 +8,7 @@ import {
   FlameIcon,
   GearIcon,
   MapPinIcon,
+  MegaphoneIcon,
   MinusIcon,
   MoonIcon,
   PlusIcon,
@@ -38,6 +39,7 @@ export const Icon = ({
 );
 
 export const Check = CheckIcon;
+export const Back = CaretLeftIcon;
 export const ChevronLeft = CaretLeftIcon;
 export const ChevronRight = CaretRightIcon;
 export const Flame = FlameIcon;
@@ -47,6 +49,7 @@ export const Settings = GearIcon;
 export const Sunrise = SunHorizonIcon;
 export const X = XIcon;
 export const AlarmClock = AlarmIcon;
+export const Adhan = MegaphoneIcon;
 export const Bed = BedIcon;
 export const Minus = MinusIcon;
 export const Plus = PlusIcon;

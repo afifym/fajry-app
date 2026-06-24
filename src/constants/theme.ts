@@ -26,13 +26,9 @@ export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
@@ -70,13 +66,14 @@ export const Palette = {
   bgInset: '#0F1F1B',
   border: '#2A4540',
   borderSubtle: '#1E3530',
-  gold: '#C9A84C',
-  goldMuted: '#A8893A',
-  goldDim: 'rgba(201, 168, 76, 0.22)',
+  gold: '#E2B842',
+  goldMuted: '#C49A38',
+  goldDim: 'rgba(226, 184, 66, 0.26)',
   text: '#F0EDE6',
   textSecondary: '#8BA39C',
   textMuted: '#5C726C',
   pattern: '#1A3530',
+  glassOutline: 'rgba(255, 255, 255, 0.16)',
 } as const;
 
 export const Radius = {
