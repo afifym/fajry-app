@@ -1,4 +1,5 @@
-import { StyleSheet, Switch, Text, View } from "react-native";
+import {StyleSheet, Switch, View, Text} from "react-native";
+
 
 import { AlarmEditSheet } from "@/components/AlarmEditSheet";
 import { AlarmClock, Icon } from "@/components/Icon";
@@ -106,13 +107,11 @@ export function WakeUpEditModal({
   return (
     <AlarmEditSheet visible={visible} onClose={onClose}>
       <View style={s.body}>
-        <View style={s.labelRow}>
-          <Icon icon={AlarmClock} size={14} color={Palette.gold} />
-          <Text style={s.label}>WAKE UP</Text>
-        </View>
-
         <View style={s.toggleRow}>
-          <Text style={s.toggleLabel}>Wake up alarm</Text>
+          <View style={s.labelRow}>
+            <Icon icon={AlarmClock} size={16} color={Palette.gold} />
+            <Text style={s.label}>WAKE UP ALARM</Text>
+          </View>
           <Switch
             value={settings.alarmEnabled}
             onValueChange={(v) => void handleAlarmToggle(v)}
@@ -143,21 +142,17 @@ const s = StyleSheet.create({
   labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   label: {
     color: Palette.gold,
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "600",
-    letterSpacing: 2,
+    letterSpacing: 1.5,
   },
-  time: { color: Palette.gold, fontSize: 36, fontWeight: "400" },
-  timeMuted: { opacity: 0.45 },
-  hint: { color: Palette.textMuted, fontSize: 14 },
   toggleRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    marginTop: 4,
+    marginTop: 24,
   },
-  toggleLabel: { color: Palette.textSecondary, fontSize: 14, flex: 1 },
   footerHint: {
     color: Palette.textMuted,
     fontSize: 13,
