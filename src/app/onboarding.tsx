@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -8,59 +9,65 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CitySearchList } from '@/components/CityPickerModal';
-import { HomeBg } from '@/components/HomeBg';
-import { useSettingsStore } from '@/store/settingsStore';
-import { inferRegionalDefault, requestGPSLocation } from '@/utils/location';
-import { requestNotificationPermissions } from '@/utils/notifications';
-import { rebuildScheduleOnAppOpen } from '@/utils/scheduling';
-import type { City, Location } from '@/types';
+import { CitySearchList } from "@/components/CityPickerModal";
+import { HomeBg } from "@/components/HomeBg";
+import { useSettingsStore } from "@/store/settingsStore";
+import type { City, Location } from "@/types";
+import { inferRegionalDefault, requestGPSLocation } from "@/utils/location";
+import { requestNotificationPermissions } from "@/utils/notifications";
+import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
-const LOCALE_COUNTRY = (Intl.DateTimeFormat().resolvedOptions().locale.split('-').pop() ?? '').toUpperCase();
+const LOCALE_COUNTRY = (
+  Intl.DateTimeFormat().resolvedOptions().locale.split("-").pop() ?? ""
+).toUpperCase();
 const DEFAULT_METHOD = inferRegionalDefault(LOCALE_COUNTRY);
 
 const METHOD_LABEL: Record<string, string> = {
-  MuslimWorldLeague: 'Muslim World League',
-  Egyptian: 'Egyptian General Authority of Survey',
-  Karachi: 'University of Islamic Sciences, Karachi',
-  UmmAlQura: 'Umm Al-Qura, Makkah',
-  Dubai: 'Dubai',
-  MoonsightingCommittee: 'Moonsighting Committee Worldwide',
-  NorthAmerica: 'Islamic Society of North America',
-  Kuwait: 'Kuwait',
-  Qatar: 'Qatar',
-  Singapore: 'Majlis Ugama Islam Singapura',
-  Tehran: 'Institute of Geophysics, Tehran',
-  Turkey: 'Turkey',
-  Other: 'Other',
+  MuslimWorldLeague: "Muslim World League",
+  Egyptian: "Egyptian General Authority of Survey",
+  Karachi: "University of Islamic Sciences, Karachi",
+  UmmAlQura: "Umm Al-Qura, Makkah",
+  Dubai: "Dubai",
+  MoonsightingCommittee: "Moonsighting Committee Worldwide",
+  NorthAmerica: "Islamic Society of North America",
+  Kuwait: "Kuwait",
+  Qatar: "Qatar",
+  Singapore: "Majlis Ugama Islam Singapura",
+  Tehran: "Institute of Geophysics, Tehran",
+  Turkey: "Turkey",
+  Other: "Other",
 };
 
-type Step = 'intro' | 'loading' | 'city-search';
+type Step = "intro" | "loading" | "city-search";
 
 const OnboardingScreen = () => {
-  const [step, setStep] = useState<Step>('intro');
-  const [query, setQuery] = useState('');
+  const [step, setStep] = useState<Step>("intro");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     useSettingsStore.getState().setCalculationMethod(DEFAULT_METHOD);
   }, []);
 
   async function handleGetStarted() {
-    setStep('loading');
+    setStep("loading");
     try {
       const gpsLoc = await requestGPSLocation();
       await handleLocationResolved(gpsLoc);
     } catch {
-      setStep('city-search');
+      setStep("city-search");
     }
   }
 
   async function handleCitySelected(city: City) {
-    const loc: Location = { lat: city.lat, lng: city.lng, cityName: city.name, country: city.country };
+    const loc: Location = {
+      lat: city.lat,
+      lng: city.lng,
+      cityName: city.name,
+      country: city.country,
+    };
     await handleLocationResolved(loc);
   }
 
@@ -77,10 +84,10 @@ const OnboardingScreen = () => {
       sleepReminderEnabled: s.sleepReminderEnabled,
       desiredSleepHours: s.desiredSleepHours,
     });
-    router.replace('/');
+    router.replace("/");
   }
 
-  if (step === 'intro') {
+  if (step === "intro") {
     return (
       <SafeAreaView style={s.root}>
         <HomeBg />
@@ -91,17 +98,25 @@ const OnboardingScreen = () => {
           </View>
 
           <Text style={s.body}>
-            A reliable Fajr alarm that works completely offline. Prayer times are calculated
-            on-device using your location — no internet required.
+            A reliable Fajr alarm that works completely offline. Prayer times
+            are calculated on-device using your location — no internet required.
           </Text>
 
           <View style={s.methodCard}>
             <Text style={s.methodLabel}>Default calculation method</Text>
-            <Text style={s.methodValue}>{METHOD_LABEL[DEFAULT_METHOD] ?? DEFAULT_METHOD}</Text>
-            <Text style={s.methodHint}>Based on your region. Change it anytime in Settings.</Text>
+            <Text style={s.methodValue}>
+              {METHOD_LABEL[DEFAULT_METHOD] ?? DEFAULT_METHOD}
+            </Text>
+            <Text style={s.methodHint}>
+              Based on your region. Change it anytime in Settings.
+            </Text>
           </View>
 
-          <Pressable style={s.cta} onPress={handleGetStarted} accessibilityRole="button">
+          <Pressable
+            style={s.cta}
+            onPress={handleGetStarted}
+            accessibilityRole="button"
+          >
             <Text style={s.ctaText}>Get Started</Text>
           </Pressable>
         </ScrollView>
@@ -109,7 +124,7 @@ const OnboardingScreen = () => {
     );
   }
 
-  if (step === 'loading') {
+  if (step === "loading") {
     return (
       <SafeAreaView style={s.root}>
         <HomeBg />
@@ -126,11 +141,13 @@ const OnboardingScreen = () => {
       <HomeBg />
       <KeyboardAvoidingView
         style={s.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={s.searchHeader}>
           <Text style={s.searchTitle}>Find your city</Text>
-          <Text style={s.searchBody}>Location access was denied. Search for your city to continue.</Text>
+          <Text style={s.searchBody}>
+            Location access was denied. Search for your city to continue.
+          </Text>
         </View>
 
         <CitySearchList
@@ -148,38 +165,59 @@ const OnboardingScreen = () => {
 export default OnboardingScreen;
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060C1A' },
+  root: { flex: 1, backgroundColor: "#060C1A" },
   flex: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 32, justifyContent: 'center', gap: 24 },
-  centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 32,
+    justifyContent: "center",
+    gap: 24,
+  },
+  centred: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16 },
 
-  hero: { gap: 4, alignItems: 'center' },
-  title: { color: '#ffffff', fontSize: 52, fontWeight: '700', letterSpacing: -1 },
-  tagline: { color: '#C9A84C', fontSize: 16, fontWeight: '500', letterSpacing: 0.5 },
+  hero: { gap: 4, alignItems: "center" },
+  title: {
+    color: "#ffffff",
+    fontSize: 52,
+    fontWeight: "700",
+    letterSpacing: -1,
+  },
+  tagline: {
+    color: "#C9A84C",
+    fontSize: 16,
+    fontWeight: "500",
+    letterSpacing: 0.5,
+  },
 
-  body: { color: '#8892A4', fontSize: 16, lineHeight: 26, textAlign: 'center' },
+  body: { color: "#8892A4", fontSize: 16, lineHeight: 26, textAlign: "center" },
 
   methodCard: {
-    backgroundColor: '#0D1526',
+    backgroundColor: "#0D1526",
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2D4A',
+    borderColor: "#1E2D4A",
     padding: 20,
     gap: 6,
   },
-  methodLabel: { color: '#C9A84C', fontSize: 11, fontWeight: '600', letterSpacing: 2, textTransform: 'uppercase' },
-  methodValue: { color: '#ffffff', fontSize: 16, fontWeight: '500' },
-  methodHint: { color: '#4A5568', fontSize: 13 },
+  methodLabel: {
+    color: "#C9A84C",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  methodValue: { color: "#ffffff", fontSize: 16, fontWeight: "500" },
+  methodHint: { color: "#4A5568", fontSize: 13 },
 
   cta: {
-    backgroundColor: '#C9A84C',
+    backgroundColor: "#C9A84C",
     borderRadius: 16,
     paddingVertical: 18,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  ctaText: { color: '#060C1A', fontSize: 17, fontWeight: '600' },
+  ctaText: { color: "#060C1A", fontSize: 17, fontWeight: "600" },
 
-  loadingText: { color: '#8892A4', fontSize: 16, marginTop: 8 },
+  loadingText: { color: "#8892A4", fontSize: 16, marginTop: 8 },
 
   searchHeader: {
     paddingHorizontal: 24,
@@ -187,6 +225,6 @@ const s = StyleSheet.create({
     paddingBottom: 8,
     gap: 8,
   },
-  searchTitle: { color: '#ffffff', fontSize: 20, fontWeight: '600' },
-  searchBody: { color: '#8892A4', fontSize: 15, lineHeight: 22 },
+  searchTitle: { color: "#ffffff", fontSize: 20, fontWeight: "600" },
+  searchBody: { color: "#8892A4", fontSize: 15, lineHeight: 22 },
 });

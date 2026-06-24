@@ -1,38 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Stack, router } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
   Easing,
-} from 'react-native-reanimated';
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useAudioPlayer } from 'expo-audio';
+import { useAudioPlayer } from "expo-audio";
 
-import { useSettingsStore } from '@/store/settingsStore';
-import { useConsistencyStore } from '@/store/consistencyStore';
-import { getFajrAndSunrise, todayISODate } from '@/utils/prayerTimes';
-import { scheduleSnooze } from '@/utils/scheduling';
-import { SlideToConfirm } from '@/components/SlideToConfirm';
-import { CountdownTimer } from '@/components/CountdownTimer';
+import { CountdownTimer } from "@/components/CountdownTimer";
+import { SlideToConfirm } from "@/components/SlideToConfirm";
+import { useConsistencyStore } from "@/store/consistencyStore";
+import { useSettingsStore } from "@/store/settingsStore";
+import { getFajrAndSunrise, todayISODate } from "@/utils/prayerTimes";
+import { scheduleSnooze } from "@/utils/scheduling";
 
-type Phase = 'ringing' | 'dismissed';
+type Phase = "ringing" | "dismissed";
 
 // Static require() calls must be at module level for Metro bundler
 const ADHAN_SOURCES = {
-  makkah: require('../../assets/audio/makkah.wav'),
-  madinah: require('../../assets/audio/madinah.wav'),
-  mishary: require('../../assets/audio/mishary.wav'),
+  makkah: require("../../assets/audio/makkah.wav"),
+  madinah: require("../../assets/audio/madinah.wav"),
+  mishary: require("../../assets/audio/mishary.wav"),
 } as const;
 
 function formatClock(date: Date): string {
   const h = date.getHours() % 12 || 12;
-  const m = String(date.getMinutes()).padStart(2, '0');
-  const period = date.getHours() >= 12 ? 'PM' : 'AM';
+  const m = String(date.getMinutes()).padStart(2, "0");
+  const period = date.getHours() >= 12 ? "PM" : "AM";
   return `${h}:${m} ${period}`;
 }
 
@@ -40,7 +40,7 @@ const AlarmScreen = () => {
   const settings = useSettingsStore();
   const { confirm } = useConsistencyStore();
 
-  const [phase, setPhase] = useState<Phase>('ringing');
+  const [phase, setPhase] = useState<Phase>("ringing");
   const [now, setNow] = useState(new Date());
 
   // Entrance animation — runs entirely on the UI thread
@@ -53,7 +53,10 @@ const AlarmScreen = () => {
   }));
 
   useEffect(() => {
-    opacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.quad) });
+    opacity.value = withTiming(1, {
+      duration: 400,
+      easing: Easing.out(Easing.quad),
+    });
     translateY.value = withDelay(
       60,
       withTiming(0, { duration: 380, easing: Easing.out(Easing.cubic) }),
@@ -68,7 +71,9 @@ const AlarmScreen = () => {
   useEffect(() => {
     player.loop = true;
     player.play();
-    return () => { player.pause(); };
+    return () => {
+      player.pause();
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const location = settings.location;
@@ -86,15 +91,20 @@ const AlarmScreen = () => {
   }, []);
 
   // Derived from the live clock so it updates without a separate effect
-  const snoozeDisabled = new Date(now.getTime() + settings.snoozeDurationMinutes * 60_000) >= sunriseTime;
+  const snoozeDisabled =
+    new Date(now.getTime() + settings.snoozeDurationMinutes * 60_000) >=
+    sunriseTime;
 
   const handleSnooze = useCallback(async () => {
-    const result = await scheduleSnooze(settings.snoozeDurationMinutes, sunriseTime);
-    if (result === 'refused') {
+    const result = await scheduleSnooze(
+      settings.snoozeDurationMinutes,
+      sunriseTime,
+    );
+    if (result === "refused") {
       Alert.alert(
-        'Cannot Snooze',
-        'Snoozing would push past Sunrise. Pray now.',
-        [{ text: 'OK' }],
+        "Cannot Snooze",
+        "Snoozing would push past Sunrise. Pray now.",
+        [{ text: "OK" }],
       );
       return;
     }
@@ -104,15 +114,15 @@ const AlarmScreen = () => {
 
   const handleDismiss = useCallback(() => {
     playerRef.current.pause();
-    setPhase('dismissed');
+    setPhase("dismissed");
   }, []);
 
   const handleConfirm = useCallback(() => {
     confirm(todayISODate(), true);
-    router.replace('/');
+    router.replace("/");
   }, [confirm]);
 
-  if (phase === 'dismissed') {
+  if (phase === "dismissed") {
     return (
       <GestureHandlerRootView style={styles.root}>
         <Stack.Screen options={{ gestureEnabled: false }} />
@@ -120,8 +130,14 @@ const AlarmScreen = () => {
           <View style={styles.centred}>
             <Text style={styles.headingSmall}>Did you pray?</Text>
             <Text style={styles.hint}>Confirm to mark today as complete.</Text>
-            <SlideToConfirm onConfirm={handleConfirm} label="Slide to confirm prayer" />
-            <Pressable style={styles.skipLink} onPress={() => router.replace('/')}>
+            <SlideToConfirm
+              onConfirm={handleConfirm}
+              label="Slide to confirm prayer"
+            />
+            <Pressable
+              style={styles.skipLink}
+              onPress={() => router.replace("/")}
+            >
               <Text style={styles.skipText}>Skip for now</Text>
             </Pressable>
           </View>
@@ -147,7 +163,6 @@ const AlarmScreen = () => {
 
             <Text style={styles.untilSunrise}>until sunrise</Text>
             <CountdownTimer targetTime={sunriseTime} />
-
           </View>
 
           <View style={styles.actions}>
@@ -163,7 +178,9 @@ const AlarmScreen = () => {
                 onPress={handleSnooze}
                 accessibilityLabel={`Snooze ${settings.snoozeDurationMinutes} minutes`}
               >
-                <Text style={styles.snoozeText}>Snooze {settings.snoozeDurationMinutes} min</Text>
+                <Text style={styles.snoozeText}>
+                  Snooze {settings.snoozeDurationMinutes} min
+                </Text>
               </Pressable>
             )}
 
@@ -184,52 +201,52 @@ const AlarmScreen = () => {
 export default AlarmScreen;
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060C1A' },
+  root: { flex: 1, backgroundColor: "#060C1A" },
   safe: { flex: 1 },
-  flex: { flex: 1, justifyContent: 'space-between' },
+  flex: { flex: 1, justifyContent: "space-between" },
 
   top: {
     paddingTop: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   clock: {
-    color: '#8892A4',
+    color: "#8892A4",
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 
   centred: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
 
   label: {
-    color: '#C9A84C',
+    color: "#C9A84C",
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 2,
   },
   fajrTime: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 60,
-    fontWeight: '200',
+    fontWeight: "200",
     letterSpacing: -1.5,
   },
   untilSunrise: {
-    color: '#4A5568',
+    color: "#4A5568",
     fontSize: 13,
     marginTop: 16,
   },
 
   headingSmall: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 32,
-    fontWeight: '300',
+    fontWeight: "300",
   },
   hint: {
-    color: '#9EA3AD',
+    color: "#9EA3AD",
     fontSize: 15,
     marginBottom: 24,
   },
@@ -240,31 +257,31 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   snoozeButton: {
-    backgroundColor: '#0D1526',
+    backgroundColor: "#0D1526",
     borderRadius: 14,
     paddingVertical: 18,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2D4A',
+    borderColor: "#1E2D4A",
   },
-  snoozeText: { color: '#A0AEC0', fontSize: 17 },
+  snoozeText: { color: "#A0AEC0", fontSize: 17 },
   snoozeDisabled: {
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   snoozeDisabledText: {
-    color: '#4A5568',
+    color: "#4A5568",
     fontSize: 13,
-    textAlign: 'center',
+    textAlign: "center",
   },
   dismissButton: {
-    backgroundColor: '#C9A84C',
+    backgroundColor: "#C9A84C",
     borderRadius: 14,
     paddingVertical: 18,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  dismissText: { color: '#000000', fontSize: 17, fontWeight: '700' },
+  dismissText: { color: "#000000", fontSize: 17, fontWeight: "700" },
 
   skipLink: { marginTop: 24 },
-  skipText: { color: '#5A5E6A', fontSize: 14 },
+  skipText: { color: "#5A5E6A", fontSize: 14 },
 });
