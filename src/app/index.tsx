@@ -1,11 +1,14 @@
 import { Redirect, router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import {Alert, Pressable, StyleSheet, View, Text} from "react-native";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BedtimeEditModal } from "@/components/BedtimeEditModal";
 import { CityPickerModal } from "@/components/CityPickerModal";
+import { GlassSurface } from "@/components/GlassSurface";
+import { GoldGradientText } from "@/components/GoldGradientText";
 import { HomeBg } from "@/components/HomeBg";
 import { Icon, Flame, MapPin, Settings } from "@/components/Icon";
 import { SleepScheduleCard } from "@/components/SleepScheduleCard";
@@ -13,6 +16,7 @@ import { SleepWakeClock } from "@/components/SleepWakeClock";
 import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { StreakButton } from "@/components/StreakButton";
 import { WakeUpEditModal } from "@/components/WakeUpEditModal";
+import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette, Radius } from "@/constants/theme";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -40,10 +44,13 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
-function formatPrayerTime(date: Date): string {
+function formatPrayerTimeParts(date: Date): { time: string; period: "AM" | "PM" } {
   const h = date.getHours() % 12 || 12;
   const m = String(date.getMinutes()).padStart(2, "0");
-  return `${h}:${m} ${date.getHours() >= 12 ? "PM" : "AM"}`;
+  return {
+    time: `${h}:${m}`,
+    period: date.getHours() >= 12 ? "PM" : "AM",
+  };
 }
 
 const HomeScreenContent = () => {
@@ -105,6 +112,9 @@ const HomeScreenContent = () => {
   }, [schedule, checkConfirmationWindow]);
 
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
+  const prayerTimeParts = nextFajr
+    ? formatPrayerTimeParts(nextFajr.fajrTime)
+    : null;
   const sleepSession = getNextSleepSession(
     schedule,
     settings.desiredSleepHours,
@@ -206,35 +216,29 @@ const HomeScreenContent = () => {
             onPress={() => setPickerOpen(true)}
             accessibilityLabel="Change location"
           >
-            <View style={styles.buttonOutline}>
-              <View style={styles.headerLocationInner}>
-                <Icon icon={MapPin} size={15} color={Palette.text} />
-                <Text style={styles.locationText} numberOfLines={1}>
-                  {location.cityName}, {location.country}
-                </Text>
-              </View>
-            </View>
+            <GlassSurface radius={Radius.sm} contentStyle={styles.headerLocationInner}>
+              <Icon icon={MapPin} size={15} color={Palette.gold} />
+              <Text style={styles.locationText} numberOfLines={1}>
+                {location.cityName}, {location.country}
+              </Text>
+            </GlassSurface>
           </Pressable>
           <View style={styles.navIcons}>
             <Pressable
               onPress={() => router.push("/settings")}
               accessibilityLabel="Settings"
             >
-              <View style={styles.buttonOutline}>
-                <View style={styles.navButton}>
-                  <Icon icon={Settings} size={17} color={Palette.text} />
-                </View>
-              </View>
+              <GlassSurface radius={Radius.sm} contentStyle={styles.navButton}>
+                <Icon icon={Settings} size={17} color={Palette.gold} />
+              </GlassSurface>
             </Pressable>
             <Pressable
               onPress={() => router.push("/consistency")}
               accessibilityLabel="Prayer consistency"
             >
-              <View style={styles.buttonOutline}>
-                <View style={styles.navButton}>
-                  <Icon icon={Flame} size={18} color={Palette.text} />
-                </View>
-              </View>
+              <GlassSurface radius={Radius.sm} contentStyle={styles.navButton}>
+                <Icon icon={Flame} size={18} color={Palette.gold} />
+              </GlassSurface>
             </Pressable>
           </View>
         </View>
@@ -243,10 +247,33 @@ const HomeScreenContent = () => {
         <View style={styles.main}>
           <View style={styles.heroStack}>
             <View style={styles.infoSection}>
-              <Text style={styles.prayerLabel}>Next Fajr</Text>
-              <Text style={styles.prayerTime}>
-                {nextFajr ? formatPrayerTime(nextFajr.fajrTime) : "—"}
-              </Text>
+              <View style={styles.fajrBlock}>
+                <ElMessiriText size={14} weight="semiBold" style={styles.prayerLabel}>
+                  Next Fajr
+                </ElMessiriText>
+                <View style={styles.prayerTimeWrap}>
+                  {prayerTimeParts ? (
+                    <View style={styles.prayerTimeAnchor}>
+                      <GoldGradientText size={96} weight="bold" reversed>
+                        {prayerTimeParts.time}
+                      </GoldGradientText>
+                      <View style={styles.prayerTimePeriodAnchor} pointerEvents="none">
+                        <ElMessiriText
+                          size={30}
+                          weight="bold"
+                          style={styles.prayerTimePeriod}
+                        >
+                          {prayerTimeParts.period}
+                        </ElMessiriText>
+                      </View>
+                    </View>
+                  ) : (
+                    <ElMessiriText size={96} weight="bold" style={styles.prayerTime}>
+                      —
+                    </ElMessiriText>
+                  )}
+                </View>
+              </View>
               <StreakButton
                 streak={streak}
                 onPress={() => router.push("/consistency")}
@@ -294,6 +321,8 @@ const HomeScreenContent = () => {
       <CityPickerModal
         visible={pickerOpen}
         title="Change Location"
+        closeLabel="Done"
+        presentationStyle="pageSheet"
         onClose={() => setPickerOpen(false)}
         onSelect={handleCityPick}
       />
@@ -334,11 +363,6 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     gap: 12,
   },
-  buttonOutline: {
-    borderRadius: Radius.sm + 1,
-    padding: 1,
-    backgroundColor: Palette.glassOutline,
-  },
   headerLocation: {
     alignSelf: "flex-start",
     flexShrink: 1,
@@ -350,15 +374,11 @@ const styles = StyleSheet.create({
     gap: 6,
     height: 40,
     paddingHorizontal: 12,
-    borderRadius: Radius.sm,
-    backgroundColor: Palette.bgElevated,
   },
   navIcons: { flexDirection: "row", gap: 10 },
   navButton: {
     width: 40,
     height: 40,
-    borderRadius: Radius.sm,
-    backgroundColor: Palette.bgElevated,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -373,28 +393,45 @@ const styles = StyleSheet.create({
 
   heroStack: {
     gap: 20,
-    paddingTop: 48,
+    paddingTop: 60,
   },
 
   infoSection: {
     alignItems: "center",
     gap: 6,
-    marginBottom: 24,
+    marginBottom: 36,
+  },
+  fajrBlock: {
+    alignItems: "center",
+    gap: 0,
   },
   prayerLabel: {
-    color: Palette.textMuted,
-    fontSize: 10,
-    fontWeight: "600",
+    color: Palette.textSecondary,
     letterSpacing: 1.5,
     textAlign: "center",
   },
   prayerTime: {
     color: Palette.gold,
-    fontSize: 56,
-    fontWeight: "700",
-    letterSpacing: -0.5,
-    lineHeight: 60,
+    letterSpacing: 0.5,
     textAlign: "center",
+  },
+  prayerTimeWrap: {
+    alignSelf: "stretch",
+    alignItems: "center",
+    marginTop: -4,
+  },
+  prayerTimeAnchor: {
+    position: "relative",
+  },
+  prayerTimePeriodAnchor: {
+    position: "absolute",
+    left: "100%",
+    bottom: 0,
+    marginLeft: 4,
+  },
+  prayerTimePeriod: {
+    color: Palette.gold,
+    letterSpacing: 0.5,
   },
   locationText: {
     color: Palette.textSecondary,
