@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View, Text} from 'react-native';
+
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,7 +20,7 @@ const ConsistencyScreen = () => {
         <Pressable onPress={() => router.back()} accessibilityLabel="Back">
           <View style={s.buttonOutline}>
             <View style={s.backBtn}>
-              <Icon icon={Back} size={20} weight="regular" color={Palette.text} />
+              <Icon icon={Back} size={24} weight="regular" color={Palette.text} />
             </View>
           </View>
         </Pressable>
