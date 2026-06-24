@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Flame, Icon } from '@/components/Icon';
-import { Palette } from '@/constants/theme';
+import { Flame, Icon } from "@/components/Icon";
+import { Palette } from "@/constants/theme";
 
 type Props = {
   streak: number;
@@ -11,7 +11,7 @@ type Props = {
 const FLAME_SIZE = 14;
 
 export function StreakButton({ streak, onPress }: Props) {
-  const unit = streak === 1 ? 'day' : 'days';
+  const unit = streak === 1 ? "day" : "days";
   const active = streak > 0;
 
   return (
@@ -40,24 +40,24 @@ export function StreakButton({ streak, onPress }: Props) {
 
 const s = StyleSheet.create({
   root: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   rootPressed: {
     opacity: 0.72,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
   line: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   count: {
     color: Palette.gold,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   countMuted: {
     color: Palette.textMuted,
