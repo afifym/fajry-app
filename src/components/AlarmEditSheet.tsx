@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -9,19 +9,17 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, X } from '@/components/Icon';
 import { Palette, Radius } from '@/constants/theme';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  title: string;
   children: ReactNode;
 };
 
 const SLIDE = { duration: 220, easing: Easing.out(Easing.cubic) };
 
-export function AlarmEditSheet({ visible, onClose, title, children }: Props) {
+export function AlarmEditSheet({ visible, onClose, children }: Props) {
   const insets = useSafeAreaInsets();
   const [shown, setShown] = useState(visible);
   const backdrop = useSharedValue(0);
@@ -69,12 +67,6 @@ export function AlarmEditSheet({ visible, onClose, title, children }: Props) {
           style={[s.sheet, { paddingBottom: Math.max(insets.bottom, 16) }, sheetStyle]}
         >
           <View style={s.handle} />
-          <View style={s.header}>
-            <Text style={s.title}>{title}</Text>
-            <Pressable onPress={onClose} style={s.closeBtn} accessibilityLabel="Close">
-              <Icon icon={X} size={20} />
-            </Pressable>
-          </View>
           {children}
         </Animated.View>
       </View>
@@ -102,14 +94,6 @@ const s = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: Palette.border,
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: 4,
-  },
-  title: { color: Palette.text, fontSize: 17, fontWeight: '600' },
-  closeBtn: { padding: 6 },
 });

@@ -1,5 +1,5 @@
-import { DateTimePicker } from '@expo/ui/community/datetime-picker';
-import { Platform, StyleSheet, View } from 'react-native';
+import { DateTimePicker } from "@expo/ui/community/datetime-picker";
+import { Platform, StyleSheet, View } from "react-native";
 
 type Props = {
   value: Date;
@@ -28,7 +28,7 @@ export function TimeWheelPicker({
         minimumDate={minimumDate}
         maximumDate={maximumDate}
         disabled={disabled}
-        presentation={Platform.OS === 'android' ? 'inline' : undefined}
+        presentation={Platform.OS === "android" ? "inline" : undefined}
         onValueChange={(_, date) => onValueChange(date)}
         style={s.picker}
       />
@@ -37,6 +37,6 @@ export function TimeWheelPicker({
 }
 
 const s = StyleSheet.create({
-  wrap: { width: '100%', alignItems: 'center' },
-  picker: { width: '100%', height: 216 },
+  wrap: { width: "100%", alignItems: "center" },
+  picker: { width: "100%", height: 216 },
 });
