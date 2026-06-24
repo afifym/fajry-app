@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { HomeBg } from '@/components/HomeBg';
 import { Icon, X } from '@/components/Icon';
-
+import { Palette, Radius } from '@/constants/theme';
 import type { City } from '@/types';
 import { searchCities } from '@/utils/location';
 
@@ -43,7 +44,7 @@ export const CitySearchList = ({
         <TextInput
           style={s.searchInput}
           placeholder={searchPlaceholder}
-          placeholderTextColor="#4A5568"
+          placeholderTextColor={Palette.textMuted}
           value={query}
           onChangeText={onQueryChange}
           autoFocus={autoFocus}
@@ -69,7 +70,9 @@ export const CitySearchList = ({
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           <Text style={s.searchHint}>
-            {query.length >= 2 ? 'No cities found.' : 'Type at least 2 characters to search.'}
+            {query.length >= 2
+              ? 'No cities found.'
+              : 'Type at least 2 characters to search.'}
           </Text>
         }
       />
@@ -119,7 +122,7 @@ export const CityPickerModal = ({
           {closeLabel === 'Done' ? (
             <Text style={s.closeTextDone}>{closeLabel}</Text>
           ) : (
-            <Icon icon={X} size={20} />
+            <Icon icon={X} size={20} color={Palette.text} />
           )}
         </Pressable>
       </View>
@@ -142,6 +145,7 @@ export const CityPickerModal = ({
     >
       {presentationStyle === 'pageSheet' ? (
         <SafeAreaView style={s.root}>
+          <HomeBg />
           <KeyboardAvoidingView
             style={s.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -154,6 +158,7 @@ export const CityPickerModal = ({
           style={[s.root, { paddingTop: insets.top }]}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+          <HomeBg />
           <View style={s.flex}>{content}</View>
         </KeyboardAvoidingView>
       )}
@@ -162,7 +167,7 @@ export const CityPickerModal = ({
 };
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#060C1A' },
+  root: { flex: 1, backgroundColor: Palette.bg },
   flex: { flex: 1 },
 
   header: {
@@ -173,21 +178,21 @@ const s = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#1E2D4A',
+    borderBottomColor: Palette.borderSubtle,
   },
-  title: { color: '#ffffff', fontSize: 20, fontWeight: '600' },
+  title: { color: Palette.text, fontSize: 20, fontWeight: '600' },
   closeBtn: { padding: 6 },
-  closeTextDone: { color: '#C9A84C', fontSize: 16 },
+  closeTextDone: { color: Palette.gold, fontSize: 16 },
 
   searchWrap: { paddingHorizontal: 24, paddingVertical: 16 },
   searchInput: {
-    backgroundColor: '#0D1526',
-    borderRadius: 12,
+    backgroundColor: Palette.bgCard,
+    borderRadius: Radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#1E2D4A',
+    borderColor: Palette.glassOutline,
     paddingHorizontal: 16,
     paddingVertical: 13,
-    color: '#ffffff',
+    color: Palette.text,
     fontSize: 16,
   },
 
@@ -198,12 +203,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#0D1526',
+    borderBottomColor: Palette.bgInset,
   },
-  cityName: { color: '#ffffff', fontSize: 16 },
-  cityCountry: { color: '#4A5568', fontSize: 13 },
+  cityName: { color: Palette.text, fontSize: 16 },
+  cityCountry: { color: Palette.textMuted, fontSize: 13 },
   searchHint: {
-    color: '#4A5568',
+    color: Palette.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 40,
