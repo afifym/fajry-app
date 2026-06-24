@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import {Dimensions, StyleSheet, View, Text} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+
 
 import { Icon, ChevronRight } from '@/components/Icon';
 import { Palette } from '@/constants/theme';

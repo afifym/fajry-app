@@ -1,16 +1,14 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
+import {ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  View, Text} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 import { CitySearchList } from "@/components/CityPickerModal";
 import { HomeBg } from "@/components/HomeBg";

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import {Pressable, StyleSheet, View, type LayoutChangeEvent, Text} from 'react-native';
+
 import Animated, {
   Easing,
   interpolateColor,

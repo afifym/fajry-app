@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {Pressable, StyleSheet, View, Text} from "react-native";
+
 
 import { Flame, Icon } from "@/components/Icon";
 import { Palette } from "@/constants/theme";

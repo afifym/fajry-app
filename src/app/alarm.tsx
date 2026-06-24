@@ -1,6 +1,7 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import {Alert, Pressable, StyleSheet, View, Text} from "react-native";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
   Easing,

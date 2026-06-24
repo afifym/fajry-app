@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
+
 import { CountdownTimer } from './CountdownTimer';
 import type { AlarmDay } from '@/types';
 
