@@ -1,10 +1,21 @@
 import '../global.css';
 
+import {
+  ElMessiri_400Regular,
+  ElMessiri_500Medium,
+  ElMessiri_600SemiBold,
+  ElMessiri_700Bold,
+  useFonts,
+} from '@expo-google-fonts/el-messiri';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import * as Sentry from '@sentry/react-native';
 
 import { Palette } from '@/constants/theme';
+
+SplashScreen.preventAutoHideAsync();
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -14,6 +25,23 @@ Sentry.init({
 });
 
 const RootLayout = () => {
+  const [fontsLoaded, fontError] = useFonts({
+    ElMessiri_400Regular,
+    ElMessiri_500Medium,
+    ElMessiri_600SemiBold,
+    ElMessiri_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <ThemeProvider value={DarkTheme}>
       <StatusBar style="light" />

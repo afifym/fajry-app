@@ -45,6 +45,14 @@ export const Fonts = Platform.select({
   },
 });
 
+/** El Messiri — loaded in root layout (@expo-google-fonts/el-messiri). */
+export const FontFamily = {
+  regular: 'ElMessiri_400Regular',
+  medium: 'ElMessiri_500Medium',
+  semiBold: 'ElMessiri_600SemiBold',
+  bold: 'ElMessiri_700Bold',
+} as const;
+
 export const Spacing = {
   half: 2,
   one: 4,
@@ -74,6 +82,7 @@ export const Palette = {
   textMuted: '#5C726C',
   pattern: '#1A3530',
   glassOutline: 'rgba(255, 255, 255, 0.16)',
+  glassFill: 'rgba(26, 46, 40, 0.45)',
 } as const;
 
 export const Radius = {
