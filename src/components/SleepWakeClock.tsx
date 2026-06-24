@@ -1,11 +1,15 @@
-import type { AppIcon } from "@/components/Icon";
 import { useCallback, useRef, useState, type RefObject } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
-import Svg, { Circle, Path } from "react-native-svg";
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
-import { Adhan, AlarmClock, Bed, Icon, Sunrise } from "@/components/Icon";
+import type { AppIcon } from "@/components/Icon";
+import { Adhan, Icon, Sunrise } from "@/components/Icon";
+import { featureFlags } from "@/constants/featureFlags";
+import { ARC_GRADIENT_HIGHLIGHT } from "@/constants/goldGradient";
+import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette } from "@/constants/theme";
 import { sleepDurationBetween } from "@/utils/alarmPickerTime";
 import {
@@ -25,7 +29,10 @@ const TRACK_R = 112;
 const FACE_R = 86;
 const MARKER_R = 62;
 const STROKE = 18;
-const HANDLE = 38;
+const UNSELECTED_STROKE = 12;
+const HIT_SIZE = 44;
+const TRACK_UNSELECTED_OPACITY = 0.32;
+const SELECTED_TRACK_OPACITY = 0.95;
 
 type Props = {
   bedTime: Date | null;
@@ -71,15 +78,102 @@ function sleepArcAngles(bed: Date, wake: Date): { start: number; end: number } {
   return { start, end };
 }
 
+const SELECTED_ARC_GRADIENT_ID = "sleepArcGradient";
+const FAJR_TICK_GRADIENT_ID = "fajrTickGradient";
+const FAJR_BADGE_GRADIENT_ID = "fajrBadgeGradient";
+const FAJR_TICK_GRADIENT_SPAN = STROKE / 2 + 16;
+
+function GoldArcLinearGradient({
+  id,
+  x1,
+  y1,
+  x2,
+  y2,
+  reversed,
+}: {
+  id: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  reversed?: boolean;
+}) {
+  return (
+    <LinearGradient
+      id={id}
+      gradientUnits="userSpaceOnUse"
+      x1={reversed ? x2 : x1}
+      y1={reversed ? y2 : y1}
+      x2={reversed ? x1 : x2}
+      y2={reversed ? y1 : y2}
+    >
+      <Stop offset="0%" stopColor={Palette.goldMuted} />
+      <Stop offset="50%" stopColor={Palette.gold} />
+      <Stop offset="100%" stopColor={ARC_GRADIENT_HIGHLIGHT} />
+    </LinearGradient>
+  );
+}
+
+function SelectedArcGradient({
+  startAngle,
+  endAngle,
+}: {
+  startAngle: number;
+  endAngle: number;
+}) {
+  const start = polarToCartesian(CENTER, CENTER, TRACK_R, startAngle);
+  const end = polarToCartesian(CENTER, CENTER, TRACK_R, endAngle);
+
+  return (
+    <Defs>
+      <GoldArcLinearGradient
+        id={SELECTED_ARC_GRADIENT_ID}
+        x1={start.x}
+        y1={start.y}
+        x2={end.x}
+        y2={end.y}
+      />
+    </Defs>
+  );
+}
+
+function ArcEndpoint({
+  angle,
+  fill,
+  muted,
+}: {
+  angle: number;
+  fill: string;
+  muted?: boolean;
+}) {
+  const pt = polarToCartesian(CENTER, CENTER, TRACK_R, angle);
+
+  return (
+    <Circle
+      cx={pt.x}
+      cy={pt.y}
+      r={STROKE / 2}
+      fill={muted ? Palette.borderSubtle : fill}
+      opacity={muted ? 0.55 : SELECTED_TRACK_OPACITY}
+    />
+  );
+}
+
+function AnchorDot({ angle }: { angle: number }) {
+  const pt = polarToCartesian(CENTER, CENTER, TRACK_R, angle);
+
+  return (
+    <Circle cx={pt.x} cy={pt.y} r={STROKE / 4} fill={Palette.bg} />
+  );
+}
+
 function formatDurationParts(ms: number): { hours: number; minutes: number } {
   const total = Math.max(0, Math.round(ms / 60_000));
   return { hours: Math.floor(total / 60), minutes: total % 60 };
 }
 
-function DraggableHandle({
+function DraggableArcHandle({
   angle,
-  icon,
-  muted,
   disabled,
   dialPageOffset,
   onDragStart,
@@ -88,8 +182,6 @@ function DraggableHandle({
   accessibilityLabel,
 }: {
   angle: number;
-  icon: AppIcon;
-  muted?: boolean;
   disabled?: boolean;
   dialPageOffset: RefObject<{ x: number; y: number }>;
   onDragStart?: () => void;
@@ -138,36 +230,65 @@ function DraggableHandle({
     <GestureDetector gesture={pan}>
       <View
         style={[
-          s.handle,
+          s.arcHandleHit,
           {
-            left: pt.x - HANDLE / 2,
-            top: pt.y - HANDLE / 2,
+            left: pt.x - HIT_SIZE / 2,
+            top: pt.y - HIT_SIZE / 2,
           },
-          muted && s.handleMuted,
-          disabled && s.handleDisabled,
+          disabled && s.arcHandleDisabled,
         ]}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="adjustable"
-      >
-        <Icon
-          icon={icon}
-          size={20}
-          color={muted ? Palette.textMuted : Palette.gold}
-        />
-      </View>
+      />
     </GestureDetector>
   );
 }
 
-function PrayerTick({ angle }: { angle: number }) {
+function FajrTickGradient({ angle }: { angle: number }) {
+  const inner = polarToCartesian(
+    CENTER,
+    CENTER,
+    TRACK_R - FAJR_TICK_GRADIENT_SPAN,
+    angle,
+  );
+  const outer = polarToCartesian(
+    CENTER,
+    CENTER,
+    TRACK_R + FAJR_TICK_GRADIENT_SPAN,
+    angle,
+  );
+
+  return (
+    <Defs>
+      <GoldArcLinearGradient
+        id={FAJR_TICK_GRADIENT_ID}
+        x1={inner.x}
+        y1={inner.y}
+        x2={outer.x}
+        y2={outer.y}
+        reversed
+      />
+    </Defs>
+  );
+}
+
+function PrayerTick({
+  angle,
+  useArcGradient,
+}: {
+  angle: number;
+  useArcGradient?: boolean;
+}) {
   const tickInner = polarToCartesian(CENTER, CENTER, TRACK_R - STROKE / 2 - 4, angle);
   const tickOuter = polarToCartesian(CENTER, CENTER, TRACK_R + STROKE / 2 + 4, angle);
 
   return (
     <Path
       d={`M ${tickInner.x.toFixed(1)} ${tickInner.y.toFixed(1)} L ${tickOuter.x.toFixed(1)} ${tickOuter.y.toFixed(1)}`}
-      stroke={Palette.gold}
-      strokeWidth={3}
+      stroke={
+        useArcGradient ? `url(#${FAJR_TICK_GRADIENT_ID})` : Palette.gold
+      }
+      strokeWidth={useArcGradient ? 4 : 3}
       strokeLinecap="round"
     />
   );
@@ -177,10 +298,12 @@ function PrayerTimeHighlight({
   angle,
   icon,
   name,
+  useArcGradient,
 }: {
   angle: number;
   icon: AppIcon;
   name: string;
+  useArcGradient?: boolean;
 }) {
   const pt = polarToCartesian(CENTER, CENTER, MARKER_R, angle);
 
@@ -190,8 +313,32 @@ function PrayerTimeHighlight({
       accessibilityLabel={name}
       pointerEvents="none"
     >
-      <View style={s.prayerBadge}>
-        <Icon icon={icon} size={15} color={Palette.gold} />
+      <View style={[s.prayerBadge, useArcGradient && s.prayerBadgeGradient]}>
+        {useArcGradient ? (
+          <Svg width={28} height={28} style={s.prayerBadgeRing}>
+            <Defs>
+              <GoldArcLinearGradient
+                id={FAJR_BADGE_GRADIENT_ID}
+                x1={0}
+                y1={0}
+                x2={28}
+                y2={28}
+                reversed
+              />
+            </Defs>
+            <Circle
+              cx={14}
+              cy={14}
+              r={12.5}
+              fill={`url(#${FAJR_BADGE_GRADIENT_ID})`}
+            />
+          </Svg>
+        ) : null}
+        <Icon
+          icon={icon}
+          size={15}
+          color={useArcGradient ? Palette.bgInset : Palette.gold}
+        />
       </View>
     </View>
   );
@@ -230,11 +377,12 @@ export const SleepWakeClock = ({
       : wakeTime;
 
   const hasArc = previewBed && previewWake;
-  const arcPath = hasArc
-    ? (() => {
-        const { start, end } = sleepArcAngles(previewBed, previewWake);
-        return arcD(CENTER, CENTER, TRACK_R, start, end);
-      })()
+  const sleepArc = hasArc ? sleepArcAngles(previewBed, previewWake) : null;
+  const selectedArcPath = sleepArc
+    ? arcD(CENTER, CENTER, TRACK_R, sleepArc.start, sleepArc.end)
+    : "";
+  const unselectedArcPath = sleepArc
+    ? arcD(CENTER, CENTER, TRACK_R, sleepArc.end, sleepArc.start + 360)
     : "";
 
   const previewDurationMs = hasArc
@@ -321,24 +469,15 @@ export const SleepWakeClock = ({
   return (
     <View ref={dialRef} style={s.dial} onLayout={measureDial}>
       <Svg width={SIZE} height={SIZE}>
-        <Circle
-          cx={CENTER}
-          cy={CENTER}
-          r={FACE_R}
-          fill="none"
-          stroke={Palette.borderSubtle}
-          strokeWidth={1}
-          strokeDasharray="3 5"
-        />
-
-        {Array.from({ length: 12 }, (_, i) => {
-          const angle = i * 30;
-          const isMajor = i % 3 === 0;
+        {Array.from({ length: 60 }, (_, i) => {
+          const angle = i * 6;
+          const isHour = i % 5 === 0;
+          const isQuarter = i % 15 === 0;
           const inner = polarToCartesian(CENTER, CENTER, FACE_R - 5, angle);
           const outer = polarToCartesian(
             CENTER,
             CENTER,
-            FACE_R - (isMajor ? 15 : 11),
+            FACE_R - (isQuarter ? 15 : isHour ? 12 : 8),
             angle,
           );
           return (
@@ -346,49 +485,93 @@ export const SleepWakeClock = ({
               key={i}
               d={`M ${inner.x} ${inner.y} L ${outer.x} ${outer.y}`}
               stroke={Palette.textSecondary}
-              strokeWidth={isMajor ? 1.5 : 1.15}
+              strokeWidth={isQuarter ? 1.5 : isHour ? 1.15 : 0.85}
               strokeLinecap="round"
-              opacity={isMajor ? 0.72 : 0.5}
+              opacity={isQuarter ? 0.72 : isHour ? 0.58 : 0.38}
             />
           );
         })}
 
-        <Circle
-          cx={CENTER}
-          cy={CENTER}
-          r={TRACK_R}
-          fill="none"
-          stroke={Palette.borderSubtle}
-          strokeWidth={STROKE}
-        />
-
-        {arcPath ? (
+        {unselectedArcPath ? (
           <Path
-            d={arcPath}
+            d={unselectedArcPath}
             fill="none"
-            stroke={Palette.gold}
-            strokeWidth={STROKE}
+            stroke={Palette.borderSubtle}
+            strokeWidth={UNSELECTED_STROKE}
             strokeLinecap="round"
-            opacity={0.95}
+            opacity={TRACK_UNSELECTED_OPACITY}
           />
+        ) : (
+          <Circle
+            cx={CENTER}
+            cy={CENTER}
+            r={TRACK_R}
+            fill="none"
+            stroke={Palette.borderSubtle}
+            strokeWidth={UNSELECTED_STROKE}
+            opacity={TRACK_UNSELECTED_OPACITY}
+          />
+        )}
+
+        {selectedArcPath && sleepArc ? (
+          <>
+            <SelectedArcGradient
+              startAngle={sleepArc.start}
+              endAngle={sleepArc.end}
+            />
+            <Path
+              d={selectedArcPath}
+              fill="none"
+              stroke={`url(#${SELECTED_ARC_GRADIENT_ID})`}
+              strokeWidth={STROKE}
+              strokeLinecap="butt"
+              opacity={SELECTED_TRACK_OPACITY}
+            />
+            {bedAngle != null ? (
+              <ArcEndpoint
+                angle={bedAngle}
+                fill={Palette.goldMuted}
+                muted={!bedEnabled}
+              />
+            ) : null}
+            {wakeAngle != null ? (
+              <ArcEndpoint
+                angle={wakeAngle}
+                fill={ARC_GRADIENT_HIGHLIGHT}
+                muted={!wakeEnabled}
+              />
+            ) : null}
+            {bedAngle != null ? <AnchorDot angle={bedAngle} /> : null}
+            {wakeAngle != null ? <AnchorDot angle={wakeAngle} /> : null}
+          </>
         ) : null}
 
-        {fajrAngle != null ? <PrayerTick angle={fajrAngle} /> : null}
-        {sunriseAngle != null ? <PrayerTick angle={sunriseAngle} /> : null}
+        {featureFlags.clockPrayerTimeHighlights && fajrAngle != null ? (
+          <FajrTickGradient angle={fajrAngle} />
+        ) : null}
+        {featureFlags.clockPrayerTimeHighlights && fajrAngle != null ? (
+          <PrayerTick angle={fajrAngle} useArcGradient />
+        ) : null}
+        {featureFlags.clockPrayerTimeHighlights && sunriseAngle != null ? (
+          <PrayerTick angle={sunriseAngle} />
+        ) : null}
       </Svg>
 
-      {fajrAngle != null && fajrTime ? (
-        <PrayerTimeHighlight angle={fajrAngle} icon={Adhan} name="Fajr" />
+      {featureFlags.clockPrayerTimeHighlights && fajrAngle != null && fajrTime ? (
+        <PrayerTimeHighlight
+          angle={fajrAngle}
+          icon={Adhan}
+          name="Fajr"
+          useArcGradient
+        />
       ) : null}
-      {sunriseAngle != null && sunriseTime ? (
+      {featureFlags.clockPrayerTimeHighlights && sunriseAngle != null && sunriseTime ? (
         <PrayerTimeHighlight angle={sunriseAngle} icon={Sunrise} name="Sunrise" />
       ) : null}
 
       {bedAngle != null ? (
-        <DraggableHandle
+        <DraggableArcHandle
           angle={bedAngle}
-          icon={Bed}
-          muted={!bedEnabled}
           disabled={bedDragDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
@@ -399,10 +582,8 @@ export const SleepWakeClock = ({
       ) : null}
 
       {wakeAngle != null ? (
-        <DraggableHandle
+        <DraggableArcHandle
           angle={wakeAngle}
-          icon={AlarmClock}
-          muted={!wakeEnabled}
           disabled={wakeDragDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
@@ -415,11 +596,22 @@ export const SleepWakeClock = ({
       <View style={s.center} pointerEvents="none">
         {duration ? (
           <>
-            <Text style={s.durationHours}>{duration.hours}hr</Text>
-            <Text style={s.durationMinutes}>{duration.minutes} min</Text>
+            <ElMessiriText size={34} weight="bold" style={s.durationHours}>
+              {duration.hours}hr
+            </ElMessiriText>
+            <ElMessiriText
+              size={16}
+              weight="semiBold"
+              style={s.durationMinutes}
+              containerStyle={s.durationMinutesWrap}
+            >
+              {duration.minutes}min
+            </ElMessiriText>
           </>
         ) : (
-          <Text style={s.durationEmpty}>—</Text>
+          <ElMessiriText size={28} weight="regular" style={s.durationEmpty}>
+            —
+          </ElMessiriText>
         )}
       </View>
     </View>
@@ -433,19 +625,12 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  handle: {
+  arcHandleHit: {
     position: "absolute",
-    width: HANDLE,
-    height: HANDLE,
-    borderRadius: HANDLE / 2,
-    backgroundColor: Palette.bgCard,
-    borderWidth: 1.5,
-    borderColor: Palette.goldMuted,
-    alignItems: "center",
-    justifyContent: "center",
+    width: HIT_SIZE,
+    height: HIT_SIZE,
   },
-  handleMuted: { opacity: 0.45 },
-  handleDisabled: { opacity: 0.35 },
+  arcHandleDisabled: { opacity: 0.35 },
   center: {
     position: "absolute",
     alignItems: "center",
@@ -453,21 +638,19 @@ const s = StyleSheet.create({
   },
   durationHours: {
     color: Palette.gold,
-    fontSize: 34,
-    fontWeight: "700",
     letterSpacing: -0.5,
+    textAlign: 'center',
+  },
+  durationMinutesWrap: {
+    marginTop: -2,
   },
   durationMinutes: {
-    color: Palette.textSecondary,
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 1.5,
-    marginTop: 2,
+    color: Palette.text,
+    textAlign: 'center',
   },
   durationEmpty: {
     color: Palette.textMuted,
-    fontSize: 28,
-    fontWeight: "300",
+    textAlign: 'center',
   },
   prayerHighlight: {
     position: 'absolute',
@@ -483,5 +666,14 @@ const s = StyleSheet.create({
     borderColor: Palette.gold,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  prayerBadgeGradient: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  prayerBadgeRing: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 });
