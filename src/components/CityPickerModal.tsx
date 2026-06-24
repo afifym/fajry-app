@@ -1,18 +1,17 @@
 import { useMemo, useState } from 'react';
-import {
-  FlatList,
+import {FlatList,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
-  View,
-} from 'react-native';
+  View, Text} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+
 import { HomeBg } from '@/components/HomeBg';
+import { GlassModalBackdrop } from '@/components/GlassModalBackdrop';
 import { Icon, X } from '@/components/Icon';
 import { Palette, Radius } from '@/constants/theme';
 import type { City } from '@/types';
@@ -122,7 +121,7 @@ export const CityPickerModal = ({
           {closeLabel === 'Done' ? (
             <Text style={s.closeTextDone}>{closeLabel}</Text>
           ) : (
-            <Icon icon={X} size={20} color={Palette.text} />
+            <Icon icon={X} size={24} color={Palette.text} />
           )}
         </Pressable>
       </View>
@@ -136,14 +135,28 @@ export const CityPickerModal = ({
     </>
   );
 
+  const blurOverlay = presentationStyle === 'fullScreen';
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle={presentationStyle}
+      transparent={blurOverlay}
+      presentationStyle={blurOverlay ? 'overFullScreen' : presentationStyle}
+      statusBarTranslucent={blurOverlay}
       onRequestClose={handleClose}
     >
-      {presentationStyle === 'pageSheet' ? (
+      {blurOverlay ? (
+        <View style={s.blurRoot}>
+          <GlassModalBackdrop />
+          <KeyboardAvoidingView
+            style={[s.flex, { paddingTop: insets.top }]}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            {content}
+          </KeyboardAvoidingView>
+        </View>
+      ) : (
         <SafeAreaView style={s.root}>
           <HomeBg />
           <KeyboardAvoidingView
@@ -153,14 +166,6 @@ export const CityPickerModal = ({
             {content}
           </KeyboardAvoidingView>
         </SafeAreaView>
-      ) : (
-        <KeyboardAvoidingView
-          style={[s.root, { paddingTop: insets.top }]}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <HomeBg />
-          <View style={s.flex}>{content}</View>
-        </KeyboardAvoidingView>
       )}
     </Modal>
   );
@@ -168,6 +173,7 @@ export const CityPickerModal = ({
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: Palette.bg },
+  blurRoot: { flex: 1 },
   flex: { flex: 1 },
 
   header: {

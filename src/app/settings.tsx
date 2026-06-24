@@ -1,16 +1,12 @@
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  Modal,
+import {Modal,
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+  View, Text} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 import { CityPickerModal } from "@/components/CityPickerModal";
 import { HomeBg } from "@/components/HomeBg";
@@ -86,40 +82,6 @@ const SettingsScreen = () => {
     await applyAndRebuild(useSettingsStore.getState());
   }, []);
 
-  const handleSnoozeChange = useCallback(async (text: string) => {
-    const v = parseInt(text, 10);
-    if (!isNaN(v) && v >= 1 && v <= 30) {
-      useSettingsStore.getState().setSnoozeDuration(v);
-      await applyAndRebuild(useSettingsStore.getState());
-    }
-  }, []);
-
-  const handleOffsetChange = useCallback(async (text: string) => {
-    const v = parseInt(text, 10);
-    if (!isNaN(v) && v >= 0 && v <= 60) {
-      useSettingsStore.getState().setPreAlarmOffset(v);
-      await applyAndRebuild(useSettingsStore.getState());
-    }
-  }, []);
-
-  const handleAlarmToggle = useCallback(async (val: boolean) => {
-    useSettingsStore.getState().setAlarmEnabled(val);
-    await applyAndRebuild(useSettingsStore.getState());
-  }, []);
-
-  const handleSleepReminderToggle = useCallback(async (val: boolean) => {
-    useSettingsStore.getState().setSleepReminderEnabled(val);
-    await applyAndRebuild(useSettingsStore.getState());
-  }, []);
-
-  const handleSleepHoursChange = useCallback(async (text: string) => {
-    const v = parseFloat(text);
-    if (!isNaN(v) && v >= 0.5 && v <= 12) {
-      useSettingsStore.getState().setDesiredSleepHours(v);
-      await applyAndRebuild(useSettingsStore.getState());
-    }
-  }, []);
-
   const currentMethodLabel =
     CALCULATION_METHODS.find((m) => m.key === settings.calculationMethod)
       ?.label ?? settings.calculationMethod;
@@ -134,7 +96,7 @@ const SettingsScreen = () => {
         <Pressable onPress={() => router.back()} accessibilityLabel="Back">
           <View style={st.buttonOutline}>
             <View style={st.backBtn}>
-              <Icon icon={Back} size={20} weight="regular" color={Palette.text} />
+              <Icon icon={Back} size={24} weight="regular" color={Palette.text} />
             </View>
           </View>
         </Pressable>
@@ -142,104 +104,42 @@ const SettingsScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={st.content}>
-        <SettingSection label="Prayer">
-          <SettingRow label="Calculation Method" isLast={false}>
-            <Pressable
-              onPress={() => setMethodModalOpen(true)}
-              style={st.picker}
-            >
-              <Text style={st.pickerValue} numberOfLines={1}>
-                {currentMethodLabel}
-              </Text>
-              <Icon icon={ChevronRight} size={20} color={Palette.textMuted} />
-            </Pressable>
-          </SettingRow>
-
-          <SettingRow label="Pre-alarm Offset (minutes)" isLast>
-            <TextInput
-              style={st.numInput}
-              keyboardType="number-pad"
-              defaultValue={String(settings.preAlarmOffsetMinutes)}
-              onEndEditing={(e) => handleOffsetChange(e.nativeEvent.text)}
-              selectTextOnFocus
-              accessibilityLabel="Pre-alarm offset in minutes"
-            />
-          </SettingRow>
-        </SettingSection>
-
-        <SettingSection label="Alarm">
-          <SettingRow label="Alarm Enabled" isLast={false}>
-            <Switch
-              value={settings.alarmEnabled}
-              onValueChange={handleAlarmToggle}
-              trackColor={{ true: Palette.gold, false: Palette.border }}
-              thumbColor={Palette.text}
-            />
-          </SettingRow>
-
-          <SettingRow label="Adhan Recitation" isLast={false}>
-            <Pressable
-              onPress={() => setRecitationModalOpen(true)}
-              style={st.picker}
-            >
-              <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
-              <Icon icon={ChevronRight} size={20} color={Palette.textMuted} />
-            </Pressable>
-          </SettingRow>
-
-          <SettingRow label="Snooze Duration (minutes)" isLast>
-            <TextInput
-              style={st.numInput}
-              keyboardType="number-pad"
-              defaultValue={String(settings.snoozeDurationMinutes)}
-              onEndEditing={(e) => handleSnoozeChange(e.nativeEvent.text)}
-              selectTextOnFocus
-              accessibilityLabel="Snooze duration in minutes"
-            />
-          </SettingRow>
-        </SettingSection>
-
-        <SettingSection label="Sleep Reminder">
-          <SettingRow
-            label="Sleep Reminder"
-            isLast={!settings.sleepReminderEnabled}
-          >
-            <Switch
-              value={settings.sleepReminderEnabled}
-              onValueChange={handleSleepReminderToggle}
-              trackColor={{ true: Palette.gold, false: Palette.border }}
-              thumbColor={Palette.text}
-            />
-          </SettingRow>
-
-          {settings.sleepReminderEnabled && (
-            <SettingRow label="Desired Sleep (hours)" isLast>
-              <TextInput
-                style={st.numInput}
-                keyboardType="decimal-pad"
-                defaultValue={String(settings.desiredSleepHours)}
-                onEndEditing={(e) => handleSleepHoursChange(e.nativeEvent.text)}
-                selectTextOnFocus
-                accessibilityLabel="Desired sleep hours"
-              />
+        <View style={st.outline}>
+          <View style={st.sectionCard}>
+            <SettingRow label="Calculation Method" isLast={false}>
+              <Pressable
+                onPress={() => setMethodModalOpen(true)}
+                style={st.picker}
+              >
+                <Text style={st.pickerValue} numberOfLines={1}>
+                  {currentMethodLabel}
+                </Text>
+                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+              </Pressable>
             </SettingRow>
-          )}
-        </SettingSection>
 
-        <SettingSection label="Location">
-          <SettingRow label="City" isLast>
-            <Pressable onPress={() => setCityModalOpen(true)} style={st.picker}>
-              <Text style={st.pickerValue} numberOfLines={1}>
-                {settings.location
-                  ? `${settings.location.cityName}, ${settings.location.country}`
-                  : "Not set"}
-              </Text>
-              <Icon icon={ChevronRight} size={20} color={Palette.textMuted} />
-            </Pressable>
-          </SettingRow>
-        </SettingSection>
+            <SettingRow label="Adhan Recitation" isLast={false}>
+              <Pressable
+                onPress={() => setRecitationModalOpen(true)}
+                style={st.picker}
+              >
+                <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
+                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+              </Pressable>
+            </SettingRow>
 
-        <SectionHeader label="Test" />
+            <SettingRow label="City" isLast>
+              <Pressable onPress={() => setCityModalOpen(true)} style={st.picker}>
+                <Text style={st.pickerValue} numberOfLines={1}>
+                  {settings.location
+                    ? `${settings.location.cityName}, ${settings.location.country}`
+                    : "Not set"}
+                </Text>
+                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+              </Pressable>
+            </SettingRow>
+          </View>
+        </View>
 
         <Pressable
           style={st.testAlarmBtn}
@@ -324,27 +224,6 @@ const SettingsScreen = () => {
 
 export default SettingsScreen;
 
-const SectionHeader = ({ label }: { label: string }) => {
-  return <Text style={st.sectionHeader}>{label.toUpperCase()}</Text>;
-};
-
-const SettingSection = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <View style={st.section}>
-      <SectionHeader label={label} />
-      <View style={st.outline}>
-        <View style={st.sectionCard}>{children}</View>
-      </View>
-    </View>
-  );
-};
-
 const SettingRow = ({
   label,
   children,
@@ -427,7 +306,6 @@ const st = StyleSheet.create({
 
   content: { paddingBottom: 48, paddingHorizontal: 24, gap: 20, paddingTop: 16 },
 
-  section: { gap: 8 },
   outline: {
     borderRadius: Radius.md + 1,
     padding: 1,
@@ -446,14 +324,6 @@ const st = StyleSheet.create({
     backgroundColor: Palette.bgCard,
   },
   testAlarmText: { color: Palette.gold, fontSize: 16, fontWeight: '500' },
-
-  sectionHeader: {
-    color: Palette.gold,
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
 
   row: {
     flexDirection: 'row',
@@ -475,19 +345,6 @@ const st = StyleSheet.create({
     maxWidth: '55%',
   },
   pickerValue: { color: Palette.textSecondary, fontSize: 15, textAlign: 'right' },
-
-  numInput: {
-    color: Palette.text,
-    fontSize: 15,
-    backgroundColor: Palette.bgInset,
-    borderRadius: Radius.sm - 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minWidth: 60,
-    textAlign: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Palette.glassOutline,
-  },
 
   modalRoot: { flex: 1, backgroundColor: Palette.bg },
   modalHeader: {
