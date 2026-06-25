@@ -1,8 +1,10 @@
 import {
   Platform,
+  StyleSheet,
   Text,
   View,
   type TextProps,
+  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 
@@ -13,8 +15,10 @@ export type ElMessiriWeight = keyof typeof FontFamily;
 type Props = TextProps & {
   size: number;
   weight?: ElMessiriWeight;
-  /** Layout height of the clipped box (defaults to ~size). */
+  /** Layout height of the clipped box (defaults from `lines` × line height). */
   height?: number;
+  /** Lines to reserve in the clipped box (default 1). */
+  lines?: number;
   containerStyle?: ViewStyle;
 };
 
@@ -26,14 +30,24 @@ export function ElMessiriText({
   size,
   weight = 'regular',
   height,
+  lines = 1,
   containerStyle,
   style,
   children,
   ...rest
 }: Props) {
-  const boxHeight = height ?? Math.round(size * 1.02);
-  const lineHeight = Math.round(size * 1.32);
-  const shiftUp = Math.round(size * (Platform.OS === 'ios' ? 0.09 : 0.07));
+  const flatStyle = StyleSheet.flatten(style) as TextStyle | undefined;
+  const lineHeight =
+    typeof flatStyle?.lineHeight === 'number'
+      ? flatStyle.lineHeight
+      : Math.round(size * 1.32);
+  const explicitHeight = height != null;
+  const shiftUp = explicitHeight
+    ? 0
+    : Math.round(size * (Platform.OS === 'ios' ? 0.09 : 0.07));
+  const descenderPad = Math.round(size * 0.2);
+  const boxHeight =
+    height ?? Math.round(lineHeight * lines + descenderPad);
 
   return (
     <View style={[{ height: boxHeight, overflow: 'hidden' }, containerStyle]}>
