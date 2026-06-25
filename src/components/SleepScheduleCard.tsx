@@ -20,6 +20,29 @@ function formatTime(date: Date): string {
   return `${h}:${m} ${date.getHours() >= 12 ? "PM" : "AM"}`;
 }
 
+const TIME_SIZE = 24;
+const TIME_HEIGHT = Math.round(TIME_SIZE * 1.32);
+
+function TimeText({
+  children,
+  muted,
+}: {
+  children: string;
+  muted: boolean;
+}) {
+  return (
+    <ElMessiriText
+      size={TIME_SIZE}
+      weight="bold"
+      height={TIME_HEIGHT}
+      style={[s.time, muted && s.timeMuted]}
+      numberOfLines={1}
+    >
+      {children}
+    </ElMessiriText>
+  );
+}
+
 export function SleepScheduleCard({
   bedTime,
   wakeTime,
@@ -42,14 +65,9 @@ export function SleepScheduleCard({
             BEDTIME
           </Text>
         </View>
-        <ElMessiriText
-          size={24}
-          weight="bold"
-          style={[s.time, !bedEnabled && s.timeMuted]}
-          numberOfLines={1}
-        >
+        <TimeText muted={!bedEnabled}>
           {bedTime ? formatTime(bedTime) : "—"}
-        </ElMessiriText>
+        </TimeText>
       </Pressable>
 
       <View style={s.separator} />
@@ -66,14 +84,9 @@ export function SleepScheduleCard({
             WAKE UP
           </Text>
         </View>
-        <ElMessiriText
-          size={24}
-          weight="bold"
-          style={[s.time, !wakeEnabled && s.timeMuted]}
-          numberOfLines={1}
-        >
+        <TimeText muted={!wakeEnabled}>
           {wakeTime ? formatTime(wakeTime) : "—"}
-        </ElMessiriText>
+        </TimeText>
       </Pressable>
     </GlassSurface>
   );
@@ -88,8 +101,9 @@ const s = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     paddingHorizontal: 16,
-    paddingVertical: 24,
-    gap: 12,
+    paddingTop: 20,
+    paddingBottom: 16,
+    gap: 8,
     alignItems: "center",
   },
   separator: {
