@@ -114,7 +114,7 @@ const SettingsScreen = () => {
                 <Text style={st.pickerValue} numberOfLines={1}>
                   {currentMethodLabel}
                 </Text>
-                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+                <Icon icon={ChevronRight} size={24} color={Palette.gold} />
               </Pressable>
             </SettingRow>
 
@@ -124,7 +124,7 @@ const SettingsScreen = () => {
                 style={st.picker}
               >
                 <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
-                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+                <Icon icon={ChevronRight} size={24} color={Palette.gold} />
               </Pressable>
             </SettingRow>
 
@@ -135,7 +135,7 @@ const SettingsScreen = () => {
                     ? `${settings.location.cityName}, ${settings.location.country}`
                     : "Not set"}
                 </Text>
-                <Icon icon={ChevronRight} size={24} color={Palette.textMuted} />
+                <Icon icon={ChevronRight} size={24} color={Palette.gold} />
               </Pressable>
             </SettingRow>
           </View>
@@ -344,7 +344,7 @@ const st = StyleSheet.create({
     gap: 4,
     maxWidth: '55%',
   },
-  pickerValue: { color: Palette.textSecondary, fontSize: 15, textAlign: 'right' },
+  pickerValue: { color: Palette.gold, fontSize: 15, textAlign: 'right' },
 
   modalRoot: { flex: 1, backgroundColor: Palette.bg },
   modalHeader: {
