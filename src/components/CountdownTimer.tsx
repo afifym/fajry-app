@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import {StyleSheet, Text} from 'react-native';
+import { StyleSheet } from 'react-native';
 
+import { ElMessiriText } from '@/components/el-messiri-text';
+import { Palette } from '@/constants/theme';
 
 type Props = {
   targetTime: Date;
@@ -34,15 +36,18 @@ export const CountdownTimer = ({ targetTime, onReach }: Props) => {
     return () => clearInterval(id);
   }, [targetTime, onReach]);
 
-  return <Text style={styles.countdown}>{formatDuration(remaining)}</Text>;
+  return (
+    <ElMessiriText size={36} weight="regular" style={styles.countdown}>
+      {formatDuration(remaining)}
+    </ElMessiriText>
+  );
 }
 
 const styles = StyleSheet.create({
   countdown: {
-    color: '#06B6D4',
-    fontSize: 36,
-    fontWeight: '300',
+    color: Palette.gold,
     letterSpacing: 1,
     fontVariant: ['tabular-nums'],
+    textAlign: 'center',
   },
 });
