@@ -9,13 +9,24 @@ import {
 } from '@expo-google-fonts/el-messiri';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
 import { Palette } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+const NavTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: Palette.bg,
+    card: Palette.bg,
+  },
+};
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -38,17 +49,21 @@ const RootLayout = () => {
     }
   }, [fontsLoaded, fontError]);
 
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(Palette.bg);
+  }, []);
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
-    <ThemeProvider value={DarkTheme}>
+    <ThemeProvider value={NavTheme}>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
+          animation: Platform.OS === 'android' ? 'slide_from_right' : 'fade',
           animationDuration: 200,
           contentStyle: { backgroundColor: Palette.bg },
         }}
