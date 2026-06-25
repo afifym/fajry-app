@@ -1,17 +1,21 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {ActivityIndicator,
+import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  View, Text} from "react-native";
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
 import { CitySearchList } from "@/components/CityPickerModal";
+import { ElMessiriText } from "@/components/el-messiri-text";
+import { GoldGradientText } from "@/components/GoldGradientText";
 import { HomeBg } from "@/components/HomeBg";
+import { Palette, Radius } from "@/constants/theme";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { City, Location } from "@/types";
 import { inferRegionalDefault, requestGPSLocation } from "@/utils/location";
@@ -22,22 +26,6 @@ const LOCALE_COUNTRY = (
   Intl.DateTimeFormat().resolvedOptions().locale.split("-").pop() ?? ""
 ).toUpperCase();
 const DEFAULT_METHOD = inferRegionalDefault(LOCALE_COUNTRY);
-
-const METHOD_LABEL: Record<string, string> = {
-  MuslimWorldLeague: "Muslim World League",
-  Egyptian: "Egyptian General Authority of Survey",
-  Karachi: "University of Islamic Sciences, Karachi",
-  UmmAlQura: "Umm Al-Qura, Makkah",
-  Dubai: "Dubai",
-  MoonsightingCommittee: "Moonsighting Committee Worldwide",
-  NorthAmerica: "Islamic Society of North America",
-  Kuwait: "Kuwait",
-  Qatar: "Qatar",
-  Singapore: "Majlis Ugama Islam Singapura",
-  Tehran: "Institute of Geophysics, Tehran",
-  Turkey: "Turkey",
-  Other: "Other",
-};
 
 type Step = "intro" | "loading" | "city-search";
 
@@ -87,35 +75,31 @@ const OnboardingScreen = () => {
 
   if (step === "intro") {
     return (
-      <SafeAreaView style={s.root}>
+      <SafeAreaView style={st.root}>
         <HomeBg />
-        <ScrollView contentContainerStyle={s.scrollContent} bounces={false}>
-          <View style={s.hero}>
-            <Text style={s.title}>Fajr</Text>
-            <Text style={s.tagline}>Answer the Call</Text>
+        <ScrollView contentContainerStyle={st.scrollContent} bounces={false}>
+          <View style={st.hero}>
+            <GoldGradientText size={64} weight="bold" reversed>
+              Fajry
+            </GoldGradientText>
+            <ElMessiriText size={16} weight="medium" style={st.tagline}>
+              Answer the Call
+            </ElMessiriText>
           </View>
 
-          <Text style={s.body}>
-            A reliable Fajr alarm that works completely offline. Prayer times
-            are calculated on-device using your location — no internet required.
-          </Text>
-
-          <View style={s.methodCard}>
-            <Text style={s.methodLabel}>Default calculation method</Text>
-            <Text style={s.methodValue}>
-              {METHOD_LABEL[DEFAULT_METHOD] ?? DEFAULT_METHOD}
-            </Text>
-            <Text style={s.methodHint}>
-              Based on your region. Change it anytime in Settings.
-            </Text>
-          </View>
+          <ElMessiriText size={16} weight="regular" lines={5} style={st.body}>
+            A reliable Fajry alarm that works completely offline. Prayer times are
+            calculated on-device using your location — no internet required.
+          </ElMessiriText>
 
           <Pressable
-            style={s.cta}
+            style={st.cta}
             onPress={handleGetStarted}
             accessibilityRole="button"
           >
-            <Text style={s.ctaText}>Get Started</Text>
+            <ElMessiriText size={17} weight="bold" style={st.ctaText}>
+              Get Started
+            </ElMessiriText>
           </Pressable>
         </ScrollView>
       </SafeAreaView>
@@ -124,28 +108,32 @@ const OnboardingScreen = () => {
 
   if (step === "loading") {
     return (
-      <SafeAreaView style={s.root}>
+      <SafeAreaView style={st.root}>
         <HomeBg />
-        <View style={s.centred}>
-          <ActivityIndicator size="large" color="#C9A84C" />
-          <Text style={s.loadingText}>Getting your location…</Text>
+        <View style={st.centred}>
+          <ActivityIndicator size="large" color={Palette.gold} />
+          <ElMessiriText size={16} weight="regular" style={st.loadingText}>
+            Getting your location…
+          </ElMessiriText>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={s.root}>
+    <SafeAreaView style={st.root}>
       <HomeBg />
       <KeyboardAvoidingView
-        style={s.flex}
+        style={st.flex}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={s.searchHeader}>
-          <Text style={s.searchTitle}>Find your city</Text>
-          <Text style={s.searchBody}>
+        <View style={st.searchHeader}>
+          <ElMessiriText size={24} weight="semiBold" style={st.searchTitle}>
+            Find your city
+          </ElMessiriText>
+          <ElMessiriText size={15} weight="regular" lines={3} style={st.searchBody}>
             Location access was denied. Search for your city to continue.
-          </Text>
+          </ElMessiriText>
         </View>
 
         <CitySearchList
@@ -162,8 +150,8 @@ const OnboardingScreen = () => {
 
 export default OnboardingScreen;
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#060C1A" },
+const st = StyleSheet.create({
+  root: { flex: 1, backgroundColor: Palette.bg },
   flex: { flex: 1 },
   scrollContent: {
     flexGrow: 1,
@@ -171,51 +159,39 @@ const s = StyleSheet.create({
     justifyContent: "center",
     gap: 24,
   },
-  centred: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16 },
-
-  hero: { gap: 4, alignItems: "center" },
-  title: {
-    color: "#ffffff",
-    fontSize: 52,
-    fontWeight: "700",
-    letterSpacing: -1,
+  centred: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
   },
+
+  hero: { gap: 8, alignItems: "center" },
   tagline: {
-    color: "#C9A84C",
-    fontSize: 16,
-    fontWeight: "500",
+    color: Palette.gold,
     letterSpacing: 0.5,
+    textAlign: "center",
   },
 
-  body: { color: "#8892A4", fontSize: 16, lineHeight: 26, textAlign: "center" },
-
-  methodCard: {
-    backgroundColor: "#0D1526",
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#1E2D4A",
-    padding: 20,
-    gap: 6,
+  body: {
+    color: Palette.textSecondary,
+    lineHeight: 26,
+    textAlign: "center",
   },
-  methodLabel: {
-    color: "#C9A84C",
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-  },
-  methodValue: { color: "#ffffff", fontSize: 16, fontWeight: "500" },
-  methodHint: { color: "#4A5568", fontSize: 13 },
 
   cta: {
-    backgroundColor: "#C9A84C",
-    borderRadius: 16,
+    backgroundColor: Palette.gold,
+    borderRadius: Radius.md,
     paddingVertical: 18,
     alignItems: "center",
   },
-  ctaText: { color: "#060C1A", fontSize: 17, fontWeight: "600" },
+  ctaText: { color: Palette.bg },
 
-  loadingText: { color: "#8892A4", fontSize: 16, marginTop: 8 },
+  loadingText: {
+    color: Palette.textSecondary,
+    marginTop: 8,
+    textAlign: "center",
+  },
 
   searchHeader: {
     paddingHorizontal: 24,
@@ -223,6 +199,13 @@ const s = StyleSheet.create({
     paddingBottom: 8,
     gap: 8,
   },
-  searchTitle: { color: "#ffffff", fontSize: 20, fontWeight: "600" },
-  searchBody: { color: "#8892A4", fontSize: 15, lineHeight: 22 },
+  searchTitle: {
+    color: Palette.text,
+    textAlign: "center",
+  },
+  searchBody: {
+    color: Palette.textSecondary,
+    lineHeight: 22,
+    textAlign: "center",
+  },
 });
