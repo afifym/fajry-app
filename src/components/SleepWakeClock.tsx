@@ -34,6 +34,13 @@ const HIT_SIZE = 44;
 const TRACK_UNSELECTED_OPACITY = 0.32;
 const SELECTED_TRACK_OPACITY = 0.95;
 
+const DURATION_HOURS_SIZE = 34;
+const DURATION_HOURS_HEIGHT = Math.round(DURATION_HOURS_SIZE * 1.32);
+const DURATION_MINUTES_SIZE = 16;
+const DURATION_MINUTES_HEIGHT = Math.round(DURATION_MINUTES_SIZE * 1.32);
+const DURATION_EMPTY_SIZE = 28;
+const DURATION_EMPTY_HEIGHT = Math.round(DURATION_EMPTY_SIZE * 1.32);
+
 type Props = {
   bedTime: Date | null;
   wakeTime: Date | null;
@@ -132,6 +139,7 @@ function SelectedArcGradient({
         y1={start.y}
         x2={end.x}
         y2={end.y}
+        reversed
       />
     </Defs>
   );
@@ -530,14 +538,14 @@ export const SleepWakeClock = ({
             {bedAngle != null ? (
               <ArcEndpoint
                 angle={bedAngle}
-                fill={Palette.goldMuted}
+                fill={ARC_GRADIENT_HIGHLIGHT}
                 muted={!bedEnabled}
               />
             ) : null}
             {wakeAngle != null ? (
               <ArcEndpoint
                 angle={wakeAngle}
-                fill={ARC_GRADIENT_HIGHLIGHT}
+                fill={Palette.goldMuted}
                 muted={!wakeEnabled}
               />
             ) : null}
@@ -596,12 +604,18 @@ export const SleepWakeClock = ({
       <View style={s.center} pointerEvents="none">
         {duration ? (
           <>
-            <ElMessiriText size={34} weight="bold" style={s.durationHours}>
+            <ElMessiriText
+              size={DURATION_HOURS_SIZE}
+              weight="bold"
+              height={DURATION_HOURS_HEIGHT}
+              style={s.durationHours}
+            >
               {duration.hours}hr
             </ElMessiriText>
             <ElMessiriText
-              size={16}
+              size={DURATION_MINUTES_SIZE}
               weight="semiBold"
+              height={DURATION_MINUTES_HEIGHT}
               style={s.durationMinutes}
               containerStyle={s.durationMinutesWrap}
             >
@@ -609,7 +623,12 @@ export const SleepWakeClock = ({
             </ElMessiriText>
           </>
         ) : (
-          <ElMessiriText size={28} weight="regular" style={s.durationEmpty}>
+          <ElMessiriText
+            size={DURATION_EMPTY_SIZE}
+            weight="regular"
+            height={DURATION_EMPTY_HEIGHT}
+            style={s.durationEmpty}
+          >
             —
           </ElMessiriText>
         )}
@@ -642,7 +661,7 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   durationMinutesWrap: {
-    marginTop: -2,
+    marginTop: -6,
   },
   durationMinutes: {
     color: Palette.text,
