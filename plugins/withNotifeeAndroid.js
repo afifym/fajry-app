@@ -1,10 +1,26 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
+const { withAndroidManifest, withProjectBuildGradle } = require('@expo/config-plugins');
+
+const NOTIFEE_MAVEN_REPO =
+  'maven { url "$rootDir/../node_modules/@notifee/react-native/android/libs" }';
 
 /**
  * Adds the notifee ForegroundService declaration and required permissions to AndroidManifest.xml.
  * notifee v9 has no Expo config plugin, so we inject manually.
  */
 function withNotifeeAndroid(config) {
+  config = withProjectBuildGradle(config, (c) => {
+    if (c.modResults.contents.includes('@notifee/react-native/android/libs')) {
+      return c;
+    }
+
+    c.modResults.contents = c.modResults.contents.replace(
+      /maven\s*\{\s*url\s*['"]https:\/\/www\.jitpack\.io['"]\s*\}/,
+      (match) => `${match}\n    ${NOTIFEE_MAVEN_REPO}`,
+    );
+
+    return c;
+  });
+
   return withAndroidManifest(config, (c) => {
     const manifest = c.modResults;
     const application = manifest.manifest.application[0];
