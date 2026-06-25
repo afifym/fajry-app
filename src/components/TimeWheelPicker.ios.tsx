@@ -1,7 +1,9 @@
 import { DateTimePicker } from "@expo/ui/community/datetime-picker";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-type Props = {
+import { Palette } from "@/constants/theme";
+
+export type TimeWheelPickerProps = {
   value: Date;
   onValueChange: (date: Date) => void;
   minimumDate?: Date;
@@ -9,26 +11,24 @@ type Props = {
   disabled?: boolean;
 };
 
-/** Inline iOS wheel / Material time picker — dark theme, gold accent. */
 export function TimeWheelPicker({
   value,
   onValueChange,
   minimumDate,
   maximumDate,
   disabled,
-}: Props) {
+}: TimeWheelPickerProps) {
   return (
-    <View style={s.wrap}>
+    <View style={[s.wrap, disabled && s.disabled]}>
       <DateTimePicker
         value={value}
         mode="time"
         display="spinner"
         themeVariant="dark"
-        accentColor="#C9A84C"
+        accentColor={Palette.gold}
         minimumDate={minimumDate}
         maximumDate={maximumDate}
         disabled={disabled}
-        presentation={Platform.OS === "android" ? "inline" : undefined}
         onValueChange={(_, date) => onValueChange(date)}
         style={s.picker}
       />
@@ -38,5 +38,6 @@ export function TimeWheelPicker({
 
 const s = StyleSheet.create({
   wrap: { width: "100%", alignItems: "center" },
+  disabled: { opacity: 0.4 },
   picker: { width: "100%", height: 216 },
 });

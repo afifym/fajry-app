@@ -1,7 +1,8 @@
-import {StyleSheet, Switch, View, Text} from "react-native";
+import { Platform, StyleSheet, View, Text } from "react-native";
 
 
 import { AlarmEditSheet } from "@/components/AlarmEditSheet";
+import { GoldSwitch } from "@/components/GoldSwitch";
 import { AlarmClock, Icon } from "@/components/Icon";
 import { TimeWheelPicker } from "@/components/TimeWheelPicker";
 import { Palette } from "@/constants/theme";
@@ -112,10 +113,9 @@ export function WakeUpEditModal({
             <Icon icon={AlarmClock} size={16} color={Palette.gold} />
             <Text style={s.label}>WAKE UP ALARM</Text>
           </View>
-          <Switch
+          <GoldSwitch
             value={settings.alarmEnabled}
             onValueChange={(v) => void handleAlarmToggle(v)}
-            trackColor={{ true: Palette.gold, false: Palette.border }}
             accessibilityLabel="Wake up alarm"
           />
         </View>
@@ -152,6 +152,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     marginTop: 24,
+    marginBottom: Platform.OS === "android" ? 28 : 0,
   },
   footerHint: {
     color: Palette.textMuted,

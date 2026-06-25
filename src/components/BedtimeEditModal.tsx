@@ -1,7 +1,8 @@
-import {StyleSheet, Switch, View, Text} from "react-native";
+import { Platform, StyleSheet, View, Text } from "react-native";
 
 
 import { AlarmEditSheet } from "@/components/AlarmEditSheet";
+import { GoldSwitch } from "@/components/GoldSwitch";
 import { Bed, Icon } from "@/components/Icon";
 import { TimeWheelPicker } from "@/components/TimeWheelPicker";
 import { Palette } from "@/constants/theme";
@@ -115,10 +116,9 @@ export function BedtimeEditModal({
             <Icon icon={Bed} size={16} color={Palette.gold} />
             <Text style={s.label}>BEDTIME REMINDER</Text>
           </View>
-          <Switch
+          <GoldSwitch
             value={settings.sleepReminderEnabled}
             onValueChange={(v) => void handleReminderToggle(v)}
-            trackColor={{ true: Palette.gold, false: Palette.border }}
             accessibilityLabel="Bedtime reminder"
           />
         </View>
@@ -155,6 +155,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     marginTop: 24,
+    marginBottom: Platform.OS === "android" ? 28 : 0,
   },
   footerHint: {
     color: Palette.textMuted,
