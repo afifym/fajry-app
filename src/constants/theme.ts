@@ -81,6 +81,7 @@ export const Palette = {
   textSecondary: '#8BA39C',
   textMuted: '#5C726C',
   pattern: '#1A3530',
+  sleepTrack: '#0C1210',
   glassOutline: 'rgba(255, 255, 255, 0.16)',
   glassFill: 'rgba(26, 46, 40, 0.45)',
 } as const;
