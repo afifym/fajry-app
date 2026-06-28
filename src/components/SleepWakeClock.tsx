@@ -38,14 +38,28 @@ const DURATION_HOURS_HEIGHT = Math.round(DURATION_HOURS_SIZE * 1.32);
 const DURATION_EMPTY_SIZE = 24;
 const DURATION_EMPTY_HEIGHT = Math.round(DURATION_EMPTY_SIZE * 1.32);
 
-const QUARTER_HOUR_LABELS = [
-  { label: "12", angle: 0 },
-  { label: "3", angle: 90 },
-  { label: "6", angle: 180 },
-  { label: "9", angle: 270 },
-] as const;
-
 const QUARTER_LABEL_R = FACE_R - 28;
+const QUARTER_SIDE_LABEL_R = FACE_R - 38;
+const QUARTER_SIDE_LABEL_OFFSET_X = 6;
+
+const QUARTER_HOUR_LABELS = [
+  { hour: "12", period: "AM", angle: 0, labelR: QUARTER_LABEL_R, offsetX: 0 },
+  {
+    hour: "3",
+    period: "AM",
+    angle: 90,
+    labelR: QUARTER_SIDE_LABEL_R,
+    offsetX: -QUARTER_SIDE_LABEL_OFFSET_X,
+  },
+  { hour: "6", period: "PM", angle: 180, labelR: QUARTER_LABEL_R, offsetX: 0 },
+  {
+    hour: "9",
+    period: "PM",
+    angle: 270,
+    labelR: QUARTER_SIDE_LABEL_R,
+    offsetX: QUARTER_SIDE_LABEL_OFFSET_X,
+  },
+] as const;
 
 type Props = {
   bedTime: Date | null;
@@ -308,15 +322,31 @@ function PrayerTick({
   );
 }
 
-function QuarterHourLabel({ label, angle }: { label: string; angle: number }) {
-  const pt = polarToCartesian(CENTER, CENTER, QUARTER_LABEL_R, angle);
+function QuarterHourLabel({
+  hour,
+  period,
+  angle,
+  labelR = QUARTER_LABEL_R,
+  offsetX = 0,
+}: {
+  hour: string;
+  period: "AM" | "PM";
+  angle: number;
+  labelR?: number;
+  offsetX?: number;
+}) {
+  const pt = polarToCartesian(CENTER, CENTER, labelR, angle);
 
   return (
     <View
-      style={[s.quarterLabel, { left: pt.x - 14, top: pt.y - 10 }]}
+      style={[
+        s.quarterLabel,
+        { left: pt.x - 23 + offsetX, top: pt.y - 9 },
+      ]}
       pointerEvents="none"
     >
-      <Text style={s.quarterLabelText}>{label}</Text>
+      <Text style={s.quarterLabelText}>{hour}</Text>
+      <Text style={s.quarterLabelText}> {period}</Text>
     </View>
   );
 }
@@ -570,8 +600,15 @@ export const SleepWakeClock = ({
         ) : null}
       </Svg>
 
-      {QUARTER_HOUR_LABELS.map(({ label, angle }) => (
-        <QuarterHourLabel key={label} label={label} angle={angle} />
+      {QUARTER_HOUR_LABELS.map(({ hour, period, angle, labelR, offsetX }) => (
+        <QuarterHourLabel
+          key={hour}
+          hour={hour}
+          period={period}
+          angle={angle}
+          labelR={labelR}
+          offsetX={offsetX}
+        />
       ))}
 
       {featureFlags.clockPrayerTimeHighlights && fajrAngle != null && fajrTime ? (
@@ -685,15 +722,16 @@ const s = StyleSheet.create({
   },
   quarterLabel: {
     position: 'absolute',
-    width: 28,
+    width: 46,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   quarterLabelText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     fontVariant: ['tabular-nums'],
-    textAlign: 'center',
   },
   prayerHighlight: {
     position: 'absolute',
