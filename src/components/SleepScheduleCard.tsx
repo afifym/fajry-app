@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AlarmClock, Bed, Icon } from "@/components/Icon";
@@ -12,6 +13,7 @@ type Props = {
   wakeEnabled: boolean;
   onBedPress: () => void;
   onWakePress: () => void;
+  children?: ReactNode;
 };
 
 function formatTime(date: Date): string {
@@ -50,50 +52,55 @@ export function SleepScheduleCard({
   wakeEnabled,
   onBedPress,
   onWakePress,
+  children,
 }: Props) {
   return (
-    <GlassSurface contentStyle={s.card}>
-      <Pressable
-        onPress={onBedPress}
-        style={s.half}
-        accessibilityLabel="Edit bedtime reminder"
-        accessibilityRole="button"
-      >
-        <View style={[s.labelRow, !bedEnabled && s.muted]}>
-          <Icon icon={Bed} size={16} color={Palette.gold} />
-          <Text style={s.label} numberOfLines={1}>
-            BEDTIME
-          </Text>
-        </View>
-        <TimeText muted={!bedEnabled}>
-          {bedTime ? formatTime(bedTime) : "—"}
-        </TimeText>
-      </Pressable>
+    <GlassSurface>
+      <View style={s.scheduleRow}>
+        <Pressable
+          onPress={onBedPress}
+          style={s.half}
+          accessibilityLabel="Edit bedtime reminder"
+          accessibilityRole="button"
+        >
+          <View style={[s.labelRow, !bedEnabled && s.muted]}>
+            <Icon icon={Bed} size={16} color={Palette.gold} />
+            <Text style={s.label} numberOfLines={1}>
+              BEDTIME
+            </Text>
+          </View>
+          <TimeText muted={!bedEnabled}>
+            {bedTime ? formatTime(bedTime) : "—"}
+          </TimeText>
+        </Pressable>
 
-      <View style={s.separator} />
+        <View style={s.separator} />
 
-      <Pressable
-        onPress={onWakePress}
-        style={s.half}
-        accessibilityLabel="Edit wake up alarm"
-        accessibilityRole="button"
-      >
-        <View style={[s.labelRow, !wakeEnabled && s.muted]}>
-          <Icon icon={AlarmClock} size={16} color={Palette.gold} />
-          <Text style={s.label} numberOfLines={1}>
-            WAKE UP
-          </Text>
-        </View>
-        <TimeText muted={!wakeEnabled}>
-          {wakeTime ? formatTime(wakeTime) : "—"}
-        </TimeText>
-      </Pressable>
+        <Pressable
+          onPress={onWakePress}
+          style={s.half}
+          accessibilityLabel="Edit wake up alarm"
+          accessibilityRole="button"
+        >
+          <View style={[s.labelRow, !wakeEnabled && s.muted]}>
+            <Icon icon={AlarmClock} size={16} color={Palette.gold} />
+            <Text style={s.label} numberOfLines={1}>
+              WAKE UP
+            </Text>
+          </View>
+          <TimeText muted={!wakeEnabled}>
+            {wakeTime ? formatTime(wakeTime) : "—"}
+          </TimeText>
+        </Pressable>
+      </View>
+
+      {children ? <View style={s.clockSection}>{children}</View> : null}
     </GlassSurface>
   );
 }
 
 const s = StyleSheet.create({
-  card: {
+  scheduleRow: {
     flexDirection: "row",
     alignItems: "stretch",
   },
@@ -132,4 +139,8 @@ const s = StyleSheet.create({
   },
   timeMuted: { opacity: 0.45 },
   muted: { opacity: 0.45 },
+  clockSection: {
+    alignItems: "center",
+    paddingBottom: 8,
+  },
 });
