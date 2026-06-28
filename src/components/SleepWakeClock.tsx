@@ -28,8 +28,8 @@ const CENTER = SIZE / 2;
 const TRACK_R = 112;
 const FACE_R = 86;
 const MARKER_R = 62;
-const STROKE = 18;
-const UNSELECTED_STROKE = 30;
+const STROKE = 22;
+const UNSELECTED_STROKE = 40;
 const HIT_SIZE = 44;
 const SELECTED_TRACK_OPACITY = 0.95;
 
