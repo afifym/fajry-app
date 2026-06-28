@@ -217,7 +217,7 @@ const HomeScreenContent = () => {
             accessibilityLabel="Change location"
           >
             <GlassSurface radius={Radius.sm} contentStyle={styles.headerLocationInner}>
-              <Icon icon={MapPin} size={15} color={Palette.gold} />
+              <Icon icon={MapPin} size={18} color={Palette.gold} />
               <Text style={styles.locationText} numberOfLines={1}>
                 {location.cityName}, {location.country}
               </Text>
@@ -229,7 +229,7 @@ const HomeScreenContent = () => {
               accessibilityLabel="Settings"
             >
               <GlassSurface radius={Radius.sm} contentStyle={styles.navButton}>
-                <Icon icon={Settings} size={17} color={Palette.gold} />
+                <Icon icon={Settings} size={20} color={Palette.gold} />
               </GlassSurface>
             </Pressable>
             <Pressable
@@ -237,7 +237,7 @@ const HomeScreenContent = () => {
               accessibilityLabel="Prayer consistency"
             >
               <GlassSurface radius={Radius.sm} contentStyle={styles.navButton}>
-                <Icon icon={Flame} size={18} color={Palette.gold} />
+                <Icon icon={Flame} size={21} color={Palette.gold} />
               </GlassSurface>
             </Pressable>
           </View>
@@ -248,7 +248,12 @@ const HomeScreenContent = () => {
           <View style={styles.heroStack}>
             <View style={styles.infoSection}>
               <View style={styles.fajrBlock}>
-                <ElMessiriText size={14} weight="semiBold" style={styles.prayerLabel}>
+                <ElMessiriText
+                  size={14}
+                  weight="semiBold"
+                  height={18}
+                  style={styles.prayerLabel}
+                >
                   Next Fajr
                 </ElMessiriText>
                 <View style={styles.prayerTimeWrap}>
@@ -287,9 +292,7 @@ const HomeScreenContent = () => {
               wakeEnabled={settings.alarmEnabled}
               onBedPress={() => setEditSheet("bedtime")}
               onWakePress={() => setEditSheet("wakeup")}
-            />
-
-            <View style={styles.clockSection}>
+            >
               <SleepWakeClock
                 bedTime={sleepSession?.bedTime ?? null}
                 wakeTime={sleepSession?.wakeTime ?? null}
@@ -302,7 +305,7 @@ const HomeScreenContent = () => {
                 onWakeTimeChange={handleWakeTimeChange}
                 onTimesPreview={handleClockPreview}
               />
-            </View>
+            </SleepScheduleCard>
           </View>
 
           {confirmationOpen && !confirmed && (
@@ -371,14 +374,14 @@ const styles = StyleSheet.create({
   headerLocationInner: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    height: 40,
-    paddingHorizontal: 12,
+    gap: 8,
+    height: 48,
+    paddingHorizontal: 14,
   },
   navIcons: { flexDirection: "row", gap: 10 },
   navButton: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -418,7 +421,7 @@ const styles = StyleSheet.create({
   prayerTimeWrap: {
     alignSelf: "stretch",
     alignItems: "center",
-    marginTop: -4,
+    marginTop: -10,
   },
   prayerTimeAnchor: {
     position: "relative",
@@ -435,13 +438,9 @@ const styles = StyleSheet.create({
   },
   locationText: {
     color: Palette.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "500",
     flexShrink: 1,
-  },
-
-  clockSection: {
-    alignItems: "center",
   },
 
   confirmCard: {
