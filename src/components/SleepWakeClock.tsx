@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type RefObject } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
@@ -7,9 +7,9 @@ import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg"
 
 import type { AppIcon } from "@/components/Icon";
 import { Adhan, Icon, Sunrise } from "@/components/Icon";
+import { ElMessiriText } from "@/components/el-messiri-text";
 import { featureFlags } from "@/constants/featureFlags";
 import { ARC_GRADIENT_HIGHLIGHT } from "@/constants/goldGradient";
-import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette } from "@/constants/theme";
 import { sleepDurationBetween } from "@/utils/alarmPickerTime";
 import {
@@ -29,17 +29,23 @@ const TRACK_R = 112;
 const FACE_R = 86;
 const MARKER_R = 62;
 const STROKE = 18;
-const UNSELECTED_STROKE = 12;
+const UNSELECTED_STROKE = 30;
 const HIT_SIZE = 44;
-const TRACK_UNSELECTED_OPACITY = 0.32;
 const SELECTED_TRACK_OPACITY = 0.95;
 
-const DURATION_HOURS_SIZE = 34;
+const DURATION_HOURS_SIZE = 28;
 const DURATION_HOURS_HEIGHT = Math.round(DURATION_HOURS_SIZE * 1.32);
-const DURATION_MINUTES_SIZE = 16;
-const DURATION_MINUTES_HEIGHT = Math.round(DURATION_MINUTES_SIZE * 1.32);
-const DURATION_EMPTY_SIZE = 28;
+const DURATION_EMPTY_SIZE = 24;
 const DURATION_EMPTY_HEIGHT = Math.round(DURATION_EMPTY_SIZE * 1.32);
+
+const QUARTER_HOUR_LABELS = [
+  { label: "12", angle: 0 },
+  { label: "3", angle: 90 },
+  { label: "6", angle: 180 },
+  { label: "9", angle: 270 },
+] as const;
+
+const QUARTER_LABEL_R = FACE_R - 28;
 
 type Props = {
   bedTime: Date | null;
@@ -302,6 +308,19 @@ function PrayerTick({
   );
 }
 
+function QuarterHourLabel({ label, angle }: { label: string; angle: number }) {
+  const pt = polarToCartesian(CENTER, CENTER, QUARTER_LABEL_R, angle);
+
+  return (
+    <View
+      style={[s.quarterLabel, { left: pt.x - 14, top: pt.y - 10 }]}
+      pointerEvents="none"
+    >
+      <Text style={s.quarterLabelText}>{label}</Text>
+    </View>
+  );
+}
+
 function PrayerTimeHighlight({
   angle,
   icon,
@@ -389,9 +408,6 @@ export const SleepWakeClock = ({
   const selectedArcPath = sleepArc
     ? arcD(CENTER, CENTER, TRACK_R, sleepArc.start, sleepArc.end)
     : "";
-  const unselectedArcPath = sleepArc
-    ? arcD(CENTER, CENTER, TRACK_R, sleepArc.end, sleepArc.start + 360)
-    : "";
 
   const previewDurationMs = hasArc
     ? dragBedAngle != null || dragWakeAngle != null
@@ -475,7 +491,8 @@ export const SleepWakeClock = ({
   const wakeDragDisabled = !fajrTime || !wakeEnabled || !onWakeTimeChange;
 
   return (
-    <View ref={dialRef} style={s.dial} onLayout={measureDial}>
+    <View style={s.clockWrap}>
+      <View ref={dialRef} style={s.dial} onLayout={measureDial}>
       <Svg width={SIZE} height={SIZE}>
         {Array.from({ length: 60 }, (_, i) => {
           const angle = i * 6;
@@ -500,26 +517,14 @@ export const SleepWakeClock = ({
           );
         })}
 
-        {unselectedArcPath ? (
-          <Path
-            d={unselectedArcPath}
-            fill="none"
-            stroke={Palette.borderSubtle}
-            strokeWidth={UNSELECTED_STROKE}
-            strokeLinecap="round"
-            opacity={TRACK_UNSELECTED_OPACITY}
-          />
-        ) : (
-          <Circle
-            cx={CENTER}
-            cy={CENTER}
-            r={TRACK_R}
-            fill="none"
-            stroke={Palette.borderSubtle}
-            strokeWidth={UNSELECTED_STROKE}
-            opacity={TRACK_UNSELECTED_OPACITY}
-          />
-        )}
+        <Circle
+          cx={CENTER}
+          cy={CENTER}
+          r={TRACK_R}
+          fill="none"
+          stroke={Palette.sleepTrack}
+          strokeWidth={UNSELECTED_STROKE}
+        />
 
         {selectedArcPath && sleepArc ? (
           <>
@@ -565,6 +570,10 @@ export const SleepWakeClock = ({
         ) : null}
       </Svg>
 
+      {QUARTER_HOUR_LABELS.map(({ label, angle }) => (
+        <QuarterHourLabel key={label} label={label} angle={angle} />
+      ))}
+
       {featureFlags.clockPrayerTimeHighlights && fajrAngle != null && fajrTime ? (
         <PrayerTimeHighlight
           angle={fajrAngle}
@@ -600,28 +609,28 @@ export const SleepWakeClock = ({
           accessibilityLabel="Adjust wake up time"
         />
       ) : null}
+      </View>
 
-      <View style={s.center} pointerEvents="none">
+      <View style={s.durationRow} pointerEvents="none">
         {duration ? (
-          <>
+          <View style={s.durationLine}>
             <ElMessiriText
               size={DURATION_HOURS_SIZE}
               weight="bold"
               height={DURATION_HOURS_HEIGHT}
               style={s.durationHours}
             >
-              {duration.hours}hr
+              {duration.hours} hr
             </ElMessiriText>
             <ElMessiriText
-              size={DURATION_MINUTES_SIZE}
-              weight="semiBold"
-              height={DURATION_MINUTES_HEIGHT}
-              style={s.durationMinutes}
-              containerStyle={s.durationMinutesWrap}
+              size={DURATION_HOURS_SIZE}
+              weight="bold"
+              height={DURATION_HOURS_HEIGHT}
+              style={s.durationHours}
             >
-              {duration.minutes}min
+              {duration.minutes} min
             </ElMessiriText>
-          </>
+          </View>
         ) : (
           <ElMessiriText
             size={DURATION_EMPTY_SIZE}
@@ -638,6 +647,9 @@ export const SleepWakeClock = ({
 };
 
 const s = StyleSheet.create({
+  clockWrap: {
+    alignItems: "center",
+  },
   dial: {
     width: SIZE,
     height: SIZE,
@@ -650,25 +662,37 @@ const s = StyleSheet.create({
     height: HIT_SIZE,
   },
   arcHandleDisabled: { opacity: 0.35 },
-  center: {
-    position: "absolute",
+  durationRow: {
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 4,
+    paddingBottom: 4,
+    minHeight: DURATION_HOURS_HEIGHT,
+  },
+  durationLine: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
   },
   durationHours: {
     color: Palette.gold,
     letterSpacing: -0.5,
-    textAlign: 'center',
-  },
-  durationMinutesWrap: {
-    marginTop: -6,
-  },
-  durationMinutes: {
-    color: Palette.text,
-    textAlign: 'center',
+    textAlign: "center",
   },
   durationEmpty: {
     color: Palette.textMuted,
+    textAlign: "center",
+  },
+  quarterLabel: {
+    position: 'absolute',
+    width: 28,
+    alignItems: 'center',
+  },
+  quarterLabelText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
   prayerHighlight: {
