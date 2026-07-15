@@ -1,5 +1,11 @@
-import notifee from '@notifee/react-native';
-import { scheduleSnooze, rebuildScheduleOnAppOpen } from '../scheduling';
+import notifee, { TriggerType } from '@notifee/react-native';
+import { TEST_ALARM_ID } from '../alarmEvents';
+import {
+  scheduleSnooze,
+  rebuildScheduleOnAppOpen,
+  scheduleTestAlarm,
+  TEST_ALARM_DELAY_MS,
+} from '../scheduling';
 import type { RebuildSettings } from '../scheduling';
 import type { Location } from '@/types';
 
@@ -54,6 +60,27 @@ describe('scheduleSnooze', () => {
     const sunrise = new Date(Date.now() + 1_000); // only 1 second away
     await scheduleSnooze(5, sunrise);
     expect(notifee.createTriggerNotification).not.toHaveBeenCalled();
+  });
+});
+
+describe('scheduleTestAlarm', () => {
+  it('schedules a wake alarm notification after the test delay', async () => {
+    const before = Date.now();
+    await scheduleTestAlarm();
+
+    expect(notifee.cancelTriggerNotification).toHaveBeenCalledWith(TEST_ALARM_ID);
+    expect(notifee.createTriggerNotification).toHaveBeenCalledTimes(1);
+
+    const scheduled = mockNotifee.__getScheduled();
+    expect(scheduled[TEST_ALARM_ID]).toBeDefined();
+
+    const trigger = scheduled[TEST_ALARM_ID].trigger as {
+      type: number;
+      timestamp: number;
+    };
+    expect(trigger.type).toBe(TriggerType.TIMESTAMP);
+    expect(trigger.timestamp - before).toBeGreaterThanOrEqual(TEST_ALARM_DELAY_MS - 50);
+    expect(trigger.timestamp - before).toBeLessThanOrEqual(TEST_ALARM_DELAY_MS + 50);
   });
 });
 

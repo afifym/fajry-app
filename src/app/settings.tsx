@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {Modal,
   Pressable,
   ScrollView,
@@ -14,7 +14,7 @@ import { Check, ChevronRight, Back, Icon } from "@/components/Icon";
 import { Palette, Radius } from "@/constants/theme";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AdhanRecitation, CalculationMethodKey, City } from "@/types";
-import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
+import { rebuildScheduleOnAppOpen, scheduleTestAlarm, TEST_ALARM_DELAY_MS } from "@/utils/scheduling";
 
 const CALCULATION_METHODS: { key: CalculationMethodKey; label: string }[] = [
   { key: "MuslimWorldLeague", label: "Muslim World League" },
@@ -53,11 +53,34 @@ async function applyAndRebuild(
   });
 }
 
+const TEST_ALARM_DELAY_SECONDS = TEST_ALARM_DELAY_MS / 1_000;
+
 const SettingsScreen = () => {
   const settings = useSettingsStore();
   const [cityModalOpen, setCityModalOpen] = useState(false);
   const [methodModalOpen, setMethodModalOpen] = useState(false);
   const [recitationModalOpen, setRecitationModalOpen] = useState(false);
+  const [testCountdown, setTestCountdown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (testCountdown === null || testCountdown <= 0) return;
+
+    const timer = setTimeout(() => {
+      setTestCountdown((current) => {
+        if (current === null || current <= 1) return null;
+        return current - 1;
+      });
+    }, 1_000);
+
+    return () => clearTimeout(timer);
+  }, [testCountdown]);
+
+  const handleTestAlarm = useCallback(async () => {
+    if (testCountdown !== null) return;
+
+    await scheduleTestAlarm();
+    setTestCountdown(TEST_ALARM_DELAY_SECONDS);
+  }, [testCountdown]);
 
   const handleMethodSelect = useCallback(async (key: CalculationMethodKey) => {
     useSettingsStore.getState().setCalculationMethod(key);
@@ -142,11 +165,16 @@ const SettingsScreen = () => {
         </View>
 
         <Pressable
-          style={st.testAlarmBtn}
-          onPress={() => router.push("/alarm")}
-          accessibilityLabel="Trigger alarm screen"
+          style={[st.testAlarmBtn, testCountdown !== null && st.testAlarmBtnDisabled]}
+          onPress={handleTestAlarm}
+          disabled={testCountdown !== null}
+          accessibilityLabel="Test alarm"
         >
-          <Text style={st.testAlarmText}>Trigger Alarm</Text>
+          <Text style={st.testAlarmText}>
+            {testCountdown !== null
+              ? `Alarm in ${testCountdown}s…`
+              : "Test Alarm"}
+          </Text>
         </Pressable>
       </ScrollView>
 
@@ -323,6 +351,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Palette.bgCard,
   },
+  testAlarmBtnDisabled: { opacity: 0.6 },
   testAlarmText: { color: Palette.gold, fontSize: 16, fontWeight: '500' },
 
   row: {
