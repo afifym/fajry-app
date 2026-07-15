@@ -1,13 +1,17 @@
 import 'expo-router/entry';
-import notifee, { EventType } from '@notifee/react-native';
+import notifee from '@notifee/react-native';
 import { Platform } from 'react-native';
 
+import {
+  markPendingAlarmLaunch,
+  shouldLaunchAlarmScreen,
+} from './src/utils/alarmEvents';
+
 // Handle notification events while the app is in the background or killed state.
-// Foreground events are handled in-screen via notifee.onForegroundEvent().
 notifee.onBackgroundEvent(async ({ type, detail }) => {
-  if (type === EventType.ACTION_PRESS && detail.pressAction) {
-    // Specific actions (snooze, dismiss) are handled in scheduling.ts helpers.
-    // Task 9 will populate this handler.
+  const notificationId = detail.notification?.id;
+  if (shouldLaunchAlarmScreen(type, notificationId)) {
+    markPendingAlarmLaunch(notificationId!);
   }
 });
 

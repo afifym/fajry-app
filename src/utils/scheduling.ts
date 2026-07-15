@@ -1,8 +1,13 @@
-import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
-import { Platform } from 'react-native';
+import notifee, { AndroidCategory, AndroidImportance, TriggerType } from '@notifee/react-native';
 import * as Sentry from '@sentry/react-native';
 
 import type { AdhanRecitation, AlarmDay, CalculationMethodKey, Location } from '@/types';
+import {
+  FAJR_ALARM_ID_PREFIX,
+  SLEEP_ALARM_ID_PREFIX,
+  SNOOZE_ALARM_ID,
+  TEST_ALARM_ID,
+} from '@/utils/alarmEvents';
 import { buildAlarmSchedule } from './prayerTimes';
 import { getTodayReflection } from './reflections';
 import {
@@ -12,9 +17,34 @@ import {
   setupNotifeeChannels,
 } from './notifications';
 
-const FAJR_PREFIX = 'fajr-';
-const SLEEP_PREFIX = 'sleep-';
-const SNOOZE_ID = 'snooze-current';
+const FAJR_PREFIX = FAJR_ALARM_ID_PREFIX;
+const SLEEP_PREFIX = SLEEP_ALARM_ID_PREFIX;
+
+export const TEST_ALARM_DELAY_MS = 5_000;
+
+function alarmNotification(
+  id: string,
+  title: string,
+  body: string,
+  channelId: string,
+) {
+  return {
+    id,
+    title,
+    body,
+    android: {
+      channelId,
+      category: AndroidCategory.ALARM,
+      importance: AndroidImportance.HIGH,
+      asForegroundService: true,
+      fullScreenAction: { id: 'default' },
+      ongoing: true,
+      autoCancel: false,
+      pressAction: { id: 'default' },
+    },
+    ios: { sound: 'default' as const, critical: true },
+  };
+}
 
 export type RebuildSettings = {
   location: Location;
@@ -41,19 +71,14 @@ export async function scheduleSnooze(
   const wakeAt = new Date(Date.now() + snoozeDurationMinutes * 60_000);
   if (wakeAt >= sunriseTime) return 'refused';
 
-  await notifee.cancelTriggerNotification(SNOOZE_ID);
+  await notifee.cancelTriggerNotification(SNOOZE_ALARM_ID);
   await notifee.createTriggerNotification(
-    {
-      id: SNOOZE_ID,
-      title: 'Time for Fajr Prayer',
-      body: 'Snooze ended — rise and pray.',
-      android: {
-        channelId: CHANNEL_SNOOZE,
-        importance: AndroidImportance.HIGH,
-        asForegroundService: true,
-      },
-      ios: { sound: 'default' },
-    },
+    alarmNotification(
+      SNOOZE_ALARM_ID,
+      'Time for Fajr Prayer',
+      'Snooze ended — rise and pray.',
+      CHANNEL_SNOOZE,
+    ),
     {
       type: TriggerType.TIMESTAMP,
       timestamp: wakeAt.getTime(),
@@ -91,17 +116,12 @@ export async function rebuildScheduleOnAppOpen(
     if (day.alarmTime.getTime() <= now) continue; // already past
 
     await notifee.createTriggerNotification(
-      {
-        id: `${FAJR_PREFIX}${day.date}`,
-        title: 'Time for Fajr Prayer',
-        body: 'Answer the call.',
-        android: {
-          channelId: CHANNEL_FAJR_ALARM,
-          importance: AndroidImportance.HIGH,
-          asForegroundService: Platform.OS === 'android',
-        },
-        ios: { sound: 'default', critical: true },
-      },
+      alarmNotification(
+        `${FAJR_PREFIX}${day.date}`,
+        'Time for Fajr Prayer',
+        'Answer the call.',
+        CHANNEL_FAJR_ALARM,
+      ),
       {
         type: TriggerType.TIMESTAMP,
         timestamp: day.alarmTime.getTime(),
@@ -115,16 +135,16 @@ export async function rebuildScheduleOnAppOpen(
       if (reminderAt > now) {
         const reflection = getTodayReflection();
         await notifee.createTriggerNotification(
-          {
-            id: `${SLEEP_PREFIX}${day.date}`,
-            title: 'Time to sleep',
-            body: reflection.text,
-            android: { channelId: CHANNEL_SLEEP_REMINDER },
-            ios: { sound: 'default' },
-          },
+          alarmNotification(
+            `${SLEEP_PREFIX}${day.date}`,
+            'Time to sleep',
+            reflection.text,
+            CHANNEL_SLEEP_REMINDER,
+          ),
           {
             type: TriggerType.TIMESTAMP,
             timestamp: reminderAt,
+            alarmManager: { allowWhileIdle: true },
           },
         );
       }
@@ -144,4 +164,24 @@ export async function rebuildScheduleOnAppOpen(
   });
 
   return result;
+}
+
+/** Schedules a test alarm using the same wake path as production Fajr alarms. */
+export async function scheduleTestAlarm(): Promise<void> {
+  await setupNotifeeChannels();
+  await notifee.cancelTriggerNotification(TEST_ALARM_ID);
+
+  await notifee.createTriggerNotification(
+    alarmNotification(
+      TEST_ALARM_ID,
+      'Time for Fajr Prayer',
+      'Test alarm — rise and pray.',
+      CHANNEL_FAJR_ALARM,
+    ),
+    {
+      type: TriggerType.TIMESTAMP,
+      timestamp: Date.now() + TEST_ALARM_DELAY_MS,
+      alarmManager: { allowWhileIdle: true },
+    },
+  );
 }

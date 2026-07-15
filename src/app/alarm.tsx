@@ -23,6 +23,7 @@ import { Palette, Radius } from "@/constants/theme";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { getFajrAndSunrise, todayISODate } from "@/utils/prayerTimes";
+import { dismissActiveAlarm } from "@/utils/alarmEvents";
 import { scheduleSnooze } from "@/utils/scheduling";
 
 type Phase = "ringing" | "dismissed";
@@ -135,16 +136,19 @@ const AlarmScreen = () => {
       return;
     }
     stopAdhan();
+    await dismissActiveAlarm();
     router.back();
   }, [settings.snoozeDurationMinutes, sunriseTime, stopAdhan]);
 
-  const handleDismiss = useCallback(() => {
+  const handleDismiss = useCallback(async () => {
+    await dismissActiveAlarm();
     setPhase("dismissed");
   }, []);
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     confirm(todayISODate(), true);
     stopAdhan();
+    await dismissActiveAlarm();
     router.replace("/");
   }, [confirm, stopAdhan]);
 

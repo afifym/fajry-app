@@ -27,6 +27,18 @@ function withNotifeeAndroid(config) {
 
     if (!application.service) application.service = [];
 
+    const mainActivity = (application.activity ?? []).find(
+      (activity) =>
+        activity.$?.['android:name'] === '.MainActivity' ||
+        activity.$?.['android:name'] === 'com.afify.fajryapp.MainActivity' ||
+        activity.$?.['android:name']?.endsWith('.MainActivity'),
+    );
+
+    if (mainActivity?.$) {
+      mainActivity.$['android:showWhenLocked'] = 'true';
+      mainActivity.$['android:turnScreenOn'] = 'true';
+    }
+
     const alreadyDeclared = application.service.some(
       (s) => s.$?.['android:name'] === 'app.notifee.core.ForegroundService',
     );
@@ -51,6 +63,7 @@ function withNotifeeAndroid(config) {
       'android.permission.FOREGROUND_SERVICE_DATA_SYNC',
       'android.permission.RECEIVE_BOOT_COMPLETED',
       'android.permission.SCHEDULE_EXACT_ALARM',
+      'android.permission.USE_FULL_SCREEN_INTENT',
     ]) {
       if (!existing.includes(perm)) {
         if (!manifest.manifest['uses-permission']) manifest.manifest['uses-permission'] = [];

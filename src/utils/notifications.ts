@@ -28,9 +28,10 @@ export async function setupNotifeeChannels(): Promise<void> {
 
   await notifee.createChannel({
     id: CHANNEL_SLEEP_REMINDER,
-    name: 'Sleep Reminder',
-    importance: AndroidImportance.DEFAULT,
-    vibration: false,
+    name: 'Bedtime Alarm',
+    importance: AndroidImportance.HIGH,
+    bypassDnd: true,
+    vibration: true,
     sound: 'default',
   });
 }

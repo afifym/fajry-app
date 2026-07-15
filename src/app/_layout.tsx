@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
+import { useAlarmLaunchListener } from '@/hooks/use-alarm-launch-listener';
 import { Palette } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -53,6 +54,8 @@ const RootLayout = () => {
     void SystemUI.setBackgroundColorAsync(Palette.bg);
   }, []);
 
+  useAlarmLaunchListener(fontsLoaded || !!fontError);
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -71,6 +74,10 @@ const RootLayout = () => {
         {/* Alarm slides up from the bottom — matches the urgency of the notification */}
         <Stack.Screen
           name="alarm"
+          options={{ animation: 'slide_from_bottom', animationDuration: 350 }}
+        />
+        <Stack.Screen
+          name="bedtime"
           options={{ animation: 'slide_from_bottom', animationDuration: 350 }}
         />
       </Stack>

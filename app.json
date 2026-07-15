@@ -11,8 +11,12 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.afify.fajry-app",
+      "entitlements": {
+        "com.apple.developer.usernotifications.critical-alerts": true
+      },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Your location is used to calculate accurate Fajr prayer times. It never leaves your device."
+        "NSLocationWhenInUseUsageDescription": "Your location is used to calculate accurate Fajr prayer times. It never leaves your device.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -23,7 +27,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.afify.fajryapp"
+      "package": "com.afify.fajryapp",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.USE_FULL_SCREEN_INTENT"
+      ]
     },
     "web": {
       "output": "static",
@@ -47,6 +58,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8f5e4382-f553-43e6-802f-7fc33f3d9e55"
+      }
+    },
+    "owner": "afifym"
   }
 }

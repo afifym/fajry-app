@@ -8,11 +8,16 @@ const EventType = { UNKNOWN: -1, DELIVERED: 0, PRESS: 1, ACTION_PRESS: 2, DISMIS
 const TriggerType = { TIMESTAMP: 0, INTERVAL: 1 };
 const AuthorizationStatus = { NOT_DETERMINED: -1, DENIED: 0, AUTHORIZED: 1, PROVISIONAL: 2 };
 const AndroidImportance = { NONE: 0, MIN: 1, LOW: 2, DEFAULT: 3, HIGH: 4 };
+const AndroidCategory = { ALARM: 'alarm' };
 
 const notifee = {
   createChannel: jest.fn().mockResolvedValue(undefined),
   requestPermission: jest.fn().mockResolvedValue({ authorizationStatus: AuthorizationStatus.AUTHORIZED }),
   getTriggerNotificationIds: jest.fn().mockImplementation(() => Promise.resolve(Object.keys(scheduled))),
+  getInitialNotification: jest.fn().mockResolvedValue(null),
+  getDisplayedNotifications: jest.fn().mockResolvedValue([]),
+  cancelDisplayedNotifications: jest.fn().mockResolvedValue(undefined),
+  stopForegroundService: jest.fn().mockResolvedValue(undefined),
   createTriggerNotification: jest.fn().mockImplementation((notification, _trigger) => {
     const id = notification.id ?? String(Date.now());
     scheduled[id] = { notification, trigger: _trigger };
@@ -53,4 +58,5 @@ module.exports = {
   TriggerType,
   AuthorizationStatus,
   AndroidImportance,
+  AndroidCategory,
 };
