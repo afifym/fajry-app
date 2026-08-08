@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "fajry-app",
+    "name": "Fajry",
     "slug": "fajry-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,9 +11,6 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.afify.fajry-app",
-      "entitlements": {
-        "com.apple.developer.usernotifications.critical-alerts": true
-      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Your location is used to calculate accurate Fajr prayer times. It never leaves your device.",
         "ITSAppUsesNonExemptEncryption": false
