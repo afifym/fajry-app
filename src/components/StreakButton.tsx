@@ -1,5 +1,4 @@
-import {Pressable, StyleSheet, View, Text} from "react-native";
-
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Flame, Icon } from "@/components/Icon";
 import { Palette } from "@/constants/theme";
@@ -14,6 +13,8 @@ const FLAME_SIZE = 14;
 export function StreakButton({ streak, onPress }: Props) {
   const unit = streak === 1 ? "day" : "days";
   const active = streak > 0;
+
+  if (!active) return null;
 
   return (
     <Pressable
