@@ -6,10 +6,10 @@ import { runOnJS } from "react-native-reanimated";
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
 import type { AppIcon } from "@/components/Icon";
-import { Adhan, Icon, Sunrise } from "@/components/Icon";
+import { Adhan, AlarmClock, Bed, Icon, Sunrise } from "@/components/Icon";
 import { ElMessiriText } from "@/components/el-messiri-text";
 import { featureFlags } from "@/constants/featureFlags";
-import { ARC_GRADIENT_HIGHLIGHT } from "@/constants/goldGradient";
+import { ARC_GRADIENT_HIGHLIGHT, ARC_GRADIENT_MUTED, arcGradientStops } from "@/constants/goldGradient";
 import { Palette } from "@/constants/theme";
 import { sleepDurationBetween } from "@/utils/alarmPickerTime";
 import {
@@ -30,7 +30,8 @@ const FACE_R = 86;
 const MARKER_R = 62;
 const STROKE = 22;
 const UNSELECTED_STROKE = 40;
-const HIT_SIZE = 44;
+const HIT_SIZE = 48;
+const HANDLE_SIZE = 32;
 const SELECTED_TRACK_OPACITY = 0.95;
 
 const DURATION_HOURS_SIZE = 28;
@@ -134,9 +135,9 @@ function GoldArcLinearGradient({
       x2={reversed ? x1 : x2}
       y2={reversed ? y1 : y2}
     >
-      <Stop offset="0%" stopColor={Palette.goldMuted} />
-      <Stop offset="50%" stopColor={Palette.gold} />
-      <Stop offset="100%" stopColor={ARC_GRADIENT_HIGHLIGHT} />
+      {arcGradientStops.map((stop) => (
+        <Stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+      ))}
     </LinearGradient>
   );
 }
@@ -165,36 +166,6 @@ function SelectedArcGradient({
   );
 }
 
-function ArcEndpoint({
-  angle,
-  fill,
-  muted,
-}: {
-  angle: number;
-  fill: string;
-  muted?: boolean;
-}) {
-  const pt = polarToCartesian(CENTER, CENTER, TRACK_R, angle);
-
-  return (
-    <Circle
-      cx={pt.x}
-      cy={pt.y}
-      r={STROKE / 2}
-      fill={muted ? Palette.borderSubtle : fill}
-      opacity={muted ? 0.55 : SELECTED_TRACK_OPACITY}
-    />
-  );
-}
-
-function AnchorDot({ angle }: { angle: number }) {
-  const pt = polarToCartesian(CENTER, CENTER, TRACK_R, angle);
-
-  return (
-    <Circle cx={pt.x} cy={pt.y} r={STROKE / 4} fill={Palette.bg} />
-  );
-}
-
 function formatDurationParts(ms: number): { hours: number; minutes: number } {
   const total = Math.max(0, Math.round(ms / 60_000));
   return { hours: Math.floor(total / 60), minutes: total % 60 };
@@ -202,7 +173,11 @@ function formatDurationParts(ms: number): { hours: number; minutes: number } {
 
 function DraggableArcHandle({
   angle,
+  icon,
+  fillColor,
   disabled,
+  muted,
+  zIndex,
   dialPageOffset,
   onDragStart,
   onAngleChange,
@@ -210,7 +185,11 @@ function DraggableArcHandle({
   accessibilityLabel,
 }: {
   angle: number;
+  icon: AppIcon;
+  fillColor: string;
   disabled?: boolean;
+  muted?: boolean;
+  zIndex?: number;
   dialPageOffset: RefObject<{ x: number; y: number }>;
   onDragStart?: () => void;
   onAngleChange: (angle: number) => void;
@@ -262,12 +241,27 @@ function DraggableArcHandle({
           {
             left: pt.x - HIT_SIZE / 2,
             top: pt.y - HIT_SIZE / 2,
+            zIndex,
           },
           disabled && s.arcHandleDisabled,
         ]}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="adjustable"
-      />
+      >
+        <View
+          style={[
+            s.arcHandle,
+            { backgroundColor: fillColor },
+            muted && s.arcHandleMuted,
+          ]}
+        >
+          <Icon
+            icon={icon}
+            size={15}
+            color={disabled || muted ? Palette.textMuted : Palette.bgInset}
+          />
+        </View>
+      </View>
     </GestureDetector>
   );
 }
@@ -570,22 +564,6 @@ export const SleepWakeClock = ({
               strokeLinecap="butt"
               opacity={SELECTED_TRACK_OPACITY}
             />
-            {bedAngle != null ? (
-              <ArcEndpoint
-                angle={bedAngle}
-                fill={ARC_GRADIENT_HIGHLIGHT}
-                muted={!bedEnabled}
-              />
-            ) : null}
-            {wakeAngle != null ? (
-              <ArcEndpoint
-                angle={wakeAngle}
-                fill={Palette.goldMuted}
-                muted={!wakeEnabled}
-              />
-            ) : null}
-            {bedAngle != null ? <AnchorDot angle={bedAngle} /> : null}
-            {wakeAngle != null ? <AnchorDot angle={wakeAngle} /> : null}
           </>
         ) : null}
 
@@ -626,6 +604,10 @@ export const SleepWakeClock = ({
       {bedAngle != null ? (
         <DraggableArcHandle
           angle={bedAngle}
+          icon={Bed}
+          fillColor={ARC_GRADIENT_HIGHLIGHT}
+          zIndex={1}
+          muted={!bedEnabled}
           disabled={bedDragDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
@@ -638,6 +620,10 @@ export const SleepWakeClock = ({
       {wakeAngle != null ? (
         <DraggableArcHandle
           angle={wakeAngle}
+          icon={AlarmClock}
+          fillColor={ARC_GRADIENT_MUTED}
+          zIndex={2}
+          muted={!wakeEnabled}
           disabled={wakeDragDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
@@ -697,8 +683,20 @@ const s = StyleSheet.create({
     position: "absolute",
     width: HIT_SIZE,
     height: HIT_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  arcHandleDisabled: { opacity: 0.35 },
+  arcHandleDisabled: { opacity: 0.4 },
+  arcHandleMuted: { opacity: 0.55 },
+  arcHandle: {
+    width: HANDLE_SIZE,
+    height: HANDLE_SIZE,
+    borderRadius: HANDLE_SIZE / 2,
+    borderWidth: 2,
+    borderColor: Palette.bgInset,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   durationRow: {
     alignItems: "center",
     justifyContent: "center",
