@@ -30,21 +30,26 @@ export function parse12hAngle(angleDeg: number): { hour12: number; minutes: numb
   return { hour12, minutes };
 }
 
-/** Map dial angle to a bedtime on the night before Fajr. */
+function nearestPriorTimeOfDay(hours: number, minutes: number, fajrTime: Date): Date {
+  const candidate = new Date(fajrTime);
+  candidate.setHours(hours, minutes, 0, 0);
+  if (candidate.getTime() >= fajrTime.getTime()) {
+    candidate.setDate(candidate.getDate() - 1);
+  }
+  return candidate;
+}
+
+/**
+ * Map dial angle to a bedtime on the night before Fajr. A 12-hour dial reading is
+ * inherently AM/PM-ambiguous, so this picks whichever half-day reading lands closer
+ * to (but before) Fajr — the seam this creates sits opposite Fajr on the dial rather
+ * than at a fixed hour, so it tracks Fajr instead of assuming bedtime is after 6pm.
+ */
 export function bedDateFrom12hAngle(angleDeg: number, fajrTime: Date): Date {
   const { hour12, minutes } = parse12hAngle(angleDeg);
-  const picked = new Date(fajrTime);
-  if (hour12 === 12) {
-    picked.setHours(0, minutes, 0, 0);
-  } else if (hour12 >= 6) {
-    picked.setHours(hour12 + 12, minutes, 0, 0);
-  } else {
-    picked.setHours(hour12, minutes, 0, 0);
-  }
-  if (picked.getTime() >= fajrTime.getTime()) {
-    picked.setDate(picked.getDate() - 1);
-  }
-  return picked;
+  const am = nearestPriorTimeOfDay(hour12 === 12 ? 0 : hour12, minutes, fajrTime);
+  const pm = nearestPriorTimeOfDay(hour12 === 12 ? 12 : hour12 + 12, minutes, fajrTime);
+  return fajrTime.getTime() - am.getTime() <= fajrTime.getTime() - pm.getTime() ? am : pm;
 }
 
 /** Map dial angle to a wake time on Fajr morning (12h face, AM), capped at Shurooq. */

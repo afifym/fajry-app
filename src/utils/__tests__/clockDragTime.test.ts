@@ -69,4 +69,25 @@ describe('clockDragTime', () => {
     expect(snapped).toBe(dateTo12Angle(bedDateFrom12hAngle(snapped, fajr)));
     expect(sleepHoursFrom12hAngle(snapped, fajr)).toBe(sleepHoursFrom12hAngle(90, fajr));
   });
+
+  it('bedDateFrom12hAngle resolves 5:50 to PM, not a bogus 23h40m AM reading', () => {
+    const bed = bedDateFrom12hAngle(175, fajr);
+    expect(bed.getHours()).toBe(17);
+    expect(bed.getDate()).toBe(14);
+  });
+
+  it('bedDateFrom12hAngle tracks the seam to Fajr instead of a fixed 6pm', () => {
+    const earlyFajr = new Date(2024, 0, 15, 4, 0, 0);
+    const bed = bedDateFrom12hAngle(120, earlyFajr);
+    expect(bed.getHours()).toBe(16);
+    expect(bed.getDate()).toBe(14);
+  });
+
+  it('bedDateFrom12hAngle has no discontinuity around the old fixed 6pm seam', () => {
+    const before = bedDateFrom12hAngle(179, fajr);
+    const at = bedDateFrom12hAngle(180, fajr);
+    const after = bedDateFrom12hAngle(181, fajr);
+    expect(Math.abs(at.getTime() - before.getTime())).toBeLessThan(6 * 60_000);
+    expect(Math.abs(after.getTime() - at.getTime())).toBeLessThan(6 * 60_000);
+  });
 });
