@@ -13,7 +13,6 @@ import { HomeBg } from "@/components/HomeBg";
 import { Icon, Flame, MapPin, Settings } from "@/components/Icon";
 import { SleepScheduleCard } from "@/components/SleepScheduleCard";
 import { SleepWakeClock } from "@/components/SleepWakeClock";
-import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { StreakButton } from "@/components/StreakButton";
 import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { ElMessiriText } from "@/components/el-messiri-text";
@@ -24,8 +23,6 @@ import type { AlarmDay, City, Location } from "@/types";
 import { detectLocationChange, requestGPSLocation } from "@/utils/location";
 import {
   getNextSleepSession,
-  isConfirmationWindowOpen,
-  todayISODate,
 } from "@/utils/prayerTimes";
 import {
   rebuildScheduleOnAppOpen,
@@ -55,14 +52,9 @@ function formatPrayerTimeParts(date: Date): { time: string; period: "AM" | "PM" 
 
 const HomeScreenContent = () => {
   const settings = useSettingsStore();
-  const { streak, confirm } = useConsistencyStore();
+  const { streak } = useConsistencyStore();
 
   const [schedule, setSchedule] = useState<AlarmDay[]>([]);
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [confirmed, setConfirmed] = useState(() => {
-    const today = todayISODate();
-    return !!useConsistencyStore.getState().confirmations[today]?.confirmedAt;
-  });
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editSheet, setEditSheet] = useState<"bedtime" | "wakeup" | null>(null);
   const [clockPreview, setClockPreview] = useState<{
@@ -72,15 +64,6 @@ const HomeScreenContent = () => {
   const [now, setNow] = useState(() => new Date());
 
   const location = settings.location!;
-
-  const checkConfirmationWindow = useCallback((s: AlarmDay[]) => {
-    const today = s.find((d) => d.date === todayISODate());
-    if (!today) return;
-    // Use true fajrTime (not alarmTime) — window opens at prayer time, not the pre-alarm offset
-    setConfirmationOpen(
-      isConfirmationWindowOpen(today.fajrTime, today.sunriseTime),
-    );
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -97,19 +80,15 @@ const HomeScreenContent = () => {
           desiredSleepHours: s.desiredSleepHours,
         });
         setSchedule(next);
-        checkConfirmationWindow(next);
       }
       void rebuild();
-    }, [checkConfirmationWindow]),
+    }, []),
   );
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setNow(new Date());
-      checkConfirmationWindow(schedule);
-    }, 60_000);
+    const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
-  }, [schedule, checkConfirmationWindow]);
+  }, []);
 
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
   const prayerTimeParts = nextFajr
@@ -134,7 +113,6 @@ const HomeScreenContent = () => {
       ...overrides,
     });
     setSchedule(newSchedule);
-    checkConfirmationWindow(newSchedule);
   }
 
   async function applyLocationChange(loc: Location) {
@@ -188,12 +166,6 @@ const HomeScreenContent = () => {
     }
     checkLocation();
   }, []); // run once on mount — manual location changes go through handleCityPick
-
-  function handleConfirm() {
-    if (confirmed) return;
-    setConfirmed(true);
-    confirm(todayISODate(), true);
-  }
 
   async function handleCityPick(city: City) {
     setPickerOpen(false);
@@ -307,17 +279,6 @@ const HomeScreenContent = () => {
               />
             </SleepScheduleCard>
           </View>
-
-          {confirmationOpen && !confirmed && (
-            <View style={styles.confirmCard}>
-              <Text style={styles.confirmTitle}>FAJR WINDOW OPEN</Text>
-              <Text style={styles.confirmHint}>Did you pray on time?</Text>
-              <SlideToConfirm
-                onConfirm={handleConfirm}
-                label="Slide to confirm"
-              />
-            </View>
-          )}
         </View>
       </SafeAreaView>
 
@@ -336,7 +297,6 @@ const HomeScreenContent = () => {
         schedule={schedule}
         onScheduleChange={(s) => {
           setSchedule(s);
-          checkConfirmationWindow(s);
         }}
         now={now}
       />
@@ -346,7 +306,6 @@ const HomeScreenContent = () => {
         schedule={schedule}
         onScheduleChange={(s) => {
           setSchedule(s);
-          checkConfirmationWindow(s);
         }}
       />
     </GestureHandlerRootView>
@@ -442,21 +401,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     flexShrink: 1,
   },
-
-  confirmCard: {
-    backgroundColor: Palette.bgCard,
-    borderRadius: Radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Palette.borderSubtle,
-    padding: 20,
-    gap: 10,
-    alignItems: "center",
-  },
-  confirmTitle: {
-    color: Palette.gold,
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 2,
-  },
-  confirmHint: { color: Palette.textSecondary, fontSize: 14 },
 });

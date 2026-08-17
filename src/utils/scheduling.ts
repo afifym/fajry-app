@@ -111,6 +111,7 @@ export async function rebuildScheduleOnAppOpen(
   }
 
   const now = Date.now();
+  const reflection = getTodayReflection();
 
   for (const day of schedule) {
     if (day.alarmTime.getTime() <= now) continue; // already past
@@ -119,7 +120,7 @@ export async function rebuildScheduleOnAppOpen(
       alarmNotification(
         `${FAJR_PREFIX}${day.date}`,
         'Time for Fajr Prayer',
-        'Answer the call.',
+        reflection.text,
         CHANNEL_FAJR_ALARM,
       ),
       {
@@ -133,7 +134,6 @@ export async function rebuildScheduleOnAppOpen(
       const reminderAt = day.fajrTime.getTime() - settings.desiredSleepHours * 3_600_000;
 
       if (reminderAt > now) {
-        const reflection = getTodayReflection();
         await notifee.createTriggerNotification(
           alarmNotification(
             `${SLEEP_PREFIX}${day.date}`,
