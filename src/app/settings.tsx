@@ -1,16 +1,12 @@
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import {Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View, Text} from "react-native";
+import { Pressable, ScrollView, StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 
 import { CityPickerModal } from "@/components/CityPickerModal";
 import { HomeBg } from "@/components/HomeBg";
-import { Check, ChevronRight, Back, Icon } from "@/components/Icon";
+import { OptionPickerModal } from "@/components/OptionPickerModal";
+import { ChevronRight, Back, Icon } from "@/components/Icon";
 import { Palette, Radius } from "@/constants/theme";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AdhanRecitation, CalculationMethodKey, City } from "@/types";
@@ -178,65 +174,25 @@ const SettingsScreen = () => {
         </Pressable>
       </ScrollView>
 
-      {/* Calculation method picker modal */}
-      <PickerModal
+      <OptionPickerModal
         visible={methodModalOpen}
         title="Calculation Method"
+        options={CALCULATION_METHODS}
+        selectedKey={settings.calculationMethod}
+        presentationStyle="pageSheet"
         onClose={() => setMethodModalOpen(false)}
-      >
-        {CALCULATION_METHODS.map((m) => (
-          <Pressable
-            key={m.key}
-            style={[
-              st.optionRow,
-              m.key === settings.calculationMethod && st.optionRowActive,
-            ]}
-            onPress={() => handleMethodSelect(m.key)}
-          >
-            <Text
-              style={[
-                st.optionText,
-                m.key === settings.calculationMethod && st.optionTextActive,
-              ]}
-            >
-              {m.label}
-            </Text>
-            {m.key === settings.calculationMethod && (
-              <Icon icon={Check} size={18} color={Palette.gold} />
-            )}
-          </Pressable>
-        ))}
-      </PickerModal>
+        onSelect={handleMethodSelect}
+      />
 
-      {/* Adhan recitation picker modal */}
-      <PickerModal
+      <OptionPickerModal
         visible={recitationModalOpen}
         title="Adhan Recitation"
+        options={ADHAN_RECITATIONS}
+        selectedKey={settings.adhanRecitation}
+        presentationStyle="pageSheet"
         onClose={() => setRecitationModalOpen(false)}
-      >
-        {ADHAN_RECITATIONS.map((r) => (
-          <Pressable
-            key={r.key}
-            style={[
-              st.optionRow,
-              r.key === settings.adhanRecitation && st.optionRowActive,
-            ]}
-            onPress={() => handleRecitationSelect(r.key)}
-          >
-            <Text
-              style={[
-                st.optionText,
-                r.key === settings.adhanRecitation && st.optionTextActive,
-              ]}
-            >
-              {r.label}
-            </Text>
-            {r.key === settings.adhanRecitation && (
-              <Icon icon={Check} size={18} color={Palette.gold} />
-            )}
-          </Pressable>
-        ))}
-      </PickerModal>
+        onSelect={handleRecitationSelect}
+      />
 
       <CityPickerModal
         visible={cityModalOpen}
@@ -266,36 +222,6 @@ const SettingRow = ({
       <Text style={st.rowLabel}>{label}</Text>
       {children}
     </View>
-  );
-};
-
-const PickerModal = ({
-  visible,
-  title,
-  onClose,
-  children,
-}: {
-  visible: boolean;
-  title: string;
-  onClose: () => void;
-  children: React.ReactNode;
-}) => {
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-    >
-      <SafeAreaView style={st.modalRoot}>
-        <View style={st.modalHeader}>
-          <Text style={st.modalTitle}>{title}</Text>
-          <Pressable onPress={onClose}>
-            <Text style={st.modalClose}>Done</Text>
-          </Pressable>
-        </View>
-        <ScrollView>{children}</ScrollView>
-      </SafeAreaView>
-    </Modal>
   );
 };
 
@@ -374,30 +300,4 @@ const st = StyleSheet.create({
     maxWidth: '55%',
   },
   pickerValue: { color: Palette.gold, fontSize: 15, textAlign: 'right' },
-
-  modalRoot: { flex: 1, backgroundColor: Palette.bg },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Palette.borderSubtle,
-  },
-  modalTitle: { color: Palette.text, fontSize: 18, fontWeight: '600' },
-  modalClose: { color: Palette.gold, fontSize: 16 },
-
-  optionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Palette.bgInset,
-  },
-  optionRowActive: { backgroundColor: Palette.bgCard },
-  optionText: { color: Palette.text, fontSize: 16 },
-  optionTextActive: { color: Palette.gold, fontWeight: '500' },
 });
