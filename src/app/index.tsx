@@ -21,6 +21,7 @@ import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
 import { detectLocationChange, requestGPSLocation } from "@/utils/location";
+import { toNightFaceDisplayDate } from "@/utils/clockDragTime";
 import {
   getNextSleepSession,
 } from "@/utils/prayerTimes";
@@ -269,8 +270,18 @@ const HomeScreenContent = () => {
             </View>
 
             <SleepScheduleCard
-              bedTime={clockPreview?.bedTime ?? sleepSession?.bedTime ?? null}
-              wakeTime={clockPreview?.wakeTime ?? sleepSession?.wakeTime ?? null}
+              bedTime={
+                clockPreview?.bedTime ??
+                (sleepSession
+                  ? toNightFaceDisplayDate(sleepSession.bedTime, sleepSession.fajrTime)
+                  : null)
+              }
+              wakeTime={
+                clockPreview?.wakeTime ??
+                (sleepSession
+                  ? toNightFaceDisplayDate(sleepSession.wakeTime, sleepSession.fajrTime)
+                  : null)
+              }
               bedEnabled={settings.sleepReminderEnabled}
               wakeEnabled={settings.alarmEnabled}
               onBedPress={() => setEditSheet("bedtime")}

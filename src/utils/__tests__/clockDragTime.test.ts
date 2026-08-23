@@ -58,6 +58,15 @@ describe('clockDragTime', () => {
     expect(wakeOffsetFrom12hAngle(157.5, fajr)).toBe(15);
   });
 
+  it('AM-side wake stays AM even when Fajr is in the afternoon', () => {
+    const afternoonFajr = new Date(2024, 0, 15, 14, 58, 0);
+    const offset = wakeOffsetFrom12hAngle(90, afternoonFajr);
+    const wake = wakeTimeFromOffset(afternoonFajr, offset);
+    expect(wake.getHours()).toBeGreaterThanOrEqual(2);
+    expect(wake.getHours()).toBeLessThan(4);
+    expect(wake.getHours()).toBeLessThan(12);
+  });
+
   it('snapWakeAngle maps out-of-range drag to the Shurooq cap', () => {
     const snapped = snapWakeAngle(300, fajr, sunrise);
     const wake = wakeTimeFromOffset(

@@ -21,6 +21,7 @@ import {
   bedDateFrom12hAngle,
   dateToNightFaceAngle,
   sleepHoursFrom12hAngle,
+  toNightFaceDisplayDate,
   snapDialAngle,
   wakeDateFrom12hAngleRaw,
   wakeOffsetFrom12hAngle,
@@ -403,7 +404,7 @@ export const SleepWakeClock = ({
   wakeTime,
   fajrTime,
   sunriseTime,
-  durationMs,
+  durationMs: _durationMs,
   bedEnabled = true,
   wakeEnabled = true,
   onBedTimeChange,
@@ -436,11 +437,19 @@ export const SleepWakeClock = ({
     ? arcD(CENTER, CENTER, TRACK_R, sleepArc.start, sleepArc.end)
     : "";
 
-  const previewDurationMs = hasArc
-    ? dragBedAngle != null || dragWakeAngle != null
-      ? sleepDurationBetween(previewBed, previewWake)
-      : (durationMs ?? sleepDurationBetween(previewBed, previewWake))
-    : null;
+  const displayBed =
+    previewBed && fajrTime
+      ? toNightFaceDisplayDate(previewBed, fajrTime)
+      : previewBed;
+  const displayWake =
+    previewWake && fajrTime
+      ? toNightFaceDisplayDate(previewWake, fajrTime)
+      : previewWake;
+
+  const previewDurationMs =
+    displayBed && displayWake
+      ? sleepDurationBetween(displayBed, displayWake)
+      : null;
   const duration =
     previewDurationMs != null ? formatDurationParts(previewDurationMs) : null;
 
@@ -465,8 +474,8 @@ export const SleepWakeClock = ({
           : wakeTime;
       if (nextBed == null || nextWake == null) return;
       onTimesPreview({
-        bedTime: nextBed,
-        wakeTime: nextWake,
+        bedTime: toNightFaceDisplayDate(nextBed, fajrTime),
+        wakeTime: toNightFaceDisplayDate(nextWake, fajrTime),
       });
     },
     [onTimesPreview, fajrTime, bedTime, wakeTime],
@@ -486,7 +495,10 @@ export const SleepWakeClock = ({
           ? wakeDateFrom12hAngleRaw(dragWakeAngle, fajrTime)
           : wakeTime;
       if (nextWake) {
-        onTimesPreview?.({ bedTime: committed, wakeTime: nextWake });
+        onTimesPreview?.({
+          bedTime: toNightFaceDisplayDate(committed, fajrTime),
+          wakeTime: toNightFaceDisplayDate(nextWake, fajrTime),
+        });
       }
       onBedTimeChange(sleepHours);
     },
@@ -521,7 +533,10 @@ export const SleepWakeClock = ({
           ? bedDateFrom12hAngle(dragBedAngle, fajrTime)
           : bedTime;
       if (nextBed) {
-        onTimesPreview?.({ bedTime: nextBed, wakeTime: committed });
+        onTimesPreview?.({
+          bedTime: toNightFaceDisplayDate(nextBed, fajrTime),
+          wakeTime: toNightFaceDisplayDate(committed, fajrTime),
+        });
       }
       onWakeTimeChange(offset);
     },

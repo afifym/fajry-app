@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AlarmClock, Bed, Icon } from "@/components/Icon";
+import { AlarmClock, ArrowRight, Bed, Icon } from "@/components/Icon";
 import { GlassSurface } from "@/components/GlassSurface";
 import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette } from "@/constants/theme";
@@ -74,7 +74,9 @@ export function SleepScheduleCard({
           </TimeText>
         </Pressable>
 
-        <View style={s.separator} />
+        <View style={s.arrowWrap} pointerEvents="none">
+          <Icon icon={ArrowRight} size={20} color={Palette.gold} />
+        </View>
 
         <Pressable
           onPress={onWakePress}
@@ -113,10 +115,11 @@ const s = StyleSheet.create({
     gap: 8,
     alignItems: "center",
   },
-  separator: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: Palette.glassOutline,
-    marginVertical: 16,
+  arrowWrap: {
+    alignSelf: "center",
+    justifyContent: "center",
+    paddingHorizontal: 2,
+    opacity: 0.7,
   },
   labelRow: {
     flexDirection: "row",

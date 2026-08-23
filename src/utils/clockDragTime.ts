@@ -2,7 +2,7 @@ import {
   bedtimeFromSleepHours,
   clampWakeTime,
   NIGHT_START_HOUR,
-  offsetFromWakeTime,
+  offsetFromNightFaceWake,
   sleepHoursFromBedtime,
   wakeTimeFromOffset,
   TIME_SNAP_MINUTES,
@@ -30,6 +30,12 @@ export function dateToNightFaceAngle(date: Date): number {
     return (hours * 60 + minutes) / 720 * 360;
   }
   return dateTo12Angle(date);
+}
+
+/** Read a stored time as the night-face clock (right half AM, left half PM). */
+export function toNightFaceDisplayDate(date: Date, fajrTime: Date): Date {
+  const { hours, minutes } = timeOfDayFrom12hAngle(dateToNightFaceAngle(date));
+  return nightFaceDate(hours, minutes, fajrTime);
 }
 
 /** Clockwise degrees from 12 o'clock (0–360). */
@@ -127,9 +133,9 @@ export function wakeOffsetFrom12hAngle(
   fajrTime: Date,
   sunriseTime?: Date,
 ): number {
-  return offsetFromWakeTime(
+  return offsetFromNightFaceWake(
     fajrTime,
-    wakeDateFrom12hAngle(angleDeg, fajrTime, sunriseTime),
+    wakeDateFrom12hAngleRaw(angleDeg, fajrTime),
     sunriseTime,
   );
 }

@@ -22,6 +22,7 @@ export const Icon = ({
   size = 20,
 }: Props) => <MaterialCommunityIcons name={icon} color={color} size={size} />;
 
+export const ArrowRight: AppIcon = 'arrow-right';
 export const Check: AppIcon = 'check';
 export const Back: AppIcon = 'chevron-left';
 export const ChevronLeft: AppIcon = 'chevron-left';
