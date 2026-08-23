@@ -23,24 +23,6 @@ type Props = {
   onScheduleChange: (schedule: AlarmDay[]) => void;
 };
 
-function formatTime(date: Date): string {
-  const h = date.getHours() % 12 || 12;
-  const m = String(date.getMinutes()).padStart(2, "0");
-  return `${h}:${m} ${date.getHours() >= 12 ? "PM" : "AM"}`;
-}
-
-function offsetLabel(minutes: number, enabled: boolean): string {
-  if (!enabled) return "Alarm off";
-  if (minutes === 0) return "At Fajr time";
-  if (minutes > 0) {
-    if (minutes === 1) return "1 min before Fajr";
-    return `${minutes} min before Fajr`;
-  }
-  const after = Math.abs(minutes);
-  if (after === 1) return "1 min after Fajr";
-  return `${after} min after Fajr`;
-}
-
 async function applyAndRebuild(
   overrides: { preAlarmOffsetMinutes?: number; alarmEnabled?: boolean } = {},
 ) {

@@ -18,8 +18,9 @@ import {
   dateTo12Angle,
   sleepHoursFrom12hAngle,
   snapBedAngle,
+  snapDialAngle,
   snapWakeAngle,
-  wakeDateFrom12hAngle,
+  wakeDateFrom12hAngleRaw,
   wakeOffsetFrom12hAngle,
 } from "@/utils/clockDragTime";
 
@@ -72,7 +73,7 @@ type Props = {
   wakeEnabled?: boolean;
   onBedTimeChange?: (sleepHours: number) => void;
   onWakeTimeChange?: (offsetMinutes: number) => void;
-  onTimesPreview?: (times: { bedTime: Date; wakeTime: Date }) => void;
+  onTimesPreview?: (times: { bedTime: Date; wakeTime: Date } | null) => void;
 };
 
 function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
@@ -424,7 +425,7 @@ export const SleepWakeClock = ({
       : bedTime;
   const previewWake =
     fajrTime && dragWakeAngle != null
-      ? wakeDateFrom12hAngle(dragWakeAngle, fajrTime, sunriseTime ?? undefined)
+      ? wakeDateFrom12hAngleRaw(dragWakeAngle, fajrTime)
       : wakeTime;
 
   const hasArc = previewBed && previewWake;
@@ -452,35 +453,39 @@ export const SleepWakeClock = ({
   const emitPreview = useCallback(
     (bedAng: number | null, wakeAng: number | null) => {
       if (!onTimesPreview || !fajrTime) return;
-      const resolvedBedAng = bedAng ?? (bedTime ? dateTo12Angle(bedTime) : null);
-      const resolvedWakeAng = wakeAng ?? (wakeTime ? dateTo12Angle(wakeTime) : null);
-      if (resolvedBedAng == null || resolvedWakeAng == null) return;
+      const nextBed =
+        bedAng != null
+          ? bedDateFrom12hAngle(bedAng, fajrTime)
+          : bedTime;
+      const nextWake =
+        wakeAng != null
+          ? wakeDateFrom12hAngleRaw(wakeAng, fajrTime)
+          : wakeTime;
+      if (nextBed == null || nextWake == null) return;
       onTimesPreview({
-        bedTime: bedDateFrom12hAngle(resolvedBedAng, fajrTime),
-        wakeTime: wakeDateFrom12hAngle(resolvedWakeAng, fajrTime, sunriseTime ?? undefined),
+        bedTime: nextBed,
+        wakeTime: nextWake,
       });
     },
-    [onTimesPreview, fajrTime, sunriseTime, bedTime, wakeTime],
+    [onTimesPreview, fajrTime, bedTime, wakeTime],
   );
 
   const handleBedDragEnd = useCallback(
     (angle: number) => {
       setDragBedAngle(null);
+      onTimesPreview?.(null);
       if (!fajrTime || !onBedTimeChange) return;
       const snapped = snapBedAngle(angle, fajrTime);
       onBedTimeChange(sleepHoursFrom12hAngle(snapped, fajrTime));
     },
-    [fajrTime, onBedTimeChange],
+    [fajrTime, onBedTimeChange, onTimesPreview],
   );
 
   const handleBedAngleChange = useCallback(
     (angle: number) => {
-      if (!fajrTime) {
-        setDragBedAngle(angle);
-        return;
-      }
-      const snapped = snapBedAngle(angle, fajrTime);
+      const snapped = snapDialAngle(angle);
       setDragBedAngle(snapped);
+      if (!fajrTime) return;
       emitPreview(snapped, dragWakeAngle);
     },
     [fajrTime, dragWakeAngle, emitPreview],
@@ -489,26 +494,24 @@ export const SleepWakeClock = ({
   const handleWakeDragEnd = useCallback(
     (angle: number) => {
       setDragWakeAngle(null);
+      onTimesPreview?.(null);
       if (!fajrTime || !onWakeTimeChange) return;
       const snapped = snapWakeAngle(angle, fajrTime, sunriseTime ?? undefined);
       onWakeTimeChange(
         wakeOffsetFrom12hAngle(snapped, fajrTime, sunriseTime ?? undefined),
       );
     },
-    [fajrTime, sunriseTime, onWakeTimeChange],
+    [fajrTime, sunriseTime, onWakeTimeChange, onTimesPreview],
   );
 
   const handleWakeAngleChange = useCallback(
     (angle: number) => {
-      if (!fajrTime) {
-        setDragWakeAngle(angle);
-        return;
-      }
-      const snapped = snapWakeAngle(angle, fajrTime, sunriseTime ?? undefined);
+      const snapped = snapDialAngle(angle);
       setDragWakeAngle(snapped);
+      if (!fajrTime) return;
       emitPreview(dragBedAngle, snapped);
     },
-    [fajrTime, sunriseTime, dragBedAngle, emitPreview],
+    [fajrTime, dragBedAngle, emitPreview],
   );
 
   const bedDragDisabled = !fajrTime || !bedEnabled || !onBedTimeChange;

@@ -7,6 +7,8 @@ import {
   TIME_SNAP_MINUTES,
 } from '@/utils/alarmPickerTime';
 
+const DIAL_STEP_DEG = 360 / (12 * (60 / TIME_SNAP_MINUTES));
+
 /** Map a clock time to degrees on a 12-hour face (12 o'clock = 0°). */
 export function dateTo12Angle(date: Date): number {
   const mins = (date.getHours() % 12) * 60 + date.getMinutes();
@@ -39,24 +41,54 @@ function nearestPriorTimeOfDay(hours: number, minutes: number, fajrTime: Date): 
   return candidate;
 }
 
-/**
- * Map dial angle to a bedtime on the night before Fajr. A 12-hour dial reading is
- * inherently AM/PM-ambiguous, so this picks whichever half-day reading lands closer
- * to (but before) Fajr — the seam this creates sits opposite Fajr on the dial rather
- * than at a fixed hour, so it tracks Fajr instead of assuming bedtime is after 6pm.
- */
-export function bedDateFrom12hAngle(angleDeg: number, fajrTime: Date): Date {
-  const { hour12, minutes } = parse12hAngle(angleDeg);
-  const am = nearestPriorTimeOfDay(hour12 === 12 ? 0 : hour12, minutes, fajrTime);
-  const pm = nearestPriorTimeOfDay(hour12 === 12 ? 12 : hour12 + 12, minutes, fajrTime);
-  return fajrTime.getTime() - am.getTime() <= fajrTime.getTime() - pm.getTime() ? am : pm;
+/** Right half (12→6) is AM; left half (6→12) is PM. */
+export function periodFrom12hAngle(angleDeg: number): 'AM' | 'PM' {
+  const normalized = ((angleDeg % 360) + 360) % 360;
+  return normalized < 180 ? 'AM' : 'PM';
 }
 
-/** Map dial angle to a wake time on Fajr morning (12h face, AM), capped at Shurooq. */
-export function wakeDateFrom12hAngle(angleDeg: number, fajrTime: Date, sunriseTime?: Date): Date {
-  const { hour12, minutes } = parse12hAngle(angleDeg);
+/** Snap to a 5-minute tick without crossing the 6 o’clock AM/PM seam. */
+export function snapDialAngle(angleDeg: number): number {
+  const normalized = ((angleDeg % 360) + 360) % 360;
+  let snapped = Math.round(normalized / DIAL_STEP_DEG) * DIAL_STEP_DEG;
+  snapped = ((snapped % 360) + 360) % 360;
+  if (periodFrom12hAngle(snapped) !== periodFrom12hAngle(normalized)) {
+    snapped = normalized < 180 ? 180 - DIAL_STEP_DEG : 180;
+  }
+  return snapped;
+}
+
+/** Clock hours on the night face: 12 AM–6 AM on the right, 6 PM–12 AM on the left. */
+export function timeOfDayFrom12hAngle(angleDeg: number): { hours: number; minutes: number } {
+  const snapped = snapDialAngle(angleDeg);
+  const totalMins = Math.round((snapped / 360) * 720);
+  const hour12 = Math.floor(totalMins / 60) % 12 || 12;
+  const minutes = totalMins % 60;
+  const period = periodFrom12hAngle(snapped);
+  if (period === 'PM') return { hours: hour12 === 12 ? 12 : hour12 + 12, minutes };
+  return { hours: hour12 === 12 ? 0 : hour12, minutes };
+}
+
+/**
+ * Map dial angle to a bedtime on the night before Fajr.
+ * The sleep face skips daytime: right side is AM, left side is PM.
+ */
+export function bedDateFrom12hAngle(angleDeg: number, fajrTime: Date): Date {
+  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg);
+  return nearestPriorTimeOfDay(hours, minutes, fajrTime);
+}
+
+/** Map dial angle to a wake time on the night face without range clamping. */
+export function wakeDateFrom12hAngleRaw(angleDeg: number, fajrTime: Date): Date {
+  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg);
   const picked = new Date(fajrTime);
-  picked.setHours(hour12 === 12 ? 0 : hour12, minutes, 0, 0);
+  picked.setHours(hours, minutes, 0, 0);
+  return picked;
+}
+
+/** Map dial angle to a wake time on the same night face, capped at Shurooq. */
+export function wakeDateFrom12hAngle(angleDeg: number, fajrTime: Date, sunriseTime?: Date): Date {
+  const picked = wakeDateFrom12hAngleRaw(angleDeg, fajrTime);
   if (sunriseTime) return clampWakeTime(picked, fajrTime, sunriseTime);
   const earliest = new Date(fajrTime.getTime() - 60 * 60_000);
   if (picked.getTime() < earliest.getTime()) return earliest;
@@ -83,8 +115,7 @@ export function wakeOffsetFrom12hAngle(
 /** Snap a drag angle to the nearest valid, 5-minute bed time on the dial. */
 export function snapBedAngle(angleDeg: number, fajrTime: Date): number {
   const hours = sleepHoursFrom12hAngle(angleDeg, fajrTime);
-  const bed = bedtimeFromSleepHours(fajrTime, hours);
-  return dateTo12Angle(bedDateFrom12hAngle(dateTo12Angle(bed), fajrTime));
+  return dateTo12Angle(bedtimeFromSleepHours(fajrTime, hours));
 }
 
 /** Snap a drag angle to the nearest valid, 5-minute wake time on the dial. */

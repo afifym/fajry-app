@@ -130,7 +130,7 @@ const HomeScreenContent = () => {
     await rebuildFromSettings({ preAlarmOffsetMinutes: offsetMinutes });
   }
 
-  const handleClockPreview = useCallback((times: { bedTime: Date; wakeTime: Date }) => {
+  const handleClockPreview = useCallback((times: { bedTime: Date; wakeTime: Date } | null) => {
     setClockPreview(times);
   }, []);
 

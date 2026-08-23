@@ -10,6 +10,7 @@ import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
   bedtimeFromSleepHours,
+  maxDesiredSleepHours,
   sleepHoursFromBedtime,
   snapToFiveMinutes,
 } from "@/utils/alarmPickerTime";
@@ -23,22 +24,6 @@ type Props = {
   onScheduleChange: (schedule: AlarmDay[]) => void;
   now: Date;
 };
-
-function formatTime(date: Date): string {
-  const h = date.getHours() % 12 || 12;
-  const m = String(date.getMinutes()).padStart(2, "0");
-  return `${h}:${m} ${date.getHours() >= 12 ? "PM" : "AM"}`;
-}
-
-function formatSleepHours(hours: number): string {
-  return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
-}
-
-function sleepHint(hours: number, enabled: boolean): string {
-  if (!enabled) return "Reminder off";
-  const label = hours === 1 ? "1 hr" : `${formatSleepHours(hours)} hr`;
-  return `${label} before Fajr`;
-}
 
 async function applyAndRebuild(
   overrides: {
@@ -68,10 +53,14 @@ export function BedtimeEditModal({
   now,
 }: Props) {
   const settings = useSettingsStore();
+  const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
 
   async function handleSleepHoursChange(hours: number) {
     const minutes = snapToFiveMinutes(Math.round(hours * 60));
-    const clamped = Math.max(30, Math.min(12 * 60, minutes)) / 60;
+    const maxMinutes = nextFajr
+      ? Math.round(maxDesiredSleepHours(nextFajr.fajrTime) * 60)
+      : 12 * 60;
+    const clamped = Math.max(30, Math.min(maxMinutes, minutes)) / 60;
     useSettingsStore.getState().setDesiredSleepHours(clamped);
     const next = await applyAndRebuild({ desiredSleepHours: clamped });
     if (next) onScheduleChange(next);
@@ -83,7 +72,6 @@ export function BedtimeEditModal({
     if (next) onScheduleChange(next);
   }
 
-  const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
   const sleepSession = getNextSleepSession(
     schedule,
     settings.desiredSleepHours,
@@ -102,7 +90,7 @@ export function BedtimeEditModal({
   }
 
   const minBed = nextFajr
-    ? bedtimeFromSleepHours(nextFajr.fajrTime, 12)
+    ? bedtimeFromSleepHours(nextFajr.fajrTime, maxDesiredSleepHours(nextFajr.fajrTime))
     : undefined;
   const maxBed = nextFajr
     ? bedtimeFromSleepHours(nextFajr.fajrTime, 0.5)
