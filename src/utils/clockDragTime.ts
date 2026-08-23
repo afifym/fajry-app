@@ -1,6 +1,7 @@
 import {
   bedtimeFromSleepHours,
   clampWakeTime,
+  NIGHT_START_HOUR,
   offsetFromWakeTime,
   sleepHoursFromBedtime,
   wakeTimeFromOffset,
@@ -13,6 +14,22 @@ const DIAL_STEP_DEG = 360 / (12 * (60 / TIME_SNAP_MINUTES));
 export function dateTo12Angle(date: Date): number {
   const mins = (date.getHours() % 12) * 60 + date.getMinutes();
   return (mins / 720) * 360;
+}
+
+/**
+ * Place a time on the night face: 6 PM–12 AM left, 12 AM–6 AM right.
+ * Daytime hours keep the 12-hour angle so sunrise just after 6 still sits by the seam.
+ */
+export function dateToNightFaceAngle(date: Date): number {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  if (hours >= 18) {
+    return ((hours - 12) * 60 + minutes) / 720 * 360;
+  }
+  if (hours < 6) {
+    return (hours * 60 + minutes) / 720 * 360;
+  }
+  return dateTo12Angle(date);
 }
 
 /** Clockwise degrees from 12 o'clock (0–360). */
@@ -32,9 +49,14 @@ export function parse12hAngle(angleDeg: number): { hour12: number; minutes: numb
   return { hour12, minutes };
 }
 
-function nearestPriorTimeOfDay(hours: number, minutes: number, fajrTime: Date): Date {
+/** PM is always the calendar day before Fajr. AM is Fajr's morning. */
+function nightFaceDate(hours: number, minutes: number, fajrTime: Date): Date {
   const candidate = new Date(fajrTime);
   candidate.setHours(hours, minutes, 0, 0);
+  if (hours >= NIGHT_START_HOUR) {
+    candidate.setDate(candidate.getDate() - 1);
+    return candidate;
+  }
   if (candidate.getTime() >= fajrTime.getTime()) {
     candidate.setDate(candidate.getDate() - 1);
   }
@@ -75,7 +97,7 @@ export function timeOfDayFrom12hAngle(angleDeg: number): { hours: number; minute
  */
 export function bedDateFrom12hAngle(angleDeg: number, fajrTime: Date): Date {
   const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg);
-  return nearestPriorTimeOfDay(hours, minutes, fajrTime);
+  return nightFaceDate(hours, minutes, fajrTime);
 }
 
 /** Map dial angle to a wake time on the night face without range clamping. */
@@ -115,12 +137,12 @@ export function wakeOffsetFrom12hAngle(
 /** Snap a drag angle to the nearest valid, 5-minute bed time on the dial. */
 export function snapBedAngle(angleDeg: number, fajrTime: Date): number {
   const hours = sleepHoursFrom12hAngle(angleDeg, fajrTime);
-  return dateTo12Angle(bedtimeFromSleepHours(fajrTime, hours));
+  return dateToNightFaceAngle(bedtimeFromSleepHours(fajrTime, hours));
 }
 
 /** Snap a drag angle to the nearest valid, 5-minute wake time on the dial. */
 export function snapWakeAngle(angleDeg: number, fajrTime: Date, sunriseTime?: Date): number {
   const offset = wakeOffsetFrom12hAngle(angleDeg, fajrTime, sunriseTime);
   const wake = wakeTimeFromOffset(fajrTime, offset);
-  return dateTo12Angle(wakeDateFrom12hAngle(dateTo12Angle(wake), fajrTime, sunriseTime));
+  return dateToNightFaceAngle(wakeDateFrom12hAngle(dateToNightFaceAngle(wake), fajrTime, sunriseTime));
 }

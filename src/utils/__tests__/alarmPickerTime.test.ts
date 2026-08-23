@@ -72,6 +72,14 @@ describe('alarmPickerTime', () => {
       expect(sleepHoursFromBedtime(fajr, tenPm)).toBe(7.5);
       expect(bedtimeFromSleepHours(fajr, 7.5).getHours()).toBe(22);
     });
+
+    it('treats 6 PM as the evening before Fajr, not after Fajr', () => {
+      const sixPm = new Date(2024, 0, 15, 18, 0, 0);
+      const hours = sleepHoursFromBedtime(fajr, sixPm);
+      const bed = bedtimeFromSleepHours(fajr, hours);
+      expect(bed.getHours()).toBe(18);
+      expect(bed.getDate()).toBe(14);
+    });
   });
 
   describe('sleepDurationBetween', () => {

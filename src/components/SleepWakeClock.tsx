@@ -11,15 +11,17 @@ import { ElMessiriText } from "@/components/el-messiri-text";
 import { featureFlags } from "@/constants/featureFlags";
 import { ARC_GRADIENT_HIGHLIGHT, ARC_GRADIENT_MUTED, arcGradientStops } from "@/constants/goldGradient";
 import { Palette } from "@/constants/theme";
-import { sleepDurationBetween } from "@/utils/alarmPickerTime";
+import {
+  bedtimeFromSleepHours,
+  sleepDurationBetween,
+  wakeTimeFromOffset,
+} from "@/utils/alarmPickerTime";
 import {
   angleFromPoint,
   bedDateFrom12hAngle,
-  dateTo12Angle,
+  dateToNightFaceAngle,
   sleepHoursFrom12hAngle,
-  snapBedAngle,
   snapDialAngle,
-  snapWakeAngle,
   wakeDateFrom12hAngleRaw,
   wakeOffsetFrom12hAngle,
 } from "@/utils/clockDragTime";
@@ -98,8 +100,8 @@ function arcD(
 }
 
 function sleepArcAngles(bed: Date, wake: Date): { start: number; end: number } {
-  const start = dateTo12Angle(bed);
-  let end = dateTo12Angle(wake);
+  const start = dateToNightFaceAngle(bed);
+  let end = dateToNightFaceAngle(wake);
   const bedMins = bed.getHours() * 60 + bed.getMinutes();
   const wakeMins = wake.getHours() * 60 + wake.getMinutes();
   if (wakeMins <= bedMins) end += 360;
@@ -443,12 +445,12 @@ export const SleepWakeClock = ({
     previewDurationMs != null ? formatDurationParts(previewDurationMs) : null;
 
   const bedAngle =
-    dragBedAngle ?? (previewBed ? dateTo12Angle(previewBed) : null);
+    dragBedAngle ?? (previewBed ? dateToNightFaceAngle(previewBed) : null);
   const wakeAngle =
-    dragWakeAngle ?? (previewWake ? dateTo12Angle(previewWake) : null);
+    dragWakeAngle ?? (previewWake ? dateToNightFaceAngle(previewWake) : null);
 
-  const fajrAngle = fajrTime ? dateTo12Angle(fajrTime) : null;
-  const sunriseAngle = sunriseTime ? dateTo12Angle(sunriseTime) : null;
+  const fajrAngle = fajrTime ? dateToNightFaceAngle(fajrTime) : null;
+  const sunriseAngle = sunriseTime ? dateToNightFaceAngle(sunriseTime) : null;
 
   const emitPreview = useCallback(
     (bedAng: number | null, wakeAng: number | null) => {
@@ -473,12 +475,22 @@ export const SleepWakeClock = ({
   const handleBedDragEnd = useCallback(
     (angle: number) => {
       setDragBedAngle(null);
-      onTimesPreview?.(null);
-      if (!fajrTime || !onBedTimeChange) return;
-      const snapped = snapBedAngle(angle, fajrTime);
-      onBedTimeChange(sleepHoursFrom12hAngle(snapped, fajrTime));
+      if (!fajrTime || !onBedTimeChange) {
+        onTimesPreview?.(null);
+        return;
+      }
+      const sleepHours = sleepHoursFrom12hAngle(angle, fajrTime);
+      const committed = bedtimeFromSleepHours(fajrTime, sleepHours);
+      const nextWake =
+        dragWakeAngle != null
+          ? wakeDateFrom12hAngleRaw(dragWakeAngle, fajrTime)
+          : wakeTime;
+      if (nextWake) {
+        onTimesPreview?.({ bedTime: committed, wakeTime: nextWake });
+      }
+      onBedTimeChange(sleepHours);
     },
-    [fajrTime, onBedTimeChange, onTimesPreview],
+    [fajrTime, onBedTimeChange, onTimesPreview, dragWakeAngle, wakeTime],
   );
 
   const handleBedAngleChange = useCallback(
@@ -494,14 +506,26 @@ export const SleepWakeClock = ({
   const handleWakeDragEnd = useCallback(
     (angle: number) => {
       setDragWakeAngle(null);
-      onTimesPreview?.(null);
-      if (!fajrTime || !onWakeTimeChange) return;
-      const snapped = snapWakeAngle(angle, fajrTime, sunriseTime ?? undefined);
-      onWakeTimeChange(
-        wakeOffsetFrom12hAngle(snapped, fajrTime, sunriseTime ?? undefined),
+      if (!fajrTime || !onWakeTimeChange) {
+        onTimesPreview?.(null);
+        return;
+      }
+      const offset = wakeOffsetFrom12hAngle(
+        angle,
+        fajrTime,
+        sunriseTime ?? undefined,
       );
+      const committed = wakeTimeFromOffset(fajrTime, offset);
+      const nextBed =
+        dragBedAngle != null
+          ? bedDateFrom12hAngle(dragBedAngle, fajrTime)
+          : bedTime;
+      if (nextBed) {
+        onTimesPreview?.({ bedTime: nextBed, wakeTime: committed });
+      }
+      onWakeTimeChange(offset);
     },
-    [fajrTime, sunriseTime, onWakeTimeChange, onTimesPreview],
+    [fajrTime, sunriseTime, onWakeTimeChange, onTimesPreview, dragBedAngle, bedTime],
   );
 
   const handleWakeAngleChange = useCallback(

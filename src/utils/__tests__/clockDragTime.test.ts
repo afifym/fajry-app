@@ -2,6 +2,7 @@ import {
   angleFromPoint,
   bedDateFrom12hAngle,
   dateTo12Angle,
+  dateToNightFaceAngle,
   parse12hAngle,
   periodFrom12hAngle,
   sleepHoursFrom12hAngle,
@@ -69,7 +70,7 @@ describe('clockDragTime', () => {
 
   it('snapBedAngle stabilises drag angles through sleep-hour clamping', () => {
     const snapped = snapBedAngle(90, fajr);
-    expect(snapped).toBe(dateTo12Angle(bedDateFrom12hAngle(snapped, fajr)));
+    expect(snapped).toBe(dateToNightFaceAngle(bedDateFrom12hAngle(snapped, fajr)));
     expect(sleepHoursFrom12hAngle(snapped, fajr)).toBe(sleepHoursFrom12hAngle(90, fajr));
   });
 
@@ -113,5 +114,32 @@ describe('clockDragTime', () => {
     expect(periodFrom12hAngle(snapDialAngle(185))).toBe('PM');
     expect(timeOfDayFrom12hAngle(snapDialAngle(175)).hours).toBe(5);
     expect(timeOfDayFrom12hAngle(snapDialAngle(185)).hours).toBe(18);
+  });
+
+  it('dateToNightFaceAngle keeps 6:30 PM on the left half', () => {
+    const sixThirtyPm = new Date(2024, 0, 14, 18, 30, 0);
+    expect(periodFrom12hAngle(dateToNightFaceAngle(sixThirtyPm))).toBe('PM');
+    expect(timeOfDayFrom12hAngle(dateToNightFaceAngle(sixThirtyPm))).toEqual({
+      hours: 18,
+      minutes: 30,
+    });
+  });
+
+  it('releasing past 6 PM commits 6:30 PM hours, not a 3:58 AM bedtime', () => {
+    const threeFiftyEightAm = new Date(2024, 0, 15, 3, 58, 0);
+    const previousHours = sleepHoursFrom12hAngle(dateTo12Angle(threeFiftyEightAm), fajr);
+    const releasedHours = sleepHoursFrom12hAngle(195, fajr);
+    expect(releasedHours).toBe(11);
+    expect(releasedHours).not.toBe(previousHours);
+    expect(bedDateFrom12hAngle(195, fajr).getHours()).toBe(18);
+  });
+
+  it('6 PM on the dial is the calendar day before Fajr', () => {
+    const bed = bedDateFrom12hAngle(180, fajr);
+    expect(bed.getHours()).toBe(18);
+    expect(bed.getDate()).toBe(14);
+    expect(sleepHoursFrom12hAngle(180, fajr)).toBe(
+      (fajr.getTime() - bed.getTime()) / 3_600_000,
+    );
   });
 });

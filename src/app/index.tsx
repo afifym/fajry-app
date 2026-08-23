@@ -135,6 +135,17 @@ const HomeScreenContent = () => {
   }, []);
 
   useEffect(() => {
+    if (!clockPreview || !sleepSession) return;
+    const sameBed =
+      clockPreview.bedTime.getHours() === sleepSession.bedTime.getHours() &&
+      clockPreview.bedTime.getMinutes() === sleepSession.bedTime.getMinutes();
+    const sameWake =
+      clockPreview.wakeTime.getHours() === sleepSession.wakeTime.getHours() &&
+      clockPreview.wakeTime.getMinutes() === sleepSession.wakeTime.getMinutes();
+    if (sameBed && sameWake) setClockPreview(null);
+  }, [clockPreview, sleepSession]);
+
+  useEffect(() => {
     // Check for location change in background (non-blocking)
     async function checkLocation() {
       try {
@@ -266,11 +277,11 @@ const HomeScreenContent = () => {
               onWakePress={() => setEditSheet("wakeup")}
             >
               <SleepWakeClock
-                bedTime={sleepSession?.bedTime ?? null}
-                wakeTime={sleepSession?.wakeTime ?? null}
+                bedTime={clockPreview?.bedTime ?? sleepSession?.bedTime ?? null}
+                wakeTime={clockPreview?.wakeTime ?? sleepSession?.wakeTime ?? null}
                 fajrTime={sleepSession?.fajrTime ?? null}
                 sunriseTime={sleepSession?.sunriseTime ?? null}
-                durationMs={sleepSession?.durationMs}
+                durationMs={clockPreview ? undefined : sleepSession?.durationMs}
                 bedEnabled={settings.sleepReminderEnabled}
                 wakeEnabled={settings.alarmEnabled}
                 onBedTimeChange={handleBedTimeChange}

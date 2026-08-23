@@ -57,22 +57,22 @@ export function wakeTimeFromOffset(fajrTime: Date, offsetMinutes: number): Date 
 /** 6 PM — seam between the PM left half and AM right half of the sleep clock. */
 export const NIGHT_START_HOUR = 18;
 
-/** Longest sleep that still lands on the night face (6 PM → Fajr), at most 12 hours. */
+/** Longest sleep on the night face: 6 PM the day before Fajr → Fajr. */
 export function maxDesiredSleepHours(fajrTime: Date): number {
   const nightStart = new Date(fajrTime);
+  nightStart.setDate(nightStart.getDate() - 1);
   nightStart.setHours(NIGHT_START_HOUR, 0, 0, 0);
-  if (nightStart.getTime() >= fajrTime.getTime()) {
-    nightStart.setDate(nightStart.getDate() - 1);
-  }
   const hours = (fajrTime.getTime() - nightStart.getTime()) / 3_600_000;
-  return Math.min(12, Math.max(0.5, hours));
+  return Math.max(0.5, hours);
 }
 
 /** Map a time-wheel selection to desired sleep hours before Fajr. */
 export function sleepHoursFromBedtime(fajrTime: Date, picked: Date): number {
-  const aligned = new Date(picked);
-  aligned.setFullYear(fajrTime.getFullYear(), fajrTime.getMonth(), fajrTime.getDate());
-  if (aligned.getTime() >= fajrTime.getTime()) {
+  const aligned = new Date(fajrTime);
+  aligned.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+  if (picked.getHours() >= NIGHT_START_HOUR) {
+    aligned.setDate(aligned.getDate() - 1);
+  } else if (aligned.getTime() >= fajrTime.getTime()) {
     aligned.setDate(aligned.getDate() - 1);
   }
   const minutes = snapToFiveMinutes(
