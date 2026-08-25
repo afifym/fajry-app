@@ -6,7 +6,6 @@ import {
   SNOOZE_ALARM_ID,
   consumePendingAlarmLaunch,
   getAlarmRouteForNotificationId,
-  isAlarmNotificationId,
   isSleepAlarmNotificationId,
   isWakeAlarmNotificationId,
   markPendingAlarmLaunch,
@@ -26,22 +25,24 @@ describe('alarmEvents', () => {
     expect(isSleepAlarmNotificationId(`${FAJR_ALARM_ID_PREFIX}2024-01-15`)).toBe(false);
   });
 
-  it('combines wake and sleep ids for alarm routing', () => {
-    expect(isAlarmNotificationId(`${FAJR_ALARM_ID_PREFIX}2024-01-15`)).toBe(true);
-    expect(isAlarmNotificationId(`${SLEEP_ALARM_ID_PREFIX}2024-01-15`)).toBe(true);
-    expect(getAlarmRouteForNotificationId(`${FAJR_ALARM_ID_PREFIX}2024-01-15`)).toBe('/alarm');
+  it('does not open the in-app alarm screen for iOS wake notifications', () => {
+    expect(getAlarmRouteForNotificationId(`${FAJR_ALARM_ID_PREFIX}2024-01-15`)).toBe(null);
+    expect(getAlarmRouteForNotificationId(SNOOZE_ALARM_ID)).toBe(null);
     expect(getAlarmRouteForNotificationId(`${SLEEP_ALARM_ID_PREFIX}2024-01-15`)).toBe('/bedtime');
   });
 
-  it('opens the alarm screen for delivered and press events only', () => {
+  it('opens the bedtime screen for delivered and press events only', () => {
     expect(
-      shouldLaunchAlarmScreen(EventType.DELIVERED, `${FAJR_ALARM_ID_PREFIX}2024-01-15`),
+      shouldLaunchAlarmScreen(EventType.DELIVERED, `${SLEEP_ALARM_ID_PREFIX}2024-01-15`),
     ).toBe(true);
     expect(
       shouldLaunchAlarmScreen(EventType.PRESS, `${SLEEP_ALARM_ID_PREFIX}2024-01-15`),
     ).toBe(true);
     expect(
-      shouldLaunchAlarmScreen(EventType.DISMISSED, `${FAJR_ALARM_ID_PREFIX}2024-01-15`),
+      shouldLaunchAlarmScreen(EventType.DELIVERED, `${FAJR_ALARM_ID_PREFIX}2024-01-15`),
+    ).toBe(false);
+    expect(
+      shouldLaunchAlarmScreen(EventType.DISMISSED, `${SLEEP_ALARM_ID_PREFIX}2024-01-15`),
     ).toBe(false);
     expect(shouldLaunchAlarmScreen(EventType.PRESS, 'other-id')).toBe(false);
   });

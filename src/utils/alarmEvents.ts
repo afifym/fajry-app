@@ -1,4 +1,5 @@
 import notifee, { EventType } from '@notifee/react-native';
+import { Platform } from 'react-native';
 import { createMMKV } from 'react-native-mmkv';
 
 export const FAJR_ALARM_ID_PREFIX = 'fajr-';
@@ -29,7 +30,9 @@ export function getAlarmRouteForNotificationId(
   id: string | undefined,
 ): AlarmRoute | null {
   if (isSleepAlarmNotificationId(id)) return '/bedtime';
-  if (isWakeAlarmNotificationId(id)) return '/alarm';
+  if (isWakeAlarmNotificationId(id)) {
+    return Platform.OS === 'ios' ? null : '/alarm';
+  }
   return null;
 }
 
@@ -47,7 +50,7 @@ export function shouldLaunchAlarmScreen(
   type: EventType,
   notificationId: string | undefined,
 ): boolean {
-  if (!isAlarmNotificationId(notificationId)) return false;
+  if (!getAlarmRouteForNotificationId(notificationId)) return false;
   return (
     type === EventType.DELIVERED ||
     type === EventType.PRESS ||

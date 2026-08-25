@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.afify.fajry-app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Your location is used to calculate accurate Fajr prayer times. It never leaves your device.",
+        "NSAlarmKitUsageDescription": "Fajry uses a system alarm to wake you for Fajr. It rings on the Lock Screen even in Silent mode or Focus.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

@@ -8,12 +8,18 @@ import {
   SNOOZE_ALARM_ID,
   TEST_ALARM_ID,
 } from '@/utils/alarmEvents';
+import {
+  cancelAllIosAlarmKit,
+  cancelIosAlarmKit,
+  ensureIosAlarmKitAuthorized,
+  isIosAlarmKitAvailable,
+  scheduleIosAlarmKit,
+} from '@/utils/iosAlarmKit';
 import { buildAlarmSchedule } from './prayerTimes';
 import { getTodayReflection } from './reflections';
 import {
   CHANNEL_FAJR_ALARM,
   CHANNEL_SLEEP_REMINDER,
-  CHANNEL_SNOOZE,
   setupNotifeeChannels,
 } from './notifications';
 
@@ -62,6 +68,30 @@ async function cancelFajrAndSleepAlarms(): Promise<void> {
   if (toCancel.length > 0) {
     await notifee.cancelTriggerNotifications(toCancel);
   }
+  await cancelAllIosAlarmKit();
+}
+
+async function scheduleWakeAlarm(
+  id: string,
+  title: string,
+  body: string,
+  timestamp: number,
+): Promise<void> {
+  if (await isIosAlarmKitAvailable()) {
+    if (await ensureIosAlarmKitAuthorized()) {
+      await scheduleIosAlarmKit(id, timestamp, title);
+    }
+    return;
+  }
+
+  await notifee.createTriggerNotification(
+    alarmNotification(id, title, body, CHANNEL_FAJR_ALARM),
+    {
+      type: TriggerType.TIMESTAMP,
+      timestamp,
+      alarmManager: { allowWhileIdle: true },
+    },
+  );
 }
 
 export async function scheduleSnooze(
@@ -72,18 +102,12 @@ export async function scheduleSnooze(
   if (wakeAt >= sunriseTime) return 'refused';
 
   await notifee.cancelTriggerNotification(SNOOZE_ALARM_ID);
-  await notifee.createTriggerNotification(
-    alarmNotification(
-      SNOOZE_ALARM_ID,
-      'Time for Fajr Prayer',
-      'Snooze ended — rise and pray.',
-      CHANNEL_SNOOZE,
-    ),
-    {
-      type: TriggerType.TIMESTAMP,
-      timestamp: wakeAt.getTime(),
-      alarmManager: { allowWhileIdle: true },
-    },
+  await cancelIosAlarmKit(SNOOZE_ALARM_ID);
+  await scheduleWakeAlarm(
+    SNOOZE_ALARM_ID,
+    'Time for Fajr Prayer',
+    'Snooze ended — rise and pray.',
+    wakeAt.getTime(),
   );
 
   return 'scheduled';
@@ -116,18 +140,11 @@ export async function rebuildScheduleOnAppOpen(
   for (const day of schedule) {
     if (day.alarmTime.getTime() <= now) continue; // already past
 
-    await notifee.createTriggerNotification(
-      alarmNotification(
-        `${FAJR_PREFIX}${day.date}`,
-        'Time for Fajr Prayer',
-        reflection.text,
-        CHANNEL_FAJR_ALARM,
-      ),
-      {
-        type: TriggerType.TIMESTAMP,
-        timestamp: day.alarmTime.getTime(),
-        alarmManager: { allowWhileIdle: true },
-      },
+    await scheduleWakeAlarm(
+      `${FAJR_PREFIX}${day.date}`,
+      'Time for Fajr Prayer',
+      reflection.text,
+      day.alarmTime.getTime(),
     );
 
     if (settings.sleepReminderEnabled) {
@@ -170,18 +187,11 @@ export async function rebuildScheduleOnAppOpen(
 export async function scheduleTestAlarm(): Promise<void> {
   await setupNotifeeChannels();
   await notifee.cancelTriggerNotification(TEST_ALARM_ID);
-
-  await notifee.createTriggerNotification(
-    alarmNotification(
-      TEST_ALARM_ID,
-      'Time for Fajr Prayer',
-      'Test alarm — rise and pray.',
-      CHANNEL_FAJR_ALARM,
-    ),
-    {
-      type: TriggerType.TIMESTAMP,
-      timestamp: Date.now() + TEST_ALARM_DELAY_MS,
-      alarmManager: { allowWhileIdle: true },
-    },
+  await cancelIosAlarmKit(TEST_ALARM_ID);
+  await scheduleWakeAlarm(
+    TEST_ALARM_ID,
+    'Time for Fajr Prayer',
+    'Test alarm — rise and pray.',
+    Date.now() + TEST_ALARM_DELAY_MS,
   );
 }

@@ -1,6 +1,6 @@
-import { Stack, router } from "expo-router";
+import { Stack, Redirect, router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
@@ -68,6 +68,10 @@ const AlarmScreen = () => {
     await dismissActiveAlarm();
     router.replace("/");
   }, []);
+
+  if (Platform.OS === "ios") {
+    return <Redirect href="/" />;
+  }
 
   return (
     <GestureHandlerRootView style={styles.root}>

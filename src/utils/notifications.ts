@@ -1,6 +1,8 @@
 import notifee, { AndroidImportance, AuthorizationStatus } from '@notifee/react-native';
 import { Platform } from 'react-native';
 
+import { ensureIosAlarmKitAuthorized, isIosAlarmKitAvailable } from '@/utils/iosAlarmKit';
+
 export const CHANNEL_FAJR_ALARM = 'fajr-alarm';
 export const CHANNEL_SNOOZE = 'snooze';
 export const CHANNEL_SLEEP_REMINDER = 'sleep-reminder';
@@ -44,7 +46,11 @@ export async function requestNotificationPermissions(): Promise<boolean> {
       badge: true,
       criticalAlert: true,
     });
-    return settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
+    const notifeeOk = settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
+    if (await isIosAlarmKitAvailable()) {
+      return (await ensureIosAlarmKitAuthorized()) && notifeeOk;
+    }
+    return notifeeOk;
   }
 
   const settings = await notifee.requestPermission();

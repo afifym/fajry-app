@@ -9,6 +9,14 @@ import {
 import type { RebuildSettings } from '../scheduling';
 import type { Location } from '@/types';
 
+jest.mock('@/utils/iosAlarmKit', () => ({
+  isIosAlarmKitAvailable: jest.fn().mockResolvedValue(false),
+  ensureIosAlarmKitAuthorized: jest.fn().mockResolvedValue(false),
+  scheduleIosAlarmKit: jest.fn().mockResolvedValue(undefined),
+  cancelIosAlarmKit: jest.fn().mockResolvedValue(undefined),
+  cancelAllIosAlarmKit: jest.fn().mockResolvedValue(undefined),
+}));
+
 const CAIRO: Location = { lat: 30.06263, lng: 31.24967, cityName: 'Cairo', country: 'EG' };
 
 const BASE_SETTINGS: RebuildSettings = {

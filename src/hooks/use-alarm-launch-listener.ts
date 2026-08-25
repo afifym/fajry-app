@@ -13,7 +13,7 @@ function openAlarmScreenForNotification(notificationId: string | undefined): voi
   if (route) router.replace(route);
 }
 
-/** Opens the reminder screen when a wake or bedtime notification fires. */
+/** Opens the bedtime reminder screen. Wake alarms on iOS use AlarmKit instead. */
 export function useAlarmLaunchListener(enabled: boolean): void {
   useEffect(() => {
     if (!enabled) return;
