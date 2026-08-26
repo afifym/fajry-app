@@ -17,6 +17,7 @@ import { StreakButton } from "@/components/StreakButton";
 import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette, Radius } from "@/constants/theme";
+import { useStoreReviewPrompt } from "@/hooks/use-store-review-prompt";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
@@ -54,6 +55,7 @@ function formatPrayerTimeParts(date: Date): { time: string; period: "AM" | "PM" 
 const HomeScreenContent = () => {
   const settings = useSettingsStore();
   const { streak } = useConsistencyStore();
+  useStoreReviewPrompt();
 
   const [schedule, setSchedule] = useState<AlarmDay[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
