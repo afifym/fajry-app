@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AlarmClock, ArrowRight, Bed, Icon } from "@/components/Icon";
 import { GlassSurface } from "@/components/GlassSurface";
+import { AlarmClock, ArrowRight, Bed, Icon } from "@/components/Icon";
 import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette } from "@/constants/theme";
 
@@ -25,13 +25,7 @@ function formatTime(date: Date): string {
 const TIME_SIZE = 24;
 const TIME_HEIGHT = Math.round(TIME_SIZE * 1.32);
 
-function TimeText({
-  children,
-  muted,
-}: {
-  children: string;
-  muted: boolean;
-}) {
+function TimeText({ children, muted }: { children: string; muted: boolean }) {
   return (
     <ElMessiriText
       size={TIME_SIZE}
@@ -104,13 +98,13 @@ export function SleepScheduleCard({
 const s = StyleSheet.create({
   scheduleRow: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   half: {
-    flex: 1,
     minWidth: 0,
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 24,
+    paddingHorizontal: 30,
     paddingBottom: 16,
     gap: 8,
     alignItems: "center",
