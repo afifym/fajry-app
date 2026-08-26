@@ -103,7 +103,7 @@ const s = StyleSheet.create({
   },
   half: {
     minWidth: 0,
-    paddingTop: 24,
+    paddingTop: 30,
     paddingHorizontal: 30,
     paddingBottom: 16,
     gap: 8,
