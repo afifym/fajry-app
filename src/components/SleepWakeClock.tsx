@@ -37,6 +37,7 @@ const UNSELECTED_STROKE = 18;
 const HIT_SIZE = 48;
 const HANDLE_SIZE = 32;
 const SELECTED_TRACK_OPACITY = 0.95;
+const UNSELECTED_TRACK_OPACITY = 0.78;
 
 const DURATION_HOURS_SIZE = 24;
 const DURATION_HOURS_HEIGHT = Math.round(DURATION_HOURS_SIZE * 1.32);
@@ -579,6 +580,7 @@ export const SleepWakeClock = ({
           fill="none"
           stroke={Palette.sleepTrack}
           strokeWidth={UNSELECTED_STROKE}
+          opacity={UNSELECTED_TRACK_OPACITY}
         />
 
         {selectedArcPath && sleepArc ? (
