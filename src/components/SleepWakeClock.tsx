@@ -631,10 +631,11 @@ export const SleepWakeClock = ({
         accessibilityRole="text"
         accessibilityLabel={
           duration
-            ? `${duration.hours} hours ${duration.minutes} minutes`
-            : undefined
+            ? `Sleep Time, ${duration.hours} hours ${duration.minutes} minutes`
+            : "Sleep Time"
         }
       >
+        <Text style={s.durationCaption}>Sleep Time</Text>
         {duration ? (
           <ElMessiriText
             size={DURATION_HOURS_SIZE}
@@ -728,6 +729,14 @@ const s = StyleSheet.create({
   durationHub: {
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
+  },
+  durationCaption: {
+    color: Palette.textSecondary,
+    fontSize: 11,
+    fontWeight: "400",
+    letterSpacing: 0.8,
+    textAlign: "center",
   },
   durationHours: {
     color: Palette.gold,
