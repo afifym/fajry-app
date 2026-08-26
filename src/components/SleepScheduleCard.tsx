@@ -104,7 +104,7 @@ const s = StyleSheet.create({
   half: {
     minWidth: 0,
     paddingTop: 30,
-    paddingHorizontal: 30,
+    paddingHorizontal: 34,
     paddingBottom: 16,
     gap: 8,
     alignItems: "center",
