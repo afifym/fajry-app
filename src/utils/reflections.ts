@@ -10,6 +10,11 @@ const storage = createMMKV({ id: 'reflections' });
 const REFLECTION_INDEX_KEY = 'reflectionIndex';
 const REFLECTION_DATE_KEY = 'reflectionDate';
 
+export function resetReflectionState(): void {
+  storage.remove(REFLECTION_INDEX_KEY);
+  storage.remove(REFLECTION_DATE_KEY);
+}
+
 export function getTodayReflection(): Reflection {
   const today = toISODate(new Date());
   const lastDate = storage.getString(REFLECTION_DATE_KEY);

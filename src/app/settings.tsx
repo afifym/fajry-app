@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View, Text } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CityPickerModal } from "@/components/CityPickerModal";
@@ -11,6 +11,7 @@ import { Palette, Radius } from "@/constants/theme";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AdhanRecitation, CalculationMethodKey, City } from "@/types";
 import { rebuildScheduleOnAppOpen, scheduleTestAlarm, TEST_ALARM_DELAY_MS } from "@/utils/scheduling";
+import { resetAppFlow } from "@/utils/resetAppFlow";
 
 const CALCULATION_METHODS: { key: CalculationMethodKey; label: string }[] = [
   { key: "MuslimWorldLeague", label: "Muslim World League" },
@@ -88,6 +89,27 @@ const SettingsScreen = () => {
     useSettingsStore.getState().setAdhanRecitation(key);
     setRecitationModalOpen(false);
     await applyAndRebuild(useSettingsStore.getState());
+  }, []);
+
+  const handleStartOver = useCallback(() => {
+    Alert.alert(
+      "Start over?",
+      "You'll go through the welcome screens again. Permissions you've already allowed won't be asked again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Start Over",
+          style: "destructive",
+          onPress: () => {
+            void (async () => {
+              await resetAppFlow();
+              if (router.canDismiss()) router.dismissAll();
+              router.replace("/onboarding");
+            })();
+          },
+        },
+      ],
+    );
   }, []);
 
   const handleCitySelect = useCallback(async (city: City) => {
@@ -171,6 +193,15 @@ const SettingsScreen = () => {
               ? `Alarm in ${testCountdown}s…`
               : "Test Alarm"}
           </Text>
+        </Pressable>
+
+        <Pressable
+          style={st.testAlarmBtn}
+          onPress={handleStartOver}
+          accessibilityLabel="Start over"
+          accessibilityRole="button"
+        >
+          <Text style={st.startOverText}>Start Over</Text>
         </Pressable>
       </ScrollView>
 
@@ -279,6 +310,7 @@ const st = StyleSheet.create({
   },
   testAlarmBtnDisabled: { opacity: 0.6 },
   testAlarmText: { color: Palette.gold, fontSize: 16, fontWeight: '500' },
+  startOverText: { color: Palette.textSecondary, fontSize: 16, fontWeight: '500' },
 
   row: {
     flexDirection: 'row',

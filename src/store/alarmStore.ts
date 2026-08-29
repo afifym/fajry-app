@@ -16,6 +16,7 @@ export type AlarmState = {
   schedule: AlarmDay[];
   setSchedule: (schedule: AlarmDay[]) => void;
   markScheduled: (date: string) => void;
+  resetSchedule: () => void;
 };
 
 export const useAlarmStore = create<AlarmState>()(
@@ -29,6 +30,7 @@ export const useAlarmStore = create<AlarmState>()(
             day.date === date ? { ...day, scheduled: true } : day,
           ),
         })),
+      resetSchedule: () => set({ schedule: [] }),
     }),
     { name: 'alarm', storage: mmkvStorage },
   ),

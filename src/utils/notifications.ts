@@ -40,12 +40,16 @@ export async function setupNotifeeChannels(): Promise<void> {
 
 export async function requestNotificationPermissions(): Promise<boolean> {
   if (Platform.OS === 'ios') {
-    const settings = await notifee.requestPermission({
-      alert: true,
-      sound: true,
-      badge: true,
-      criticalAlert: true,
-    });
+    const existing = await notifee.getNotificationSettings();
+    const alreadyOk = existing.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
+    const settings = alreadyOk
+      ? existing
+      : await notifee.requestPermission({
+          alert: true,
+          sound: true,
+          badge: true,
+          criticalAlert: true,
+        });
     const notifeeOk = settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
     if (await isIosAlarmKitAvailable()) {
       return (await ensureIosAlarmKitAuthorized()) && notifeeOk;
@@ -53,6 +57,10 @@ export async function requestNotificationPermissions(): Promise<boolean> {
     return notifeeOk;
   }
 
+  const existing = await notifee.getNotificationSettings();
+  if (existing.authorizationStatus >= AuthorizationStatus.AUTHORIZED) {
+    return true;
+  }
   const settings = await notifee.requestPermission();
   return settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED;
 }

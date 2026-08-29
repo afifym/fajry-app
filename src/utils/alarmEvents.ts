@@ -46,6 +46,10 @@ export function consumePendingAlarmLaunch(): string | null {
   return id ?? null;
 }
 
+export function clearPendingAlarmLaunch(): void {
+  mmkv.remove(PENDING_ALARM_ID_KEY);
+}
+
 export function shouldLaunchAlarmScreen(
   type: EventType,
   notificationId: string | undefined,

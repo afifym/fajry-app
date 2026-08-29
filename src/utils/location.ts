@@ -10,7 +10,11 @@ const LOCATION_CHANGE_THRESHOLD_KM = 50;
 export type GPSError = { code: 'permission_denied' | 'unavailable' };
 
 export async function requestGPSLocation(): Promise<Location> {
-  const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+  const existing = await ExpoLocation.getForegroundPermissionsAsync();
+  const status =
+    existing.status === 'granted'
+      ? existing.status
+      : (await ExpoLocation.requestForegroundPermissionsAsync()).status;
   if (status !== 'granted') {
     throw { code: 'permission_denied' } satisfies GPSError;
   }

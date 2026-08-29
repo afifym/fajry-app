@@ -24,6 +24,7 @@ export type ConsistencyState = {
   confirm: (date: string, isOnTime: boolean) => void;
   toggleConfirmation: (date: string, sunriseTime: Date) => void;
   computeStreak: () => void;
+  resetConsistency: () => void;
 };
 
 function computeStreakFromConfirmations(
@@ -105,6 +106,8 @@ export const useConsistencyStore = create<ConsistencyState>()(
           streak: computeStreakFromConfirmations(state.confirmations),
         }));
       },
+
+      resetConsistency: () => set({ confirmations: {}, streak: 0 }),
     }),
     { name: 'consistency', storage: mmkvStorage },
   ),

@@ -71,6 +71,15 @@ async function cancelFajrAndSleepAlarms(): Promise<void> {
   await cancelAllIosAlarmKit();
 }
 
+/** Cancel every scheduled Fajr, sleep, snooze, and test alarm. */
+export async function cancelAllAppAlarms(): Promise<void> {
+  const ids = await notifee.getTriggerNotificationIds();
+  if (ids.length > 0) {
+    await notifee.cancelTriggerNotifications(ids);
+  }
+  await cancelAllIosAlarmKit();
+}
+
 async function scheduleWakeAlarm(
   id: string,
   title: string,

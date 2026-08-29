@@ -31,19 +31,24 @@ export type SettingsState = {
   setAlarmEnabled: (enabled: boolean) => void;
   setSleepReminderEnabled: (enabled: boolean) => void;
   setDesiredSleepHours: (hours: number) => void;
+  resetSettings: () => void;
+};
+
+const SETTINGS_DEFAULTS = {
+  calculationMethod: inferRegionalDefault('') as CalculationMethodKey,
+  adhanRecitation: 'makkah' as AdhanRecitation,
+  snoozeDurationMinutes: 5,
+  preAlarmOffsetMinutes: 0,
+  location: null as Location | null,
+  alarmEnabled: true,
+  sleepReminderEnabled: true,
+  desiredSleepHours: 6,
 };
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      calculationMethod: inferRegionalDefault(''),
-      adhanRecitation: 'makkah',
-      snoozeDurationMinutes: 5,
-      preAlarmOffsetMinutes: 0,
-      location: null,
-      alarmEnabled: true,
-      sleepReminderEnabled: false,
-      desiredSleepHours: 6,
+      ...SETTINGS_DEFAULTS,
 
       setCalculationMethod: (method) => set({ calculationMethod: method }),
       setAdhanRecitation: (recitation) => set({ adhanRecitation: recitation }),
@@ -53,6 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
       setAlarmEnabled: (enabled) => set({ alarmEnabled: enabled }),
       setSleepReminderEnabled: (enabled) => set({ sleepReminderEnabled: enabled }),
       setDesiredSleepHours: (hours) => set({ desiredSleepHours: hours }),
+      resetSettings: () => set({ ...SETTINGS_DEFAULTS }),
     }),
     { name: 'settings', storage: mmkvStorage },
   ),

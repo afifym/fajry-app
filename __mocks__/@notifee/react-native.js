@@ -13,6 +13,7 @@ const AndroidCategory = { ALARM: 'alarm' };
 const notifee = {
   createChannel: jest.fn().mockResolvedValue(undefined),
   requestPermission: jest.fn().mockResolvedValue({ authorizationStatus: AuthorizationStatus.AUTHORIZED }),
+  getNotificationSettings: jest.fn().mockResolvedValue({ authorizationStatus: AuthorizationStatus.AUTHORIZED }),
   getTriggerNotificationIds: jest.fn().mockImplementation(() => Promise.resolve(Object.keys(scheduled))),
   getInitialNotification: jest.fn().mockResolvedValue(null),
   getDisplayedNotifications: jest.fn().mockResolvedValue([]),
