@@ -1,10 +1,8 @@
 import {
   bedtimeFromSleepHours,
-  clampWakeTime,
   NIGHT_START_HOUR,
   offsetFromNightFaceWake,
   sleepHoursFromBedtime,
-  wakeTimeFromOffset,
   TIME_SNAP_MINUTES,
 } from '@/utils/alarmPickerTime';
 
@@ -114,14 +112,9 @@ export function wakeDateFrom12hAngleRaw(angleDeg: number, fajrTime: Date): Date 
   return picked;
 }
 
-/** Map dial angle to a wake time on the same night face, capped at Shurooq. */
-export function wakeDateFrom12hAngle(angleDeg: number, fajrTime: Date, sunriseTime?: Date): Date {
-  const picked = wakeDateFrom12hAngleRaw(angleDeg, fajrTime);
-  if (sunriseTime) return clampWakeTime(picked, fajrTime, sunriseTime);
-  const earliest = new Date(fajrTime.getTime() - 60 * 60_000);
-  if (picked.getTime() < earliest.getTime()) return earliest;
-  if (picked.getTime() > fajrTime.getTime()) return new Date(fajrTime);
-  return picked;
+/** Map dial angle to a wake time on the night face. */
+export function wakeDateFrom12hAngle(angleDeg: number, fajrTime: Date, _sunriseTime?: Date): Date {
+  return wakeDateFrom12hAngleRaw(angleDeg, fajrTime);
 }
 
 export function sleepHoursFrom12hAngle(angleDeg: number, fajrTime: Date): number {
@@ -146,9 +139,7 @@ export function snapBedAngle(angleDeg: number, fajrTime: Date): number {
   return dateToNightFaceAngle(bedtimeFromSleepHours(fajrTime, hours));
 }
 
-/** Snap a drag angle to the nearest valid, 5-minute wake time on the dial. */
-export function snapWakeAngle(angleDeg: number, fajrTime: Date, sunriseTime?: Date): number {
-  const offset = wakeOffsetFrom12hAngle(angleDeg, fajrTime, sunriseTime);
-  const wake = wakeTimeFromOffset(fajrTime, offset);
-  return dateToNightFaceAngle(wakeDateFrom12hAngle(dateToNightFaceAngle(wake), fajrTime, sunriseTime));
+/** Snap a drag angle to a 5-minute tick on the night face. */
+export function snapWakeAngle(angleDeg: number, fajrTime: Date, _sunriseTime?: Date): number {
+  return dateToNightFaceAngle(wakeDateFrom12hAngleRaw(snapDialAngle(angleDeg), fajrTime));
 }

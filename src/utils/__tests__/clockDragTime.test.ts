@@ -48,10 +48,9 @@ describe('clockDragTime', () => {
     expect(sleepHoursFrom12hAngle(330, fajr)).toBe(6.5);
   });
 
-  it('wakeDateFrom12hAngle caps at Shurooq', () => {
+  it('wakeDateFrom12hAngle keeps times past 6 AM on the night face', () => {
     const wake = wakeDateFrom12hAngle(210, fajr, sunrise);
-    expect(wake.getHours()).toBe(6);
-    expect(wake.getMinutes()).toBe(41);
+    expect(wake.getHours()).toBe(19);
   });
 
   it('wakeOffsetFrom12hAngle round-trips 5:15 AM wake', () => {
@@ -67,13 +66,9 @@ describe('clockDragTime', () => {
     expect(wake.getHours()).toBeLessThan(12);
   });
 
-  it('snapWakeAngle maps out-of-range drag to the Shurooq cap', () => {
+  it('snapWakeAngle keeps an evening drag on the night face', () => {
     const snapped = snapWakeAngle(300, fajr, sunrise);
-    const wake = wakeTimeFromOffset(
-      fajr,
-      wakeOffsetFrom12hAngle(300, fajr, sunrise),
-    );
-    expect(wake.getTime()).toBeLessThanOrEqual(sunrise.getTime());
+    expect(timeOfDayFrom12hAngle(snapped)).toEqual({ hours: 22, minutes: 0 });
     expect(snapWakeAngle(snapped, fajr, sunrise)).toBe(snapped);
   });
 

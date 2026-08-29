@@ -51,28 +51,17 @@ export function offsetFromWakeTime(fajrTime: Date, picked: Date, sunriseTime?: D
 }
 
 /**
- * Offset for a night-face wake. Does not flip AM ↔ PM just to fit the
- * 60-minute-before-Fajr window (that is how 3 AM became 2:58 PM).
+ * Offset for a night-face wake. No Fajr/Shurooq window — the dial position is the time.
  */
 export function offsetFromNightFaceWake(
   fajrTime: Date,
   picked: Date,
-  sunriseTime?: Date,
+  _sunriseTime?: Date,
 ): number {
-  const wake = new Date(fajrTime);
-  wake.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
-  if (picked.getHours() >= NIGHT_START_HOUR) {
-    wake.setDate(wake.getDate() - 1);
-  }
-  const minutes = snapToFiveMinutes(
+  const wake = nightFaceDateFromTime(fajrTime, picked);
+  return snapToFiveMinutes(
     Math.round((fajrTime.getTime() - wake.getTime()) / 60_000),
   );
-  const clamped = clampWakeOffsetMinutes(minutes, fajrTime, sunriseTime);
-  const clampedWake = wakeTimeFromOffset(fajrTime, clamped);
-  const pickedAm = picked.getHours() < 12;
-  const clampedAm = clampedWake.getHours() < 12;
-  if (pickedAm !== clampedAm) return minutes;
-  return clamped;
 }
 
 export function wakeTimeFromOffset(fajrTime: Date, offsetMinutes: number): Date {
