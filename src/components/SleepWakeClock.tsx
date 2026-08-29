@@ -173,7 +173,7 @@ function DraggableArcHandle({
   icon,
   fillColor,
   disabled,
-  muted,
+  interactionDisabled,
   zIndex,
   dialPageOffset,
   onDragStart,
@@ -185,7 +185,7 @@ function DraggableArcHandle({
   icon: AppIcon;
   fillColor: string;
   disabled?: boolean;
-  muted?: boolean;
+  interactionDisabled?: boolean;
   zIndex?: number;
   dialPageOffset: RefObject<{ x: number; y: number }>;
   onDragStart?: () => void;
@@ -219,7 +219,7 @@ function DraggableArcHandle({
   );
 
   const pan = Gesture.Pan()
-    .enabled(!disabled)
+    .enabled(!interactionDisabled)
     .onBegin(() => {
       if (onDragStart) runOnJS(onDragStart)();
     })
@@ -249,13 +249,12 @@ function DraggableArcHandle({
           style={[
             s.arcHandle,
             { backgroundColor: fillColor },
-            muted && s.arcHandleMuted,
           ]}
         >
           <Icon
             icon={icon}
             size={15}
-            color={disabled || muted ? Palette.textMuted : Palette.bgInset}
+            color={disabled ? Palette.textMuted : Palette.bgInset}
           />
         </View>
       </View>
@@ -542,8 +541,8 @@ export const SleepWakeClock = ({
     [fajrTime, dragBedAngle, emitPreview],
   );
 
-  const bedDragDisabled = !fajrTime || !bedEnabled || !onBedTimeChange;
-  const wakeDragDisabled = !fajrTime || !wakeEnabled || !onWakeTimeChange;
+  const bedInteractionDisabled = !fajrTime || !bedEnabled || !onBedTimeChange;
+  const wakeInteractionDisabled = !fajrTime || !wakeEnabled || !onWakeTimeChange;
 
   return (
     <View style={s.clockWrap}>
@@ -665,8 +664,8 @@ export const SleepWakeClock = ({
           icon={Bed}
           fillColor={ARC_GRADIENT_HIGHLIGHT}
           zIndex={1}
-          muted={!bedEnabled}
-          disabled={bedDragDisabled}
+          disabled={!fajrTime || !onBedTimeChange}
+          interactionDisabled={bedInteractionDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
           onAngleChange={handleBedAngleChange}
@@ -681,8 +680,8 @@ export const SleepWakeClock = ({
           icon={AlarmClock}
           fillColor={ARC_GRADIENT_MUTED}
           zIndex={2}
-          muted={!wakeEnabled}
-          disabled={wakeDragDisabled}
+          disabled={!fajrTime || !onWakeTimeChange}
+          interactionDisabled={wakeInteractionDisabled}
           dialPageOffset={dialPageOffset}
           onDragStart={measureDial}
           onAngleChange={handleWakeAngleChange}
@@ -718,7 +717,6 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   arcHandleDisabled: { opacity: 0.4 },
-  arcHandleMuted: { opacity: 0.55 },
   arcHandle: {
     width: HANDLE_SIZE,
     height: HANDLE_SIZE,
