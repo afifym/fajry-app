@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -79,27 +80,20 @@ const OnboardingScreen = () => {
         <HomeBg />
         <ScrollView contentContainerStyle={st.scrollContent} bounces={false}>
           <View style={st.hero}>
-            <GoldGradientText size={64} weight="bold" reversed>
+            <GoldGradientText size={80} weight="bold" reversed>
               Fajry
             </GoldGradientText>
-            <ElMessiriText size={16} weight="medium" style={st.tagline}>
+            <ElMessiriText size={22} weight="medium" style={st.tagline}>
               Answer the Call
             </ElMessiriText>
           </View>
-
-          <ElMessiriText size={16} weight="regular" lines={5} style={st.body}>
-            A reliable Fajry alarm that works completely offline. Prayer times are
-            calculated on-device using your location — no internet required.
-          </ElMessiriText>
 
           <Pressable
             style={st.cta}
             onPress={handleGetStarted}
             accessibilityRole="button"
           >
-            <ElMessiriText size={17} weight="bold" style={st.ctaText}>
-              Get Started
-            </ElMessiriText>
+            <Text style={st.ctaText}>Get Started</Text>
           </Pressable>
         </ScrollView>
       </SafeAreaView>
@@ -157,7 +151,7 @@ const st = StyleSheet.create({
     flexGrow: 1,
     padding: 32,
     justifyContent: "center",
-    gap: 24,
+    gap: 56,
   },
   centred: {
     flex: 1,
@@ -166,16 +160,10 @@ const st = StyleSheet.create({
     gap: 16,
   },
 
-  hero: { gap: 8, alignItems: "center" },
+  hero: { gap: 12, alignItems: "center" },
   tagline: {
     color: Palette.gold,
     letterSpacing: 0.5,
-    textAlign: "center",
-  },
-
-  body: {
-    color: Palette.textSecondary,
-    lineHeight: 26,
     textAlign: "center",
   },
 
@@ -185,7 +173,11 @@ const st = StyleSheet.create({
     paddingVertical: 18,
     alignItems: "center",
   },
-  ctaText: { color: Palette.bg },
+  ctaText: {
+    color: Palette.bg,
+    fontSize: 17,
+    fontWeight: "700",
+  },
 
   loadingText: {
     color: Palette.textSecondary,
