@@ -331,6 +331,12 @@ const HomeScreenContent = () => {
         onScheduleChange={(s) => {
           setSchedule(s);
         }}
+        wakeTime={
+          clockPreview?.wakeTime ??
+          (sleepSession
+            ? toNightFaceDisplayDate(sleepSession.wakeTime, sleepSession.fajrTime)
+            : null)
+        }
       />
     </GestureHandlerRootView>
   );

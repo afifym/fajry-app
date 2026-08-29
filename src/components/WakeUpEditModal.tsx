@@ -9,11 +9,13 @@ import { Palette } from "@/constants/theme";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
-  clampWakeOffsetMinutes,
-  offsetFromWakeTime,
+  nightFaceDateFromTime,
+  nightFaceStart,
+  offsetFromNightFaceWake,
   snapToFiveMinutes,
   wakeTimeFromOffset,
 } from "@/utils/alarmPickerTime";
+import { getNextSleepSession } from "@/utils/prayerTimes";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
 type Props = {
@@ -21,6 +23,8 @@ type Props = {
   onClose: () => void;
   schedule: AlarmDay[];
   onScheduleChange: (schedule: AlarmDay[]) => void;
+  /** Time shown on the wake-up card; the picker follows this when present. */
+  wakeTime?: Date | null;
 };
 
 async function applyAndRebuild(
@@ -45,6 +49,7 @@ export function WakeUpEditModal({
   onClose,
   schedule,
   onScheduleChange,
+  wakeTime,
 }: Props) {
   const settings = useSettingsStore();
 
@@ -57,34 +62,34 @@ export function WakeUpEditModal({
   async function handleOffsetChange(minutes: number) {
     if (!nextFajr) return;
     const snapped = snapToFiveMinutes(minutes);
-    const clamped = clampWakeOffsetMinutes(
-      snapped,
-      nextFajr.fajrTime,
-      nextFajr.sunriseTime,
-    );
-    useSettingsStore.getState().setPreAlarmOffset(clamped);
-    const next = await applyAndRebuild({ preAlarmOffsetMinutes: clamped });
+    useSettingsStore.getState().setPreAlarmOffset(snapped);
+    const next = await applyAndRebuild({ preAlarmOffsetMinutes: snapped });
     if (next) onScheduleChange(next);
   }
 
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
-  const nextAlarm = schedule.find((d) => d.alarmTime.getTime() > Date.now());
-  const pickerValue =
-    nextAlarm?.alarmTime ??
+  const sleepSession = getNextSleepSession(
+    schedule,
+    settings.desiredSleepHours,
+  );
+  const rawPickerValue =
+    wakeTime ??
+    sleepSession?.wakeTime ??
     (nextFajr
       ? wakeTimeFromOffset(nextFajr.fajrTime, settings.preAlarmOffsetMinutes)
       : new Date());
+  const pickerValue = nextFajr
+    ? nightFaceDateFromTime(nextFajr.fajrTime, rawPickerValue)
+    : rawPickerValue;
 
   function handleWakeTimeChange(date: Date) {
     if (!nextFajr) return;
     void handleOffsetChange(
-      offsetFromWakeTime(nextFajr.fajrTime, date, nextFajr.sunriseTime),
+      offsetFromNightFaceWake(nextFajr.fajrTime, date, nextFajr.sunriseTime),
     );
   }
 
-  const minTime = nextFajr
-    ? wakeTimeFromOffset(nextFajr.fajrTime, 60)
-    : undefined;
+  const minTime = nextFajr ? nightFaceStart(nextFajr.fajrTime) : undefined;
   const maxTime = nextFajr?.sunriseTime;
 
   return (

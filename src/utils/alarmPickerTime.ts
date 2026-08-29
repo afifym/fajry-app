@@ -79,15 +79,30 @@ export function wakeTimeFromOffset(fajrTime: Date, offsetMinutes: number): Date 
   return new Date(fajrTime.getTime() - offsetMinutes * 60_000);
 }
 
+/** Put a clock time on the same night-face calendar as Fajr (PM is the evening before). */
+export function nightFaceDateFromTime(fajrTime: Date, picked: Date): Date {
+  const aligned = new Date(fajrTime);
+  aligned.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+  if (picked.getHours() >= NIGHT_START_HOUR) {
+    aligned.setDate(aligned.getDate() - 1);
+  }
+  return aligned;
+}
+
+/** Earliest time on the night face: 6 PM the calendar day before Fajr. */
+export function nightFaceStart(fajrTime: Date): Date {
+  const start = new Date(fajrTime);
+  start.setDate(start.getDate() - 1);
+  start.setHours(NIGHT_START_HOUR, 0, 0, 0);
+  return start;
+}
+
 /** 6 PM — seam between the PM left half and AM right half of the sleep clock. */
 export const NIGHT_START_HOUR = 18;
 
 /** Longest sleep on the night face: 6 PM the day before Fajr → Fajr. */
 export function maxDesiredSleepHours(fajrTime: Date): number {
-  const nightStart = new Date(fajrTime);
-  nightStart.setDate(nightStart.getDate() - 1);
-  nightStart.setHours(NIGHT_START_HOUR, 0, 0, 0);
-  const hours = (fajrTime.getTime() - nightStart.getTime()) / 3_600_000;
+  const hours = (fajrTime.getTime() - nightFaceStart(fajrTime).getTime()) / 3_600_000;
   return Math.max(0.5, hours);
 }
 

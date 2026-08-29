@@ -26,12 +26,14 @@ const BACKDROP_CLOSE = { duration: 280 };
 export function AlarmEditSheet({ visible, onClose, children }: Props) {
   const insets = useSafeAreaInsets();
   const [shown, setShown] = useState(visible);
+  const [contentKey, setContentKey] = useState(0);
   const backdrop = useSharedValue(0);
   const translateY = useSharedValue(400);
 
   useEffect(() => {
     if (visible) {
       setShown(true);
+      setContentKey((key) => key + 1);
       backdrop.value = 0;
       translateY.value = 400;
       requestAnimationFrame(() => {
@@ -81,7 +83,9 @@ export function AlarmEditSheet({ visible, onClose, children }: Props) {
           <HomeBg />
           <View style={s.sheetInner}>
             <View style={s.handle} />
-            <View style={s.content}>{children}</View>
+            <View key={contentKey} style={s.content}>
+              {children}
+            </View>
           </View>
         </Animated.View>
       </View>

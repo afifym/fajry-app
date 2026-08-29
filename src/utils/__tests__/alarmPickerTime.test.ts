@@ -5,6 +5,8 @@ import {
   wakeTimeFromOffset,
   bedtimeFromSleepHours,
   maxDesiredSleepHours,
+  nightFaceDateFromTime,
+  nightFaceStart,
 } from '../alarmPickerTime';
 
 describe('alarmPickerTime', () => {
@@ -79,6 +81,23 @@ describe('alarmPickerTime', () => {
       const bed = bedtimeFromSleepHours(fajr, hours);
       expect(bed.getHours()).toBe(18);
       expect(bed.getDate()).toBe(14);
+    });
+  });
+
+  describe('nightFaceDateFromTime', () => {
+    it('keeps a 5 AM wake on Fajr morning, after the 6 PM seam', () => {
+      const fiveAm = new Date(2024, 0, 14, 5, 0, 0);
+      const aligned = nightFaceDateFromTime(fajr, fiveAm);
+      expect(aligned.getDate()).toBe(15);
+      expect(aligned.getHours()).toBe(5);
+      expect(aligned.getTime()).toBeGreaterThan(nightFaceStart(fajr).getTime());
+    });
+
+    it('places 11 PM on the evening before Fajr', () => {
+      const elevenPm = new Date(2024, 0, 15, 23, 0, 0);
+      const aligned = nightFaceDateFromTime(fajr, elevenPm);
+      expect(aligned.getDate()).toBe(14);
+      expect(aligned.getHours()).toBe(23);
     });
   });
 
