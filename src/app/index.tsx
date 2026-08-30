@@ -18,6 +18,7 @@ import { WakeUpEditModal } from "@/components/WakeUpEditModal";
 import { ElMessiriText } from "@/components/el-messiri-text";
 import { Palette, Radius } from "@/constants/theme";
 import { useStoreReviewPrompt } from "@/hooks/use-store-review-prompt";
+import { useNotificationAuthorization } from "@/hooks/use-notification-authorization";
 import { useConsistencyStore } from "@/store/consistencyStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay, City, Location } from "@/types";
@@ -56,6 +57,7 @@ const HomeScreenContent = () => {
   const settings = useSettingsStore();
   const { streak } = useConsistencyStore();
   useStoreReviewPrompt();
+  const { authorized: notificationsAllowed } = useNotificationAuthorization();
 
   const [schedule, setSchedule] = useState<AlarmDay[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -288,8 +290,8 @@ const HomeScreenContent = () => {
                   ? toNightFaceDisplayDate(sleepSession.wakeTime, sleepSession.fajrTime)
                   : null)
               }
-              bedEnabled={settings.sleepReminderEnabled}
-              wakeEnabled={settings.alarmEnabled}
+              bedEnabled={settings.sleepReminderEnabled && notificationsAllowed}
+              wakeEnabled={settings.alarmEnabled && notificationsAllowed}
               onBedPress={() => setEditSheet("bedtime")}
               onWakePress={() => setEditSheet("wakeup")}
             >
@@ -299,8 +301,8 @@ const HomeScreenContent = () => {
                 fajrTime={sleepSession?.fajrTime ?? null}
                 sunriseTime={sleepSession?.sunriseTime ?? null}
                 durationMs={clockPreview ? undefined : sleepSession?.durationMs}
-                bedEnabled={settings.sleepReminderEnabled}
-                wakeEnabled={settings.alarmEnabled}
+                bedEnabled={settings.sleepReminderEnabled && notificationsAllowed}
+                wakeEnabled={settings.alarmEnabled && notificationsAllowed}
                 onBedTimeChange={handleBedTimeChange}
                 onWakeTimeChange={handleWakeTimeChange}
                 onTimesPreview={handleClockPreview}

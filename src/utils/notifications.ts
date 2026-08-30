@@ -1,5 +1,5 @@
 import notifee, { AndroidImportance, AuthorizationStatus } from '@notifee/react-native';
-import { Platform } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 
 import { ensureIosAlarmKitAuthorized, isIosAlarmKitAvailable } from '@/utils/iosAlarmKit';
 
@@ -36,6 +36,53 @@ export async function setupNotifeeChannels(): Promise<void> {
     vibration: true,
     sound: 'default',
   });
+}
+
+export function notificationAccessForStatus(
+  status: number,
+): 'granted' | 'request' | 'settings' {
+  if (status >= AuthorizationStatus.AUTHORIZED) return 'granted';
+  if (status === AuthorizationStatus.NOT_DETERMINED) return 'request';
+  return 'settings';
+}
+
+export async function getNotificationAccess(): Promise<
+  'granted' | 'request' | 'settings'
+> {
+  const { authorizationStatus } = await notifee.getNotificationSettings();
+  return notificationAccessForStatus(authorizationStatus);
+}
+
+export async function areNotificationsAuthorized(): Promise<boolean> {
+  return (await getNotificationAccess()) === 'granted';
+}
+
+export async function openAppNotificationSettings(): Promise<void> {
+  await Linking.openSettings();
+}
+
+/** Ask the OS, or send the user to Settings if they already denied. */
+export async function enableOsNotificationAccess(): Promise<boolean> {
+  const access = await getNotificationAccess();
+  if (access === 'settings') {
+    return new Promise((resolve) => {
+      Alert.alert(
+        'Turn on notifications',
+        'Fajry needs notifications for the bedtime reminder and Fajr alarm.',
+        [
+          { text: 'Not now', style: 'cancel', onPress: () => resolve(false) },
+          {
+            text: 'Open Settings',
+            onPress: () => {
+              void openAppNotificationSettings();
+              resolve(false);
+            },
+          },
+        ],
+      );
+    });
+  }
+  return requestNotificationPermissions();
 }
 
 export async function requestNotificationPermissions(): Promise<boolean> {

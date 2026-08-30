@@ -6,6 +6,7 @@ import { GoldSwitch } from "@/components/GoldSwitch";
 import { Bed, Icon } from "@/components/Icon";
 import { TimeWheelPicker } from "@/components/TimeWheelPicker";
 import { Palette } from "@/constants/theme";
+import { useNotificationAuthorization } from "@/hooks/use-notification-authorization";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
@@ -14,6 +15,7 @@ import {
   snapToFiveMinutes,
 } from "@/utils/alarmPickerTime";
 import { getNextSleepSession } from "@/utils/prayerTimes";
+import { enableOsNotificationAccess } from "@/utils/notifications";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
 type Props = {
@@ -55,6 +57,9 @@ export function BedtimeEditModal({
   bedTime: bedTimeProp,
 }: Props) {
   const settings = useSettingsStore();
+  const { authorized, refresh: refreshNotifications } =
+    useNotificationAuthorization();
+  const reminderOn = settings.sleepReminderEnabled && authorized;
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
 
   async function handleSleepHoursChange(hours: number) {
@@ -65,6 +70,11 @@ export function BedtimeEditModal({
   }
 
   async function handleReminderToggle(enabled: boolean) {
+    if (enabled) {
+      const ok = await enableOsNotificationAccess();
+      await refreshNotifications();
+      if (!ok) return;
+    }
     useSettingsStore.getState().setSleepReminderEnabled(enabled);
     const next = await applyAndRebuild({ sleepReminderEnabled: enabled });
     if (next) onScheduleChange(next);
@@ -96,7 +106,7 @@ export function BedtimeEditModal({
             <Text style={s.label}>BEDTIME REMINDER</Text>
           </View>
           <GoldSwitch
-            value={settings.sleepReminderEnabled}
+            value={reminderOn}
             onValueChange={(v) => void handleReminderToggle(v)}
             accessibilityLabel="Bedtime reminder"
           />
@@ -106,7 +116,7 @@ export function BedtimeEditModal({
           key={visible ? "open" : "closed"}
           value={pickerValue}
           onValueChange={handleBedtimeChange}
-          disabled={!settings.sleepReminderEnabled}
+          disabled={!reminderOn}
         />
 
         <Text style={s.footerHint}>

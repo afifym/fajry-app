@@ -6,6 +6,7 @@ import { GoldSwitch } from "@/components/GoldSwitch";
 import { AlarmClock, Icon } from "@/components/Icon";
 import { TimeWheelPicker } from "@/components/TimeWheelPicker";
 import { Palette } from "@/constants/theme";
+import { useNotificationAuthorization } from "@/hooks/use-notification-authorization";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
@@ -16,6 +17,7 @@ import {
   wakeTimeFromOffset,
 } from "@/utils/alarmPickerTime";
 import { getNextSleepSession } from "@/utils/prayerTimes";
+import { enableOsNotificationAccess } from "@/utils/notifications";
 import { rebuildScheduleOnAppOpen } from "@/utils/scheduling";
 
 type Props = {
@@ -52,8 +54,16 @@ export function WakeUpEditModal({
   wakeTime,
 }: Props) {
   const settings = useSettingsStore();
+  const { authorized, refresh: refreshNotifications } =
+    useNotificationAuthorization();
+  const alarmOn = settings.alarmEnabled && authorized;
 
   async function handleAlarmToggle(enabled: boolean) {
+    if (enabled) {
+      const ok = await enableOsNotificationAccess();
+      await refreshNotifications();
+      if (!ok) return;
+    }
     useSettingsStore.getState().setAlarmEnabled(enabled);
     const next = await applyAndRebuild({ alarmEnabled: enabled });
     if (next) onScheduleChange(next);
@@ -101,7 +111,7 @@ export function WakeUpEditModal({
             <Text style={s.label}>WAKE UP ALARM</Text>
           </View>
           <GoldSwitch
-            value={settings.alarmEnabled}
+            value={alarmOn}
             onValueChange={(v) => void handleAlarmToggle(v)}
             accessibilityLabel="Wake up alarm"
           />
@@ -112,7 +122,7 @@ export function WakeUpEditModal({
           onValueChange={handleWakeTimeChange}
           minimumDate={minTime}
           maximumDate={maxTime}
-          disabled={!settings.alarmEnabled}
+          disabled={!alarmOn}
         />
 
         <Text style={s.footerHint}>
