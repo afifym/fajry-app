@@ -82,21 +82,21 @@ function arcD(
 ): string {
   let span = end - start;
   if (span <= 0) span += 360;
-  if (span >= 359.9) return "";
+  if (span >= 360) return "";
   const large = span > 180 ? 1 : 0;
   const s = polarToCartesian(cx, cy, r, start);
   const e = polarToCartesian(cx, cy, r, end);
   return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
 }
 
-function sleepArcAngles(bed: Date, wake: Date): { start: number; end: number } {
-  const start = dateToNightFaceAngle(bed);
-  let end = dateToNightFaceAngle(wake);
-  const bedMins = bed.getHours() * 60 + bed.getMinutes();
-  const wakeMins = wake.getHours() * 60 + wake.getMinutes();
-  if (wakeMins <= bedMins) end += 360;
-  if (end <= start) end += 360;
-  return { start, end };
+/** Clockwise arc from bed handle to wake handle on the night-face dial. */
+function sleepArcFromHandleAngles(
+  bedAngle: number,
+  wakeAngle: number,
+): { start: number; end: number } {
+  let end = wakeAngle;
+  if (end <= bedAngle) end += 360;
+  return { start: bedAngle, end };
 }
 
 const SELECTED_ARC_GRADIENT_ID = "sleepArcGradient";
@@ -419,8 +419,15 @@ export const SleepWakeClock = ({
       ? wakeDateFrom12hAngleRaw(dragWakeAngle, fajrTime)
       : wakeTime;
 
-  const hasArc = previewBed && previewWake;
-  const sleepArc = hasArc ? sleepArcAngles(previewBed, previewWake) : null;
+  const bedAngle =
+    dragBedAngle ?? (previewBed ? dateToNightFaceAngle(previewBed) : null);
+  const wakeAngle =
+    dragWakeAngle ?? (previewWake ? dateToNightFaceAngle(previewWake) : null);
+
+  const sleepArc =
+    bedAngle != null && wakeAngle != null
+      ? sleepArcFromHandleAngles(bedAngle, wakeAngle)
+      : null;
   const selectedArcPath = sleepArc
     ? arcD(CENTER, CENTER, TRACK_R, sleepArc.start, sleepArc.end)
     : "";
@@ -440,11 +447,6 @@ export const SleepWakeClock = ({
       : null;
   const duration =
     previewDurationMs != null ? formatDurationParts(previewDurationMs) : null;
-
-  const bedAngle =
-    dragBedAngle ?? (previewBed ? dateToNightFaceAngle(previewBed) : null);
-  const wakeAngle =
-    dragWakeAngle ?? (previewWake ? dateToNightFaceAngle(previewWake) : null);
 
   const fajrAngle = fajrTime ? dateToNightFaceAngle(fajrTime) : null;
   const sunriseAngle = sunriseTime ? dateToNightFaceAngle(sunriseTime) : null;

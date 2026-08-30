@@ -48,9 +48,9 @@ describe('clockDragTime', () => {
     expect(sleepHoursFrom12hAngle(330, fajr)).toBe(6.5);
   });
 
-  it('wakeDateFrom12hAngle keeps times past 6 AM on the night face', () => {
+  it('wakeDateFrom12hAngle stays AM when the handle crosses 6', () => {
     const wake = wakeDateFrom12hAngle(210, fajr, sunrise);
-    expect(wake.getHours()).toBe(19);
+    expect(wake.getHours()).toBe(7);
   });
 
   it('wakeOffsetFrom12hAngle round-trips 5:15 AM wake', () => {
@@ -66,64 +66,65 @@ describe('clockDragTime', () => {
     expect(wake.getHours()).toBeLessThan(12);
   });
 
-  it('snapWakeAngle keeps an evening drag on the night face', () => {
+  it('snapWakeAngle keeps an evening-side drag as AM', () => {
     const snapped = snapWakeAngle(300, fajr, sunrise);
-    expect(timeOfDayFrom12hAngle(snapped)).toEqual({ hours: 22, minutes: 0 });
+    expect(timeOfDayFrom12hAngle(snapped, 'AM')).toEqual({ hours: 10, minutes: 0 });
     expect(snapWakeAngle(snapped, fajr, sunrise)).toBe(snapped);
   });
 
-  it('snapBedAngle stabilises drag angles through sleep-hour clamping', () => {
+  it('snapBedAngle keeps afternoon PM instead of clamping to 6 PM', () => {
     const snapped = snapBedAngle(90, fajr);
-    expect(snapped).toBe(dateToNightFaceAngle(bedDateFrom12hAngle(snapped, fajr)));
-    expect(sleepHoursFrom12hAngle(snapped, fajr)).toBe(sleepHoursFrom12hAngle(90, fajr));
+    expect(snapped).toBe(90);
+    expect(bedDateFrom12hAngle(snapped, fajr).getHours()).toBe(15);
+    expect(sleepHoursFrom12hAngle(175, fajr)).toBe(11 + 40 / 60);
   });
 
-  it('maps the right half to AM and the left half to PM for bedtime', () => {
-    expect(bedDateFrom12hAngle(90, fajr).getHours()).toBe(3);
+  it('reads bedtime hours as PM on every clock number', () => {
+    expect(bedDateFrom12hAngle(90, fajr).getHours()).toBe(15);
     expect(bedDateFrom12hAngle(270, fajr).getHours()).toBe(21);
     expect(bedDateFrom12hAngle(180, fajr).getHours()).toBe(18);
-    expect(bedDateFrom12hAngle(0, fajr).getHours()).toBe(0);
+    expect(bedDateFrom12hAngle(0, fajr).getHours()).toBe(12);
   });
 
-  it('keeps 5:50 on the AM right half', () => {
+  it('keeps 5:50 as 5:50 PM when bedtime crosses 6', () => {
     const bed = bedDateFrom12hAngle(175, fajr);
-    expect(bed.getHours()).toBe(5);
+    expect(bed.getHours()).toBe(17);
     expect(bed.getMinutes()).toBe(50);
   });
 
-  it('keeps 4 o’clock as 4 AM on the right half', () => {
+  it('keeps 4 o’clock as 4 PM for the bedtime handle', () => {
     const earlyFajr = new Date(2024, 0, 15, 4, 0, 0);
     const bed = bedDateFrom12hAngle(120, earlyFajr);
-    expect(bed.getHours()).toBe(4);
+    expect(bed.getHours()).toBe(16);
     expect(bed.getDate()).toBe(14);
   });
 
-  it('maps wake handles with the same night-face hours as bedtime', () => {
-    expect(timeOfDayFrom12hAngle(90)).toEqual({ hours: 3, minutes: 0 });
-    expect(timeOfDayFrom12hAngle(270)).toEqual({ hours: 21, minutes: 0 });
-    expect(timeOfDayFrom12hAngle(180)).toEqual({ hours: 18, minutes: 0 });
-    expect(timeOfDayFrom12hAngle(0)).toEqual({ hours: 0, minutes: 0 });
+  it('reads wake hours as AM on every clock number', () => {
+    expect(timeOfDayFrom12hAngle(90, 'AM')).toEqual({ hours: 3, minutes: 0 });
+    expect(timeOfDayFrom12hAngle(270, 'AM')).toEqual({ hours: 9, minutes: 0 });
+    expect(timeOfDayFrom12hAngle(180, 'AM')).toEqual({ hours: 6, minutes: 0 });
+    expect(timeOfDayFrom12hAngle(0, 'AM')).toEqual({ hours: 0, minutes: 0 });
     expect(wakeDateFrom12hAngle(150, fajr).getHours()).toBe(5);
   });
 
-  it('flips AM/PM when the dial crosses 6', () => {
-    expect(periodFrom12hAngle(165)).toBe('AM');
-    expect(periodFrom12hAngle(195)).toBe('PM');
-    expect(bedDateFrom12hAngle(165, fajr).getHours()).toBe(5);
+  it('keeps bedtime in PM and wake in AM when the dial crosses 6', () => {
+    expect(bedDateFrom12hAngle(165, fajr).getHours()).toBe(17);
     expect(bedDateFrom12hAngle(195, fajr).getHours()).toBe(18);
+    expect(wakeDateFrom12hAngle(165, fajr).getHours()).toBe(5);
+    expect(wakeDateFrom12hAngle(195, fajr).getHours()).toBe(6);
   });
 
-  it('snapDialAngle keeps AM and PM on either side of 6', () => {
-    expect(periodFrom12hAngle(snapDialAngle(175))).toBe('AM');
-    expect(periodFrom12hAngle(snapDialAngle(185))).toBe('PM');
-    expect(timeOfDayFrom12hAngle(snapDialAngle(175)).hours).toBe(5);
-    expect(timeOfDayFrom12hAngle(snapDialAngle(185)).hours).toBe(18);
+  it('snapDialAngle can round across 6', () => {
+    expect(timeOfDayFrom12hAngle(snapDialAngle(175), 'PM').hours).toBe(17);
+    expect(timeOfDayFrom12hAngle(snapDialAngle(185), 'PM').hours).toBe(18);
+    expect(timeOfDayFrom12hAngle(snapDialAngle(175), 'AM').hours).toBe(5);
+    expect(timeOfDayFrom12hAngle(snapDialAngle(185), 'AM').hours).toBe(6);
   });
 
   it('dateToNightFaceAngle keeps 6:30 PM on the left half', () => {
     const sixThirtyPm = new Date(2024, 0, 14, 18, 30, 0);
     expect(periodFrom12hAngle(dateToNightFaceAngle(sixThirtyPm))).toBe('PM');
-    expect(timeOfDayFrom12hAngle(dateToNightFaceAngle(sixThirtyPm))).toEqual({
+    expect(timeOfDayFrom12hAngle(dateToNightFaceAngle(sixThirtyPm), 'PM')).toEqual({
       hours: 18,
       minutes: 30,
     });

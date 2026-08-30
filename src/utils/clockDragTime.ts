@@ -1,8 +1,7 @@
 import {
-  bedtimeFromSleepHours,
   NIGHT_START_HOUR,
   offsetFromNightFaceWake,
-  sleepHoursFromBedtime,
+  snapToFiveMinutes,
   TIME_SNAP_MINUTES,
 } from '@/utils/alarmPickerTime';
 
@@ -30,10 +29,9 @@ export function dateToNightFaceAngle(date: Date): number {
   return dateTo12Angle(date);
 }
 
-/** Read a stored time as the night-face clock (right half AM, left half PM). */
+/** Align a clock time to Fajr's night without changing AM/PM. */
 export function toNightFaceDisplayDate(date: Date, fajrTime: Date): Date {
-  const { hours, minutes } = timeOfDayFrom12hAngle(dateToNightFaceAngle(date));
-  return nightFaceDate(hours, minutes, fajrTime);
+  return nightFaceDate(date.getHours(), date.getMinutes(), fajrTime);
 }
 
 /** Clockwise degrees from 12 o'clock (0–360). */
@@ -73,40 +71,38 @@ export function periodFrom12hAngle(angleDeg: number): 'AM' | 'PM' {
   return normalized < 180 ? 'AM' : 'PM';
 }
 
-/** Snap to a 5-minute tick without crossing the 6 o’clock AM/PM seam. */
+/** Snap to a 5-minute tick on the 12-hour face. */
 export function snapDialAngle(angleDeg: number): number {
   const normalized = ((angleDeg % 360) + 360) % 360;
-  let snapped = Math.round(normalized / DIAL_STEP_DEG) * DIAL_STEP_DEG;
-  snapped = ((snapped % 360) + 360) % 360;
-  if (periodFrom12hAngle(snapped) !== periodFrom12hAngle(normalized)) {
-    snapped = normalized < 180 ? 180 - DIAL_STEP_DEG : 180;
-  }
-  return snapped;
+  const snapped = Math.round(normalized / DIAL_STEP_DEG) * DIAL_STEP_DEG;
+  return ((snapped % 360) + 360) % 360;
 }
 
-/** Clock hours on the night face: 12 AM–6 AM on the right, 6 PM–12 AM on the left. */
-export function timeOfDayFrom12hAngle(angleDeg: number): { hours: number; minutes: number } {
+/** Read a 12-hour dial angle as AM or PM. Bed stays PM; wake stays AM. */
+export function timeOfDayFrom12hAngle(
+  angleDeg: number,
+  period: 'AM' | 'PM',
+): { hours: number; minutes: number } {
   const snapped = snapDialAngle(angleDeg);
   const totalMins = Math.round((snapped / 360) * 720);
   const hour12 = Math.floor(totalMins / 60) % 12 || 12;
   const minutes = totalMins % 60;
-  const period = periodFrom12hAngle(snapped);
   if (period === 'PM') return { hours: hour12 === 12 ? 12 : hour12 + 12, minutes };
   return { hours: hour12 === 12 ? 0 : hour12, minutes };
 }
 
 /**
- * Map dial angle to a bedtime on the night before Fajr.
- * The sleep face skips daytime: right side is AM, left side is PM.
+ * Map dial angle to a bedtime. The hour on the face is always PM,
+ * so crossing 6 stays 5 PM rather than flipping to 5 AM.
  */
 export function bedDateFrom12hAngle(angleDeg: number, fajrTime: Date): Date {
-  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg);
+  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg, 'PM');
   return nightFaceDate(hours, minutes, fajrTime);
 }
 
-/** Map dial angle to a wake time on the night face without range clamping. */
+/** Map dial angle to a wake time. The hour on the face is always AM. */
 export function wakeDateFrom12hAngleRaw(angleDeg: number, fajrTime: Date): Date {
-  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg);
+  const { hours, minutes } = timeOfDayFrom12hAngle(angleDeg, 'AM');
   const picked = new Date(fajrTime);
   picked.setHours(hours, minutes, 0, 0);
   return picked;
@@ -118,7 +114,10 @@ export function wakeDateFrom12hAngle(angleDeg: number, fajrTime: Date, _sunriseT
 }
 
 export function sleepHoursFrom12hAngle(angleDeg: number, fajrTime: Date): number {
-  return sleepHoursFromBedtime(fajrTime, bedDateFrom12hAngle(angleDeg, fajrTime));
+  const bed = bedDateFrom12hAngle(angleDeg, fajrTime);
+  return (
+    snapToFiveMinutes(Math.round((fajrTime.getTime() - bed.getTime()) / 60_000)) / 60
+  );
 }
 
 export function wakeOffsetFrom12hAngle(
@@ -133,10 +132,9 @@ export function wakeOffsetFrom12hAngle(
   );
 }
 
-/** Snap a drag angle to the nearest valid, 5-minute bed time on the dial. */
+/** Snap a drag angle to a 5-minute tick on the night face. */
 export function snapBedAngle(angleDeg: number, fajrTime: Date): number {
-  const hours = sleepHoursFrom12hAngle(angleDeg, fajrTime);
-  return dateToNightFaceAngle(bedtimeFromSleepHours(fajrTime, hours));
+  return dateToNightFaceAngle(bedDateFrom12hAngle(snapDialAngle(angleDeg), fajrTime));
 }
 
 /** Snap a drag angle to a 5-minute tick on the night face. */
