@@ -24,6 +24,7 @@ function formatTime(date: Date): string {
 
 const TIME_SIZE = 24;
 const TIME_HEIGHT = Math.round(TIME_SIZE * 1.32);
+const SCHEDULE_CARD_WIDTH = 132;
 
 function TimeText({ children, muted }: { children: string; muted: boolean }) {
   return (
@@ -99,12 +100,13 @@ const s = StyleSheet.create({
   scheduleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    gap: 12,
   },
   half: {
-    minWidth: 0,
+    width: SCHEDULE_CARD_WIDTH,
     paddingTop: 30,
-    paddingHorizontal: 34,
+    paddingHorizontal: 12,
     paddingBottom: 16,
     gap: 8,
     alignItems: "center",
