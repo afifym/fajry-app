@@ -137,6 +137,18 @@ describe('rebuildScheduleOnAppOpen', () => {
     expect(sleepIds.length).toBeGreaterThan(0);
   });
 
+  it('still returns the prayer schedule when the OS blocks notifications', async () => {
+    (notifee.createTriggerNotification as jest.Mock).mockRejectedValue(
+      new Error('notifications denied'),
+    );
+    const schedule = await rebuildScheduleOnAppOpen({
+      ...BASE_SETTINGS,
+      sleepReminderEnabled: true,
+    });
+    expect(schedule).toHaveLength(7);
+    expect(schedule.every((d) => d.fajrTime instanceof Date)).toBe(true);
+  });
+
   it('marks future days as scheduled and past days as not scheduled', async () => {
     const schedule = await rebuildScheduleOnAppOpen(BASE_SETTINGS);
     // Today's alarm may already have passed (Fajr is early morning)

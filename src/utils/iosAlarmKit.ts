@@ -35,9 +35,13 @@ export async function isIosAlarmKitAvailable(): Promise<boolean> {
 export async function ensureIosAlarmKitAuthorized(): Promise<boolean> {
   const native = getNative();
   if (!native) return false;
-  if (!(await isIosAlarmKitAvailable())) return false;
-  const status = await native.requestAuthorization();
-  return status === "authorized";
+  try {
+    if (!(await isIosAlarmKitAvailable())) return false;
+    const status = await native.requestAuthorization();
+    return status === "authorized";
+  } catch {
+    return false;
+  }
 }
 
 export async function scheduleIosAlarmKit(

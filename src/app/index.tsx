@@ -73,16 +73,20 @@ const HomeScreenContent = () => {
       async function rebuild() {
         const s = useSettingsStore.getState();
         if (!s.location) return;
-        const next = await rebuildScheduleOnAppOpen({
-          location: s.location,
-          calculationMethod: s.calculationMethod,
-          adhanRecitation: s.adhanRecitation,
-          preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
-          alarmEnabled: s.alarmEnabled,
-          sleepReminderEnabled: s.sleepReminderEnabled,
-          desiredSleepHours: s.desiredSleepHours,
-        });
-        setSchedule(next);
+        try {
+          const next = await rebuildScheduleOnAppOpen({
+            location: s.location,
+            calculationMethod: s.calculationMethod,
+            adhanRecitation: s.adhanRecitation,
+            preAlarmOffsetMinutes: s.preAlarmOffsetMinutes,
+            alarmEnabled: s.alarmEnabled,
+            sleepReminderEnabled: s.sleepReminderEnabled,
+            desiredSleepHours: s.desiredSleepHours,
+          });
+          setSchedule(next);
+        } catch {
+          // OS notification permission is optional — keep the last schedule on screen.
+        }
       }
       void rebuild();
     }, []),

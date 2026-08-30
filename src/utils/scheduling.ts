@@ -63,21 +63,49 @@ export type RebuildSettings = {
 };
 
 async function cancelFajrAndSleepAlarms(): Promise<void> {
-  const ids = await notifee.getTriggerNotificationIds();
-  const toCancel = ids.filter((id) => id.startsWith(FAJR_PREFIX) || id.startsWith(SLEEP_PREFIX));
-  if (toCancel.length > 0) {
-    await notifee.cancelTriggerNotifications(toCancel);
+  try {
+    const ids = await notifee.getTriggerNotificationIds();
+    const toCancel = ids.filter((id) => id.startsWith(FAJR_PREFIX) || id.startsWith(SLEEP_PREFIX));
+    if (toCancel.length > 0) {
+      await notifee.cancelTriggerNotifications(toCancel);
+    }
+  } catch (error) {
+    Sentry.captureException(error);
   }
   await cancelAllIosAlarmKit();
 }
 
 /** Cancel every scheduled Fajr, sleep, snooze, and test alarm. */
 export async function cancelAllAppAlarms(): Promise<void> {
-  const ids = await notifee.getTriggerNotificationIds();
-  if (ids.length > 0) {
-    await notifee.cancelTriggerNotifications(ids);
+  try {
+    const ids = await notifee.getTriggerNotificationIds();
+    if (ids.length > 0) {
+      await notifee.cancelTriggerNotifications(ids);
+    }
+  } catch (error) {
+    Sentry.captureException(error);
   }
   await cancelAllIosAlarmKit();
+}
+
+async function tryCreateTriggerNotification(
+  notification: ReturnType<typeof alarmNotification>,
+  timestamp: number,
+): Promise<void> {
+  try {
+    await notifee.createTriggerNotification(notification, {
+      type: TriggerType.TIMESTAMP,
+      timestamp,
+      alarmManager: { allowWhileIdle: true },
+    });
+  } catch (error) {
+    Sentry.addBreadcrumb({
+      category: 'alarm',
+      message: 'Could not schedule a notification (permission denied or OS blocked)',
+      level: 'warning',
+    });
+    Sentry.captureException(error);
+  }
 }
 
 async function scheduleWakeAlarm(
@@ -86,20 +114,21 @@ async function scheduleWakeAlarm(
   body: string,
   timestamp: number,
 ): Promise<void> {
-  if (await isIosAlarmKitAvailable()) {
-    if (await ensureIosAlarmKitAuthorized()) {
-      await scheduleIosAlarmKit(id, timestamp, title);
+  try {
+    if (await isIosAlarmKitAvailable()) {
+      if (await ensureIosAlarmKitAuthorized()) {
+        await scheduleIosAlarmKit(id, timestamp, title);
+      }
+      return;
     }
+  } catch (error) {
+    Sentry.captureException(error);
     return;
   }
 
-  await notifee.createTriggerNotification(
+  await tryCreateTriggerNotification(
     alarmNotification(id, title, body, CHANNEL_FAJR_ALARM),
-    {
-      type: TriggerType.TIMESTAMP,
-      timestamp,
-      alarmManager: { allowWhileIdle: true },
-    },
+    timestamp,
   );
 }
 
@@ -125,7 +154,11 @@ export async function scheduleSnooze(
 export async function rebuildScheduleOnAppOpen(
   settings: RebuildSettings,
 ): Promise<AlarmDay[]> {
-  await setupNotifeeChannels();
+  try {
+    await setupNotifeeChannels();
+  } catch (error) {
+    Sentry.captureException(error);
+  }
   await cancelFajrAndSleepAlarms();
 
   const schedule = buildAlarmSchedule(
@@ -160,18 +193,14 @@ export async function rebuildScheduleOnAppOpen(
       const reminderAt = day.fajrTime.getTime() - settings.desiredSleepHours * 3_600_000;
 
       if (reminderAt > now) {
-        await notifee.createTriggerNotification(
+        await tryCreateTriggerNotification(
           alarmNotification(
             `${SLEEP_PREFIX}${day.date}`,
             'Time to sleep',
             reflection.text,
             CHANNEL_SLEEP_REMINDER,
           ),
-          {
-            type: TriggerType.TIMESTAMP,
-            timestamp: reminderAt,
-            alarmManager: { allowWhileIdle: true },
-          },
+          reminderAt,
         );
       }
     }
