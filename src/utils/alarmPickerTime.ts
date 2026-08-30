@@ -107,9 +107,7 @@ export function sleepHoursFromBedtime(fajrTime: Date, picked: Date): number {
   const minutes = snapToFiveMinutes(
     Math.round((fajrTime.getTime() - aligned.getTime()) / 60_000),
   );
-  const maxMinutes = Math.round(maxDesiredSleepHours(fajrTime) * 60);
-  const clamped = Math.max(30, Math.min(maxMinutes, minutes));
-  return clamped / 60;
+  return minutes / 60;
 }
 
 export function bedtimeFromSleepHours(fajrTime: Date, sleepHours: number): Date {

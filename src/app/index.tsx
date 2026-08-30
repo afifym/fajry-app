@@ -327,6 +327,12 @@ const HomeScreenContent = () => {
           setSchedule(s);
         }}
         now={now}
+        bedTime={
+          clockPreview?.bedTime ??
+          (sleepSession
+            ? toNightFaceDisplayDate(sleepSession.bedTime, sleepSession.fajrTime)
+            : null)
+        }
       />
       <WakeUpEditModal
         visible={editSheet === "wakeup"}

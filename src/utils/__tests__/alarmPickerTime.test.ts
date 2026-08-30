@@ -4,7 +4,6 @@ import {
   sleepHoursFromBedtime,
   wakeTimeFromOffset,
   bedtimeFromSleepHours,
-  maxDesiredSleepHours,
   nightFaceDateFromTime,
   nightFaceStart,
 } from '../alarmPickerTime';
@@ -58,15 +57,12 @@ describe('alarmPickerTime', () => {
       expect(sleepHoursFromBedtime(fajr, bed)).toBe(7);
     });
 
-    it('snaps to five-minute steps and clamps to 30 min–night-start before Fajr', () => {
+    it('snaps to five-minute steps without clamping the bedtime', () => {
       const uneven = new Date(fajr.getTime() - (7 * 60 + 17) * 60_000);
       expect(sleepHoursFromBedtime(fajr, uneven)).toBe(7 + 15 / 60);
 
-      const tooLate = new Date(fajr.getTime() - 15 * 60_000);
-      expect(sleepHoursFromBedtime(fajr, tooLate)).toBe(0.5);
-
-      const tooEarly = new Date(fajr.getTime() - 14 * 3_600_000);
-      expect(sleepHoursFromBedtime(fajr, tooEarly)).toBe(maxDesiredSleepHours(fajr));
+      const fiveFiftyPm = new Date(2024, 0, 14, 17, 50, 0);
+      expect(sleepHoursFromBedtime(fajr, fiveFiftyPm)).toBe(11 + 40 / 60);
     });
 
     it('keeps a 10 PM bedtime as 10 PM', () => {

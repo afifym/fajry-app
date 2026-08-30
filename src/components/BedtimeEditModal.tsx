@@ -10,7 +10,6 @@ import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
   bedtimeFromSleepHours,
-  maxDesiredSleepHours,
   sleepHoursFromBedtime,
   snapToFiveMinutes,
 } from "@/utils/alarmPickerTime";
@@ -23,6 +22,8 @@ type Props = {
   schedule: AlarmDay[];
   onScheduleChange: (schedule: AlarmDay[]) => void;
   now: Date;
+  /** Time shown on the bedtime card; the picker follows this when present. */
+  bedTime?: Date | null;
 };
 
 async function applyAndRebuild(
@@ -51,18 +52,15 @@ export function BedtimeEditModal({
   schedule,
   onScheduleChange,
   now,
+  bedTime: bedTimeProp,
 }: Props) {
   const settings = useSettingsStore();
   const nextFajr = schedule.find((d) => d.fajrTime.getTime() > Date.now());
 
   async function handleSleepHoursChange(hours: number) {
-    const minutes = snapToFiveMinutes(Math.round(hours * 60));
-    const maxMinutes = nextFajr
-      ? Math.round(maxDesiredSleepHours(nextFajr.fajrTime) * 60)
-      : 12 * 60;
-    const clamped = Math.max(30, Math.min(maxMinutes, minutes)) / 60;
-    useSettingsStore.getState().setDesiredSleepHours(clamped);
-    const next = await applyAndRebuild({ desiredSleepHours: clamped });
+    const snapped = snapToFiveMinutes(Math.round(hours * 60)) / 60;
+    useSettingsStore.getState().setDesiredSleepHours(snapped);
+    const next = await applyAndRebuild({ desiredSleepHours: snapped });
     if (next) onScheduleChange(next);
   }
 
@@ -77,9 +75,9 @@ export function BedtimeEditModal({
     settings.desiredSleepHours,
     now,
   );
-  const bedTime = sleepSession?.bedTime ?? null;
   const pickerValue =
-    bedTime ??
+    bedTimeProp ??
+    sleepSession?.bedTime ??
     (nextFajr
       ? bedtimeFromSleepHours(nextFajr.fajrTime, settings.desiredSleepHours)
       : new Date());
@@ -88,13 +86,6 @@ export function BedtimeEditModal({
     if (!nextFajr) return;
     void handleSleepHoursChange(sleepHoursFromBedtime(nextFajr.fajrTime, date));
   }
-
-  const minBed = nextFajr
-    ? bedtimeFromSleepHours(nextFajr.fajrTime, maxDesiredSleepHours(nextFajr.fajrTime))
-    : undefined;
-  const maxBed = nextFajr
-    ? bedtimeFromSleepHours(nextFajr.fajrTime, 0.5)
-    : undefined;
 
   return (
     <AlarmEditSheet visible={visible} onClose={onClose}>
@@ -112,10 +103,9 @@ export function BedtimeEditModal({
         </View>
 
         <TimeWheelPicker
+          key={visible ? "open" : "closed"}
           value={pickerValue}
           onValueChange={handleBedtimeChange}
-          minimumDate={minBed}
-          maximumDate={maxBed}
           disabled={!settings.sleepReminderEnabled}
         />
 
