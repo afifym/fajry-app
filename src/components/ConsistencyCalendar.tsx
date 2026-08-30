@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Palette } from '@/constants/theme';
+import { ChevronLeft, ChevronRight, Icon } from '@/components/Icon';
 import { useConsistencyStore } from '@/store/consistencyStore';
 import { toISODate } from '@/utils/prayerTimes';
 import type { PrayerConfirmation } from '@/types';
@@ -54,6 +55,15 @@ function buildCalendarDays(year: number, month: number): string[] {
     days.push(`${year}-${m}-${dd}`);
   }
   return days;
+}
+
+function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
+  const d = new Date(year, month + delta, 1);
+  return { year: d.getFullYear(), month: d.getMonth() };
+}
+
+function isSameMonth(year: number, month: number, date: Date): boolean {
+  return year === date.getFullYear() && month === date.getMonth();
 }
 
 const MONTH_NAMES = [
@@ -176,10 +186,14 @@ function CalendarDayCell({
 export const ConsistencyCalendar = () => {
   const { confirmations, toggleConfirmation } = useConsistencyStore();
   const [cellSize, setCellSize] = useState(0);
-  const today = toISODate(new Date());
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const todayDate = new Date();
+  const today = toISODate(todayDate);
+  const [viewed, setViewed] = useState(() => ({
+    year: todayDate.getFullYear(),
+    month: todayDate.getMonth(),
+  }));
+  const { year, month } = viewed;
+  const atLatestMonth = isSameMonth(year, month, todayDate);
 
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - EDITABLE_WINDOW);
@@ -201,9 +215,36 @@ export const ConsistencyCalendar = () => {
 
   return (
     <View style={s.container}>
-      <Text style={s.monthLabel}>
-        {MONTH_NAMES[month]} {year}
-      </Text>
+      <View style={s.monthRow}>
+        <Pressable
+          onPress={() => setViewed((v) => shiftMonth(v.year, v.month, -1))}
+          accessibilityLabel="Previous month"
+          hitSlop={12}
+          style={s.monthNavBtn}
+        >
+          <Icon icon={ChevronLeft} size={22} color={Palette.gold} />
+        </Pressable>
+        <Text style={s.monthLabel}>
+          {MONTH_NAMES[month]} {year}
+        </Text>
+        <Pressable
+          onPress={() => {
+            if (atLatestMonth) return;
+            setViewed((v) => shiftMonth(v.year, v.month, 1));
+          }}
+          disabled={atLatestMonth}
+          accessibilityLabel="Next month"
+          accessibilityState={{ disabled: atLatestMonth }}
+          hitSlop={12}
+          style={s.monthNavBtn}
+        >
+          <Icon
+            icon={ChevronRight}
+            size={22}
+            color={atLatestMonth ? Palette.textMuted : Palette.gold}
+          />
+        </Pressable>
+      </View>
 
       <View style={s.calendar} onLayout={onGridLayout}>
         <View style={s.grid}>
@@ -233,45 +274,35 @@ export const ConsistencyCalendar = () => {
           ))}
         </View>
       </View>
-
-      <View style={s.legend}>
-        <LegendDot color={Palette.goldDim} border={Palette.goldMuted} label="Prayed" />
-        <LegendDot color={Palette.bgCard} border={Palette.glassOutline} label="Missed" />
-      </View>
     </View>
   );
 };
 
-const LegendDot = ({
-  color,
-  border,
-  label,
-}: {
-  color: string;
-  border?: string;
-  label: string;
-}) => (
-  <View style={s.legendItem}>
-    <View
-      style={[
-        s.legendDot,
-        { backgroundColor: color },
-        border ? { borderWidth: StyleSheet.hairlineWidth, borderColor: border } : null,
-      ]}
-    />
-    <Text style={s.legendText}>{label}</Text>
-  </View>
-);
-
 const s = StyleSheet.create({
   container: { gap: 14 },
+  monthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    minHeight: 28,
+  },
+  monthNavBtn: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   monthLabel: {
+    flex: 1,
     color: Palette.gold,
-    fontSize: 10,
+    fontSize: 13,
+    lineHeight: 28,
     fontWeight: '600',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
     textAlign: 'center',
     textTransform: 'uppercase',
+    includeFontPadding: false,
   },
   calendar: { width: '100%' },
   grid: {
@@ -316,15 +347,4 @@ const s = StyleSheet.create({
   dayNum_future: { color: Palette.textMuted },
   dayNum_prayed: { fontWeight: '700' },
   dayNumOutsideMonth: { opacity: 0.45 },
-
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-    marginTop: 4,
-    paddingTop: 4,
-  },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: Palette.textSecondary, fontSize: 12, fontWeight: '500' },
 });
