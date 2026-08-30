@@ -8,6 +8,7 @@ import { HomeBg } from "@/components/HomeBg";
 import { OptionPickerModal } from "@/components/OptionPickerModal";
 import { ChevronRight, Back, Icon } from "@/components/Icon";
 import { Palette, Radius } from "@/constants/theme";
+import { featureFlags } from "@/constants/featureFlags";
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AdhanRecitation, CalculationMethodKey, City } from "@/types";
 import { rebuildScheduleOnAppOpen, scheduleTestAlarm, TEST_ALARM_DELAY_MS } from "@/utils/scheduling";
@@ -159,15 +160,17 @@ const SettingsScreen = () => {
               </Pressable>
             </SettingRow>
 
-            <SettingRow label="Adhan Recitation" isLast={false}>
-              <Pressable
-                onPress={() => setRecitationModalOpen(true)}
-                style={st.picker}
-              >
-                <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
-                <Icon icon={ChevronRight} size={24} color={Palette.gold} />
-              </Pressable>
-            </SettingRow>
+            {featureFlags.adhanRecitationSetting ? (
+              <SettingRow label="Adhan Recitation" isLast={false}>
+                <Pressable
+                  onPress={() => setRecitationModalOpen(true)}
+                  style={st.picker}
+                >
+                  <Text style={st.pickerValue}>{currentRecitationLabel}</Text>
+                  <Icon icon={ChevronRight} size={24} color={Palette.gold} />
+                </Pressable>
+              </SettingRow>
+            ) : null}
 
             <SettingRow label="City" isLast>
               <Pressable onPress={() => setCityModalOpen(true)} style={st.picker}>
@@ -215,15 +218,17 @@ const SettingsScreen = () => {
         onSelect={handleMethodSelect}
       />
 
-      <OptionPickerModal
-        visible={recitationModalOpen}
-        title="Adhan Recitation"
-        options={ADHAN_RECITATIONS}
-        selectedKey={settings.adhanRecitation}
-        presentationStyle="pageSheet"
-        onClose={() => setRecitationModalOpen(false)}
-        onSelect={handleRecitationSelect}
-      />
+      {featureFlags.adhanRecitationSetting ? (
+        <OptionPickerModal
+          visible={recitationModalOpen}
+          title="Adhan Recitation"
+          options={ADHAN_RECITATIONS}
+          selectedKey={settings.adhanRecitation}
+          presentationStyle="pageSheet"
+          onClose={() => setRecitationModalOpen(false)}
+          onSelect={handleRecitationSelect}
+        />
+      ) : null}
 
       <CityPickerModal
         visible={cityModalOpen}
