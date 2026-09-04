@@ -24,6 +24,7 @@ export function TimeWheelPicker({
         value={value}
         mode="time"
         display="spinner"
+        locale="en_US"
         themeVariant="dark"
         accentColor={Palette.gold}
         minimumDate={minimumDate}

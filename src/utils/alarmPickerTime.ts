@@ -5,6 +5,51 @@ export function snapToFiveMinutes(minutes: number): number {
   return Math.round(minutes / TIME_SNAP_MINUTES) * TIME_SNAP_MINUTES;
 }
 
+/** Midnight through 12:00 — hides 13:00–24:00 on a 24-hour time wheel. */
+export function morningPickerBounds(day: Date): { minimumDate: Date; maximumDate: Date } {
+  const minimumDate = new Date(day);
+  minimumDate.setHours(0, 0, 0, 0);
+  const maximumDate = new Date(day);
+  maximumDate.setHours(12, 0, 0, 0);
+  return { minimumDate, maximumDate };
+}
+
+/** 12:00 through 23:55 — afternoon and evening only. */
+export function eveningPickerBounds(day: Date): { minimumDate: Date; maximumDate: Date } {
+  const minimumDate = new Date(day);
+  minimumDate.setHours(12, 0, 0, 0);
+  const maximumDate = new Date(day);
+  maximumDate.setHours(23, 55, 0, 0);
+  return { minimumDate, maximumDate };
+}
+
+function clampDate(date: Date, minimumDate: Date, maximumDate: Date): Date {
+  const t = date.getTime();
+  if (t < minimumDate.getTime()) return new Date(minimumDate);
+  if (t > maximumDate.getTime()) return new Date(maximumDate);
+  return date;
+}
+
+/** Keep a wake picker time in 00:00–12:00. 13:00–23:00 maps to the same clock hour AM. */
+export function restrictToMorningHours(date: Date): Date {
+  const next = new Date(date);
+  if (next.getHours() > 12) {
+    next.setHours(next.getHours() - 12, next.getMinutes(), 0, 0);
+  }
+  const { minimumDate, maximumDate } = morningPickerBounds(next);
+  return clampDate(next, minimumDate, maximumDate);
+}
+
+/** Keep a bedtime picker time in 12:00–23:55. Morning hours map to PM. */
+export function restrictToEveningHours(date: Date): Date {
+  const next = new Date(date);
+  if (next.getHours() < 12) {
+    next.setHours(next.getHours() + 12, next.getMinutes(), 0, 0);
+  }
+  const { minimumDate, maximumDate } = eveningPickerBounds(next);
+  return clampDate(next, minimumDate, maximumDate);
+}
+
 /** Map a time-wheel selection to pre-alarm offset minutes before Fajr (negative = after Fajr). */
 export function maxMinutesAfterFajrUntilSunrise(fajrTime: Date, sunriseTime: Date): number {
   return Math.max(0, Math.round((sunriseTime.getTime() - fajrTime.getTime()) / 60_000));

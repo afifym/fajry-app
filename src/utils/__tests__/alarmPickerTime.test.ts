@@ -1,15 +1,40 @@
 import {
+  eveningPickerBounds,
+  morningPickerBounds,
+  nightFaceDateFromTime,
+  nightFaceStart,
   offsetFromWakeTime,
+  restrictToEveningHours,
+  restrictToMorningHours,
   sleepDurationBetween,
   sleepHoursFromBedtime,
   wakeTimeFromOffset,
   bedtimeFromSleepHours,
-  nightFaceDateFromTime,
-  nightFaceStart,
 } from '../alarmPickerTime';
 
 describe('alarmPickerTime', () => {
   const fajr = new Date(2024, 0, 15, 5, 30, 0); // 15 Jan 2024, 5:30 AM
+
+  describe('morning and evening picker bounds', () => {
+    it('keeps wake times out of 13:00–24:00', () => {
+      const sevenPm = new Date(2024, 0, 15, 19, 0, 0);
+      const morning = restrictToMorningHours(sevenPm);
+      expect(morning.getHours()).toBe(7);
+      const { maximumDate } = morningPickerBounds(sevenPm);
+      expect(maximumDate.getHours()).toBe(12);
+      expect(maximumDate.getMinutes()).toBe(0);
+    });
+
+    it('keeps bedtime in the afternoon and evening', () => {
+      const threeAm = new Date(2024, 0, 14, 3, 0, 0);
+      const evening = restrictToEveningHours(threeAm);
+      expect(evening.getHours()).toBe(15);
+      const { minimumDate, maximumDate } = eveningPickerBounds(threeAm);
+      expect(minimumDate.getHours()).toBe(12);
+      expect(maximumDate.getHours()).toBe(23);
+      expect(maximumDate.getMinutes()).toBe(55);
+    });
+  });
 
   describe('wakeTimeFromOffset / offsetFromWakeTime', () => {
     it('round-trips offset minutes', () => {
