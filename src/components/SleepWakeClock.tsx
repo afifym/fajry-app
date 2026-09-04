@@ -393,8 +393,8 @@ export const SleepWakeClock = ({
   fajrTime,
   sunriseTime,
   durationMs: _durationMs,
-  bedEnabled = true,
-  wakeEnabled = true,
+  bedEnabled: _bedEnabled = true,
+  wakeEnabled: _wakeEnabled = true,
   onBedTimeChange,
   onWakeTimeChange,
   onTimesPreview,
@@ -543,8 +543,8 @@ export const SleepWakeClock = ({
     [fajrTime, dragBedAngle, emitPreview],
   );
 
-  const bedInteractionDisabled = !fajrTime || !bedEnabled || !onBedTimeChange;
-  const wakeInteractionDisabled = !fajrTime || !wakeEnabled || !onWakeTimeChange;
+  const bedInteractionDisabled = !fajrTime || !onBedTimeChange;
+  const wakeInteractionDisabled = !fajrTime || !onWakeTimeChange;
 
   return (
     <View style={s.clockWrap}>

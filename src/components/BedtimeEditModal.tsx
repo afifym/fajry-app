@@ -11,6 +11,8 @@ import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
   bedtimeFromSleepHours,
+  eveningPickerBounds,
+  restrictToEveningHours,
   sleepHoursFromBedtime,
   snapToFiveMinutes,
 } from "@/utils/alarmPickerTime";
@@ -85,16 +87,21 @@ export function BedtimeEditModal({
     settings.desiredSleepHours,
     now,
   );
-  const pickerValue =
+  const pickerValue = restrictToEveningHours(
     bedTimeProp ??
-    sleepSession?.bedTime ??
-    (nextFajr
-      ? bedtimeFromSleepHours(nextFajr.fajrTime, settings.desiredSleepHours)
-      : new Date());
+      sleepSession?.bedTime ??
+      (nextFajr
+        ? bedtimeFromSleepHours(nextFajr.fajrTime, settings.desiredSleepHours)
+        : new Date()),
+  );
+  const { minimumDate: minBed, maximumDate: maxBed } =
+    eveningPickerBounds(pickerValue);
 
   function handleBedtimeChange(date: Date) {
     if (!nextFajr) return;
-    void handleSleepHoursChange(sleepHoursFromBedtime(nextFajr.fajrTime, date));
+    void handleSleepHoursChange(
+      sleepHoursFromBedtime(nextFajr.fajrTime, restrictToEveningHours(date)),
+    );
   }
 
   return (
@@ -116,7 +123,8 @@ export function BedtimeEditModal({
           key={visible ? "open" : "closed"}
           value={pickerValue}
           onValueChange={handleBedtimeChange}
-          disabled={!reminderOn}
+          minimumDate={minBed}
+          maximumDate={maxBed}
         />
 
         <Text style={s.footerHint}>

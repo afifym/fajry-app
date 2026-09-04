@@ -10,9 +10,10 @@ import { useNotificationAuthorization } from "@/hooks/use-notification-authoriza
 import { useSettingsStore } from "@/store/settingsStore";
 import type { AlarmDay } from "@/types";
 import {
+  morningPickerBounds,
   nightFaceDateFromTime,
-  nightFaceStart,
   offsetFromNightFaceWake,
+  restrictToMorningHours,
   snapToFiveMinutes,
   wakeTimeFromOffset,
 } from "@/utils/alarmPickerTime";
@@ -88,19 +89,24 @@ export function WakeUpEditModal({
     (nextFajr
       ? wakeTimeFromOffset(nextFajr.fajrTime, settings.preAlarmOffsetMinutes)
       : new Date());
-  const pickerValue = nextFajr
-    ? nightFaceDateFromTime(nextFajr.fajrTime, rawPickerValue)
-    : rawPickerValue;
+  const pickerValue = restrictToMorningHours(
+    nextFajr
+      ? nightFaceDateFromTime(nextFajr.fajrTime, rawPickerValue)
+      : rawPickerValue,
+  );
+  const { minimumDate: minTime, maximumDate: maxTime } =
+    morningPickerBounds(pickerValue);
 
   function handleWakeTimeChange(date: Date) {
     if (!nextFajr) return;
     void handleOffsetChange(
-      offsetFromNightFaceWake(nextFajr.fajrTime, date, nextFajr.sunriseTime),
+      offsetFromNightFaceWake(
+        nextFajr.fajrTime,
+        restrictToMorningHours(date),
+        nextFajr.sunriseTime,
+      ),
     );
   }
-
-  const minTime = nextFajr ? nightFaceStart(nextFajr.fajrTime) : undefined;
-  const maxTime = nextFajr?.sunriseTime;
 
   return (
     <AlarmEditSheet visible={visible} onClose={onClose}>
@@ -122,7 +128,6 @@ export function WakeUpEditModal({
           onValueChange={handleWakeTimeChange}
           minimumDate={minTime}
           maximumDate={maxTime}
-          disabled={!alarmOn}
         />
 
         <Text style={s.footerHint}>
