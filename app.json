@@ -63,6 +63,12 @@
         "projectId": "8f5e4382-f553-43e6-802f-7fc33f3d9e55"
       }
     },
-    "owner": "afifym"
+    "owner": "afifym",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8f5e4382-f553-43e6-802f-7fc33f3d9e55"
+    }
   }
 }
